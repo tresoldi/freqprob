@@ -23,12 +23,37 @@ class ScoringMethod:
     This class provides a common interface for all smoothing methods.
     """
 
-    def __init__(self):
-        # Set a default value for the unobserved probability, which is
-        # also used to avoid domain errors when calculating the log
-        # probabilities.
+    def __init__(self, unobs_prob: Optional[float] = None, gamma: Optional[float] = None, bins: Optional[int] = None):
+        # Set a default value for the observed and unobserved probabilities.
+        # The default value for the unobserved probability is 1e-10, which
+        # is also used to avoid domain errors when calculating the log
+        # probabilities. All methods should take the maximum value between
+        # this value and the reserved mass probability when computing
+        # log-probabilities.
         self._unobs = 1e-10
-        self._prob = {}
+        self._prob: Dict[str, float] = {}
+
+        # Set .logprob to None, so that calling this superclass directly
+        # will raise an error.
+        self.logprob: Optional[bool] = None
+
+        # Check values for all distributions; this allows to have a single check,
+        # so arguments with the same name in different distributions will behave
+        # the same way.
+        if unobs_prob is not None:
+            # Confirm that the reserved mass probability is valid (between 0.0 and 1.0)
+            if not 0.0 <= unobs_prob <= 1.0:
+                raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
+
+        if gamma is not None:
+            if gamma < 0:
+                # TODO: check if it can/makes sense to have a gamma of zero (<= 0.0)
+                raise ValueError("Gamma must be a real number.")
+
+        if bins is not None:
+            if bins < 1:
+                # TODO: check if it can/makes sense to have a bins of zero (<= 0)
+                raise ValueError("Number of bins must be a real number.")
 
     def __call__(self, element: str) -> float:
         """
@@ -73,11 +98,7 @@ class Uniform(ScoringMethod):
 
     def __init__(self, freqdist: Dict[str, int], unobs_prob: float = 0.0, logprob: bool = True):
         # Call the parent constructor
-        super().__init__()
-
-        # Confirm that the reserved mass probability is valid (between 0.0 and 1.0)
-        if not 0.0 <= unobs_prob <= 1.0:
-            raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
+        super().__init__(unobs_prob=unobs_prob)
 
         # Store the parameters
         self.logprob = logprob
@@ -85,7 +106,7 @@ class Uniform(ScoringMethod):
         # Calculation couldn't be easier: we just subtract the reserved mass
         # probability from 1.0 and divide by the number of samples.
         if self.logprob:
-            unobs_prob = max(unobs_prob, self._unobs)
+            unobs_prob = max(unobs_prob, self._unobs)  # avoids domain errors
             prob = math.log((1.0 - unobs_prob) / len(freqdist))
             self._prob = {elem: prob for elem in freqdist}
             self._unobs = math.log(unobs_prob)
@@ -122,11 +143,7 @@ class Random(ScoringMethod):
 
     def __init__(self, freqdist: Dict[str, int], unobs_prob: float = 0.0, logprob: bool = True, seed=None):
         # Call the parent constructor
-        super().__init__()
-
-        # Confirm that the reserved mass probability is valid (between 0.0 and 1.0)
-        if not 0.0 <= unobs_prob <= 1.0:
-            raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
+        super().__init__(unobs_prob=unobs_prob)
 
         # Store the parameters
         self.logprob = logprob
@@ -153,7 +170,6 @@ class MLE(ScoringMethod):
     """
     Returns a Maximum-Likelihood Estimation log-probability distribution.
 
-
     In an MLE log-probability distribution the probability of each sample is
     approximated as the frequency of the same sample in the frequency
     distribution of observed samples. It is the distribution people intuitively
@@ -176,11 +192,7 @@ class MLE(ScoringMethod):
 
     def __init__(self, freqdist: Dict[str, int], unobs_prob: float = 0.0, logprob: bool = True):
         # Call the parent constructor
-        super().__init__()
-
-        # Confirm that the reserved mass probability is valid (between 0.0 and 1.0)
-        if not 0.0 <= unobs_prob <= 1.0:
-            raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
+        super().__init__(unobs_prob=unobs_prob)
 
         # Store the parameters
         self.logprob = logprob
@@ -233,25 +245,21 @@ class Lidstone(ScoringMethod):
     """
 
     def __init__(self, freqdist: Dict[str, int], gamma: float, bins: Optional[int] = None, logprob: bool = True):
+        # Collect `bins` if necessary before validating with the parent
+        if bins is None:
+            bins = len(freqdist)
+
         # Call the parent constructor
-        super().__init__()
-
-        # TODO: check parameters
-
-        # Obtain the parameters for probability calculation.
-        n = sum(freqdist.values())
-        if not bins:
-            b = len(freqdist)
-        else:
-            b = bins
+        super().__init__(gamma=gamma, bins=bins)
 
         # Store the parameters
         self.logprob = logprob
 
         # Store the probabilities
+        n = sum(freqdist.values())
         if self.logprob:
-            self._prob = {sample: math.log((count + gamma) / (n + b * gamma)) for sample, count in freqdist.items()}
-            self._unobs = math.log(gamma / (n + b * gamma))
+            self._prob = {sample: math.log((count + gamma) / (n + bins * gamma)) for sample, count in freqdist.items()}
+            self._unobs = math.log(gamma / (n + bins * gamma))
         else:
-            self._prob = {sample: (count + gamma) / (n + b * gamma) for sample, count in freqdist.items()}
-            self._unobs = gamma / (n + b * gamma)
+            self._prob = {sample: (count + gamma) / (n + bins * gamma) for sample, count in freqdist.items()}
+            self._unobs = gamma / (n + bins * gamma)

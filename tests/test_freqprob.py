@@ -347,5 +347,8 @@ def test_lidstone_raises():
     Test the Lidstone distribution raises the correct errors.
     """
 
-    # TODO: write tests
-    pass
+    with pytest.raises(ValueError):
+        Lidstone(TEST_OBS1, gamma=1.0, bins=0)
+
+    with pytest.raises(ValueError):
+        Lidstone(TEST_OBS1, gamma=-1.0)
