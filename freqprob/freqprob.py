@@ -13,6 +13,8 @@ import math
 import random
 from typing import Dict
 
+# TODO: add querying functions to the ScoringMethod to get 1. the method name 2. whether logprobs are used
+
 
 class ScoringMethod:
     """
@@ -144,4 +146,51 @@ class Random(ScoringMethod):
             self._unobs = math.log(unobs_prob)
         else:
             self._prob = {elem: (count / value_sum) * (1.0 - unobs_prob) for elem, count in random_freqdist.items()}
+            self._unobs = unobs_prob
+
+
+class MLE(ScoringMethod):
+    """
+    Returns a Maximum-Likelihood Estimation log-probability distribution.
+
+
+    In an MLE log-probability distribution the probability of each sample is
+    approximated as the frequency of the same sample in the frequency
+    distribution of observed samples. It is the distribution people intuitively
+    adopt when thinking of probability distributions. A mass probability can
+    optionally be reserved for unobserved samples.
+
+    Parameters
+    ----------
+    freqdist : dict
+        Frequency distribution of samples (keys) and counts (values) from
+        which the probability distribution will be calculated.
+    unobs_prob : float
+        An optional mass probability to be reserved for unobserved states,
+        from 0.0 to 1.0.
+    logprob : bool
+        Whether to return the log-probabilities (default) or the
+        probabilities themselves. When using the log-probabilities, the
+        counts are automatically corrected to avoid domain errors.
+    """
+
+    def __init__(self, freqdist: Dict[str, int], unobs_prob: float = 0.0, logprob: bool = True):
+        # Call the parent constructor
+        super().__init__()
+
+        # Confirm that the reserved mass probability is valid (between 0.0 and 1.0)
+        if not 0.0 <= unobs_prob <= 1.0:
+            raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
+
+        # Store the parameters
+        self.logprob = logprob
+
+        # Store the probabilities
+        value_sum = sum(freqdist.values())
+        if self.logprob:
+            unobs_prob = max(unobs_prob, self._unobs)
+            self._prob = {elem: math.log((count / value_sum) * (1.0 - unobs_prob)) for elem, count in freqdist.items()}
+            self._unobs = math.log(unobs_prob)
+        else:
+            self._prob = {elem: (count / value_sum) * (1.0 - unobs_prob) for elem, count in freqdist.items()}
             self._unobs = unobs_prob
