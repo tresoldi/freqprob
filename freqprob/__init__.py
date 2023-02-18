@@ -7,30 +7,11 @@ __version__ = "0.1.0"  # Remember to sync with setup.py
 __author__ = "Tiago Tresoldi"
 __email__ = "tiago.tresoldi@lingfil.uu.se"
 
+
 # Import from local modules
-from .smoothing import (
-    certaintydegree_dist,
-    ele_dist,
-    laplace_dist,
-    lidstone_dist,
-    mle_dist,
-    random_dist,
-    sgt_dist,
-    smooth_dist,
-    uniform_dist,
-    wittenbell_dist,
-)
+from .freqprob import Uniform
 
 # Build the namespace
 __all__ = [
-    "certaintydegree_dist",
-    "ele_dist",
-    "laplace_dist",
-    "lidstone_dist",
-    "mle_dist",
-    "random_dist",
-    "sgt_dist",
-    "smooth_dist",
-    "uniform_dist",
-    "wittenbell_dist",
+    "Uniform",
 ]
