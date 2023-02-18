@@ -65,7 +65,7 @@ setuptools.setup(
             'test',
         ]
     ),
-    python_requires='>=3.7, <4',
+    python_requires='>=3.8, <4',
     url='http://github.com/tresoldi/freqprob',
     version='0.1.0',  # Remember to sync with __init__.py
 )
