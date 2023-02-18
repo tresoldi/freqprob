@@ -12,7 +12,7 @@ from collections import Counter
 import pytest
 
 # Import the library to test
-from freqprob import MLE, Laplace, Lidstone, Random, Uniform
+from freqprob import ELE, MLE, Laplace, Lidstone, Random, Uniform
 
 # TODO: add tests with different bin values for the Lidstone family
 
@@ -427,3 +427,76 @@ def test_laplace_raises():
 
     with pytest.raises(ValueError):
         Laplace(TEST_OBS1, bins=-1)
+
+
+def test_ele_dist_nolog_noobs():
+    """
+    Test the ELE distribution without logprob and without unobserved states score.
+    """
+
+    scorer1 = ELE(TEST_OBS1, logprob=False)
+    assert scorer1("A") == pytest.approx(0.09090909090909091)
+    assert scorer1("B") == pytest.approx(0.15151515151515152)
+    assert scorer1("F") == pytest.approx(0.030303030303030304)
+
+    scorer2 = ELE(TEST_OBS2, logprob=False)
+    assert scorer2("0") == pytest.approx(1.5671714005503027e-06)
+    assert scorer2("~") == pytest.approx(3.951582085067264e-08)
+    assert scorer2("aaa") == pytest.approx(2.5543517033401835e-11)
+
+
+def test_ele_dist_log_noobs():
+    """
+    Test the ELE distribution with logprob and without unobserved states score.
+    """
+
+    scorer1 = ELE(TEST_OBS1)
+    assert scorer1("A") == pytest.approx(-2.3978952727983707)
+    assert scorer1("B") == pytest.approx(-1.8870696490323797)
+    assert scorer1("F") == pytest.approx(-3.4965075614664802)
+
+    scorer2 = ELE(TEST_OBS2)
+    assert scorer2("0") == pytest.approx(-13.36623821923814)
+    assert scorer2("~") == pytest.approx(-17.046564717364078)
+    assert scorer2("aaa") == pytest.approx(-24.390637567937144)
+
+
+def test_ele_dist_nolog_obs():
+    """
+    Test the ELE distribution without logprob and with unobserved states score.
+    """
+
+    scorer1 = ELE(TEST_OBS1, logprob=False)
+    assert scorer1("A") == pytest.approx(0.09090909090909091)
+    assert scorer1("B") == pytest.approx(0.15151515151515152)
+    assert scorer1("F") == pytest.approx(0.030303030303030304)
+
+    scorer2 = ELE(TEST_OBS2, logprob=False)
+    assert scorer2("0") == pytest.approx(1.5671714005503027e-06)
+    assert scorer2("~") == pytest.approx(3.951582085067264e-08)
+    assert scorer2("aaa") == pytest.approx(2.5543517033401835e-11)
+
+
+def test_ele_dist_log_obs():
+    """
+    Test the ELE distribution with logprob and with unobserved states score.
+    """
+
+    scorer1 = ELE(TEST_OBS1)
+    assert scorer1("A") == pytest.approx(-2.3978952727983707)
+    assert scorer1("B") == pytest.approx(-1.8870696490323797)
+    assert scorer1("F") == pytest.approx(-3.4965075614664802)
+
+    scorer2 = ELE(TEST_OBS2)
+    assert scorer2("0") == pytest.approx(-13.36623821923814)
+    assert scorer2("~") == pytest.approx(-17.046564717364078)
+    assert scorer2("aaa") == pytest.approx(-24.390637567937144)
+
+
+def test_ele_raises():
+    """
+    Test the ELE distribution raises the correct errors.
+    """
+
+    with pytest.raises(ValueError):
+        ELE(TEST_OBS1, bins=-1)
