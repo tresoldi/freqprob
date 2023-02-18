@@ -12,7 +12,7 @@ from collections import Counter
 import pytest
 
 # Import the library to test
-from freqprob import ELE, MLE, Laplace, Lidstone, Random, Uniform
+from freqprob import ELE, MLE, Laplace, Lidstone, Random, Uniform, WittenBell
 
 # TODO: add tests with different bin values for the Lidstone family
 
@@ -500,3 +500,75 @@ def test_ele_raises():
 
     with pytest.raises(ValueError):
         ELE(TEST_OBS1, bins=-1)
+
+
+def test_wb_dist_nolog_noobs():
+    """
+    Test the Witten-Bell distribution without logprob and without unobserved states score.
+    """
+
+    scorer1 = WittenBell(TEST_OBS1, logprob=False)
+    assert scorer1("A") == pytest.approx(0.05263157894736842)
+    assert scorer1("B") == pytest.approx(0.10526315789473684)
+    assert scorer1("F") == pytest.approx(0.2631578947368421)
+
+    scorer2 = WittenBell(TEST_OBS2, logprob=False)
+    assert scorer2("0") == pytest.approx(1.5671458490271861e-06)
+    assert scorer2("~") == pytest.approx(3.9490277131895124e-08)
+    assert scorer2("aaa") == pytest.approx(1.0217406761163034e-08)
+
+
+def test_wb_dist_log_noobs():
+    """
+    Test the Witten-Bell distribution with logprob and without unobserved states score.
+    """
+
+    scorer1 = WittenBell(TEST_OBS1)
+    assert scorer1("A") == pytest.approx(-2.9444389791664407)
+    assert scorer1("B") == pytest.approx(-2.2512917986064953)
+    assert scorer1("F") == pytest.approx(-1.3350010667323402)
+
+    scorer2 = WittenBell(TEST_OBS2)
+    assert scorer2("0") == pytest.approx(-13.366254523601153)
+    assert scorer2("~") == pytest.approx(-17.047211343898482)
+    assert scorer2("aaa") == pytest.approx(-18.399173025937866)
+
+
+def test_wb_dist_nolog_obs():
+    """
+    Test the Witten-Bell distribution without logprob and with unobserved states score.
+    """
+
+    scorer1 = WittenBell(TEST_OBS1, logprob=False)
+    assert scorer1("A") == pytest.approx(0.05263157894736842)
+    assert scorer1("B") == pytest.approx(0.10526315789473684)
+    assert scorer1("F") == pytest.approx(0.2631578947368421)
+
+    scorer2 = WittenBell(TEST_OBS2, logprob=False)
+    assert scorer2("0") == pytest.approx(1.5671458490271861e-06)
+    assert scorer2("~") == pytest.approx(3.9490277131895124e-08)
+    assert scorer2("aaa") == pytest.approx(1.0217406761163034e-08)
+
+
+def test_wb_dist_log_obs():
+    """
+    Test the Witten-Bell distribution with logprob and with unobserved states score.
+    """
+
+    scorer1 = WittenBell(TEST_OBS1)
+    assert scorer1("A") == pytest.approx(-2.9444389791664407)
+    assert scorer1("B") == pytest.approx(-2.2512917986064953)
+    assert scorer1("F") == pytest.approx(-1.3350010667323402)
+
+    scorer2 = WittenBell(TEST_OBS2)
+    assert scorer2("0") == pytest.approx(-13.366254523601153)
+    assert scorer2("~") == pytest.approx(-17.047211343898482)
+    assert scorer2("aaa") == pytest.approx(-18.399173025937866)
+
+
+def test_wb_raises():
+    """
+    Test the Witten-Bell distribution raises the correct errors.
+    """
+
+    pass
