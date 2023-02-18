@@ -12,7 +12,16 @@ from collections import Counter
 import pytest
 
 # Import the library to test
-from freqprob import ELE, MLE, Laplace, Lidstone, Random, Uniform, WittenBell
+from freqprob import (
+    ELE,
+    MLE,
+    CertaintyDegree,
+    Laplace,
+    Lidstone,
+    Random,
+    Uniform,
+    WittenBell,
+)
 
 # TODO: add tests with different bin values for the Lidstone family
 
@@ -569,6 +578,78 @@ def test_wb_dist_log_obs():
 def test_wb_raises():
     """
     Test the Witten-Bell distribution raises the correct errors.
+    """
+
+    pass
+
+
+def test_cb_dist_nolog_noobs():
+    """
+    Test the Certainty Degree distribution without logprob and without unobserved states score.
+    """
+
+    scorer1 = CertaintyDegree(TEST_OBS1, logprob=False)
+    assert scorer1("A") == pytest.approx(0.06586524529838218)
+    assert scorer1("B") == pytest.approx(0.13173049059676437)
+    assert scorer1("F") == pytest.approx(0.07788656582264941)
+
+    scorer2 = CertaintyDegree(TEST_OBS2, logprob=False)
+    assert scorer2("0") == pytest.approx(1.5671458490271861e-06)
+    assert scorer2("~") == pytest.approx(3.9490277131895124e-08)
+    assert scorer2("aaa") == pytest.approx(-0.0)
+
+
+def test_cb_dist_log_noobs():
+    """
+    Test the Certainty Degree distribution with logprob and without unobserved states score.
+    """
+
+    scorer1 = CertaintyDegree(TEST_OBS1)
+    assert scorer1("A") == pytest.approx(-2.7201443620473227)
+    assert scorer1("B") == pytest.approx(-2.0269971814873777)
+    assert scorer1("F") == pytest.approx(-2.552501795115364)
+
+    scorer2 = CertaintyDegree(TEST_OBS2)
+    assert scorer2("0") == pytest.approx(-13.366254523601153)
+    assert scorer2("~") == pytest.approx(-17.047211343898482)
+    assert scorer2("aaa") == pytest.approx(-23.02585084720009)
+
+
+def test_cb_dist_nolog_obs():
+    """
+    Test the Certainty Degree distribution without logprob and with unobserved states score.
+    """
+
+    scorer1 = CertaintyDegree(TEST_OBS1, logprob=False)
+    assert scorer1("A") == pytest.approx(0.06586524529838218)
+    assert scorer1("B") == pytest.approx(0.13173049059676437)
+    assert scorer1("F") == pytest.approx(0.07788656582264941)
+
+    scorer2 = CertaintyDegree(TEST_OBS2, logprob=False)
+    assert scorer2("0") == pytest.approx(1.5671458490271861e-06)
+    assert scorer2("~") == pytest.approx(3.9490277131895124e-08)
+    assert scorer2("aaa") == pytest.approx(-0.0)
+
+
+def test_cb_dist_log_obs():
+    """
+    Test the Certainty Degree distribution with logprob and with unobserved states score.
+    """
+
+    scorer1 = CertaintyDegree(TEST_OBS1)
+    assert scorer1("A") == pytest.approx(-2.7201443620473227)
+    assert scorer1("B") == pytest.approx(-2.0269971814873777)
+    assert scorer1("F") == pytest.approx(-2.552501795115364)
+
+    scorer2 = CertaintyDegree(TEST_OBS2)
+    assert scorer2("0") == pytest.approx(-13.366254523601153)
+    assert scorer2("~") == pytest.approx(-17.047211343898482)
+    assert scorer2("aaa") == pytest.approx(-23.02585084720009)
+
+
+def test_cb_raises():
+    """
+    Test the Certainty Degree distribution raises the correct errors.
     """
 
     pass
