@@ -8,9 +8,29 @@ __author__ = "Tiago Tresoldi"
 __email__ = "tiago.tresoldi@lingfil.uu.se"
 
 # Import from local modules
-from .mock import mock
+from .smoothing import (
+    certaintydegree_dist,
+    ele_dist,
+    laplace_dist,
+    lidstone_dist,
+    mle_dist,
+    random_dist,
+    sgt_dist,
+    smooth_dist,
+    uniform_dist,
+    wittenbell_dist,
+)
 
 # Build the namespace
 __all__ = [
-    "mock",
+    "certaintydegree_dist",
+    "ele_dist",
+    "laplace_dist",
+    "lidstone_dist",
+    "mle_dist",
+    "random_dist",
+    "sgt_dist",
+    "smooth_dist",
+    "uniform_dist",
+    "wittenbell_dist",
 ]
