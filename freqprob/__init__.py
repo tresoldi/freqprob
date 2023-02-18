@@ -16,9 +16,20 @@ from .freqprob import (
     Laplace,
     Lidstone,
     Random,
+    SimpleGoodTuring,
     Uniform,
     WittenBell,
 )
 
 # Build the namespace
-__all__ = ["Uniform", "Random", "MLE", "Lidstone", "Laplace", "ELE", "WittenBell", "CertaintyDegree"]
+__all__ = [
+    "Uniform",
+    "Random",
+    "MLE",
+    "Lidstone",
+    "Laplace",
+    "ELE",
+    "WittenBell",
+    "CertaintyDegree",
+    "SimpleGoodTuring",
+]

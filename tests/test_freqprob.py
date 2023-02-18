@@ -19,6 +19,7 @@ from freqprob import (
     Laplace,
     Lidstone,
     Random,
+    SimpleGoodTuring,
     Uniform,
     WittenBell,
 )
@@ -653,3 +654,64 @@ def test_cb_raises():
     """
 
     pass
+
+
+def test_sgt_dist_nolog_noobs():
+    """
+    Test the Simple Good-Turing distribution without logprob and without unobserved states score.
+    """
+
+    # The second distribution does not have enough data for confident results,
+    # but it has enough to stress-test the method
+    scorer = SimpleGoodTuring(TEST_OBS2, logprob=False, allow_fail=False)
+    assert scorer("0") == pytest.approx(1.5671458490271861e-06)
+    assert scorer("~") == pytest.approx(3.9488998643028844e-08)
+    assert scorer("aaa") == pytest.approx(5.108703432518229e-11)
+
+
+def test_sgt_dist_log_noobs():
+    """
+    Test the Simple Good-Turing distribution with logprob and without unobserved states score.
+    """
+
+    # The second distribution does not have enough data for confident results,
+    # but it has enough to stress-test the method
+    scorer = SimpleGoodTuring(TEST_OBS2, allow_fail=False)
+    assert scorer("0") == pytest.approx(-13.366254523601153)
+    assert scorer("~") == pytest.approx(-17.047243719198303)
+    assert scorer("aaa") == pytest.approx(-23.697490382319582)
+
+
+def test_sgt_dist_nolog_obs():
+    """
+    Test the Simple Good-Turing distribution without logprob and with unobserved states score.
+    """
+
+    # The second distribution does not have enough data for confident results,
+    # but it has enough to stress-test the method
+    scorer = SimpleGoodTuring(TEST_OBS2, logprob=False, allow_fail=False)
+    assert scorer("0") == pytest.approx(1.5671458490271861e-06)
+    assert scorer("~") == pytest.approx(3.9488998643028844e-08)
+    assert scorer("aaa") == pytest.approx(5.108703432518229e-11)
+
+
+def test_sgt_dist_log_obs():
+    """
+    Test the Simple Good-Turing distribution with logprob and with unobserved states score.
+    """
+
+    # The second distribution does not have enough data for confident results,
+    # but it has enough to stress-test the method
+    scorer = SimpleGoodTuring(TEST_OBS2, allow_fail=False)
+    assert scorer("0") == pytest.approx(-13.366254523601153)
+    assert scorer("~") == pytest.approx(-17.047243719198303)
+    assert scorer("aaa") == pytest.approx(-23.697490382319582)
+
+
+def test_sgt_raises():
+    """
+    Test the Simple Good-Turing distribution raises the correct errors.
+    """
+
+    with pytest.raises(RuntimeWarning):
+        scorer = SimpleGoodTuring(TEST_OBS1)

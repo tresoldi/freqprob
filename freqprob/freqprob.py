@@ -13,6 +13,10 @@ import math
 import random
 from typing import Dict, Optional
 
+# Import 3rd-party modules
+import numpy as np
+import scipy  # type: ignore
+
 # TODO: add querying functions to the ScoringMethod to get 1. the method name 2. whether logprobs are used
 
 
@@ -484,3 +488,193 @@ class CertaintyDegree(ScoringMethod):
             prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
             self._prob = {sample: (count / n) * prob_space for sample, count in freqdist.items()}
             self._unobs = -(prob_space - 1.0)
+
+
+class SimpleGoodTuring(ScoringMethod):
+    """
+    Returns a Simple Good-Turing estimate probability distribution.
+
+    The returned probability distribution is based on the Good-Turing
+    frequency estimation, as first developed by Alan Turing and I. J. Good and
+    implemented in a more easily computable way by Gale and Sampson's
+    (1995/2001 reprint) in the so-called "Simple Good-Turing".
+    This implementation is based mostly in the one by "maxbane" (2011)
+    (https://github.com/maxbane/simplegoodturing/blob/master/sgt.py), as well
+    as in the original one in C by Geoffrey Sampson (1995; 2000; 2005; 2008)
+    (https://www.grsampson.net/Resources.html), and in the one by
+    Loper, Bird et al. (2001-2018, NLTK Project). Please note that
+    due to minor differences in implementation intended to guarantee non-zero
+    probabilities even in cases of expected underflow, as well as our
+    reliance on scipy's libraries for speed and our way of handling
+    probabilities that are not computable when the assumptions of SGT are
+    not met, most results will not exactly match those of the 'gold standard'
+    of Gale and Sampson, even though the differences are never expected to
+    be significant and are equally distributed across the samples.
+
+    freqdist : dict
+        Frequency distribution of samples (keys) and counts (values) from
+        which the probability distribution will be calculated.
+    p_value : float
+        The p-value for calculating the confidence interval of the empirical
+        Turing estimate, which guides the decision of using either the Turing
+        estimate "x" or the log-linear smoothed "y". Defaults to 0.05, as per
+        the reference implementation by Sampson, but consider that the authors,
+        both in their paper and in the code following suggestions credited to
+        private communication with Fan Yang, suggest using a value of 0.1.
+    default_p0 : float
+        An optional value indicating the probability for unobserved samples
+        ("p0") in cases where no samples with a single count are observed; if
+        this value is not specified, "p0" will default to a Laplace estimation
+        for the current frequency distribution. Please note that this is
+        intended change from the reference implementation by Gale and Sampson.
+    logprob : bool
+        Whether to return the log-probabilities (default) or the
+        probabilities themselves. When using the log-probabilities, the
+        counts are automatically corrected to avoid domain errors.
+    allow_fail : bool
+        A logic value informing if the function is allowed to fail, throwing
+        RuntimeWarning exceptions, if the essential assumptions on the
+        frequency distribution are not met, i.e., if the slope of the log-linear
+        regression is > -1.0 or if an unobserved count is reached before we are
+        able to cross the smoothing threshold. If set to False, the estimation
+        might result in an unreliable probability distribution; defaults to
+        True.
+    """
+
+    def __init__(
+        self,
+        freqdist: Dict[str, int],
+        p_value: float = 0.05,
+        default_p0: Optional[float] = None,
+        logprob: bool = True,
+        allow_fail: bool = True,
+    ):
+        # Call the parent constructor
+        # TODO: add checks
+        super().__init__()
+
+        # Store the parameters
+        self.logprob = logprob
+        self.name = "Simple Good-Turing"
+
+        # Calculate the confidence level from the p_value.
+        confidence_level = scipy.stats.norm.ppf(1.0 - (p_value / 2.0))
+
+        # Remove all samples with `count` equal to zero.
+        # TODO: consider counts of zero in all other tests
+        freqdist = {sample: count for sample, count in freqdist.items() if count > 0}
+
+        # Prepare vectors for frequencies (`r` in G&S) and frequencies of
+        # frequencies (`Nr` in G&S). freqdist.values() is cast to a tuple because
+        # we can't consume the iterable a single time. `freqs_keys` is sorted to
+        # make vector computations faster later on (so we query lists and not
+        # dictionaries).
+        freqs = tuple(freqdist.values())
+        freqs_keys = sorted(set(freqs))  # r -> n (G&S)
+        freqs_of_freqs = {c: freqs.count(c) for c in freqs_keys}
+
+        # The papers and the implementations are not clear on how to calculate the
+        # probability of unobserved states in case of missing single-count samples
+        # (unless we just fail, of course); Gale and Sampson's C implementation
+        # defaults to 0.0, which is not acceptable for our purposes. The solution
+        # here offered is to either use an user-provided probability (but in this
+        # case we are not necessarily defaulting to _UNOBS, and, in fact, the
+        # function argument name is `default_p0` and not `unobs_prob`) or default
+        # to a Lidstone smoothing with a gamma of 1.0 (i.e., using Laplace
+        # smoothing constant).
+        # TODO: Investigate and discuss other possible solutions, including
+        #       user-defined `gamma`, `bins`, and/or `N`.
+        if 1 in freqs_keys:
+            p0 = freqs_of_freqs[1] / sum(freqs)
+        else:
+            p0 = default_p0 or (1.0 / (sum(freqs) + 1))
+
+        # Compute Sampson's Z: for each count `j`, we set Z[j] to the linear
+        # interpolation of {i, j, k}, where `i` is the greatest observed count less
+        # than `j`, and `k` the smallest observed count greater than `j`.
+        i = [0] + freqs_keys[:-1]
+        k = freqs_keys[1:] + [2 * freqs_keys[-1] - i[-1]]
+        z = {j: 2 * freqs_of_freqs[j] / (k - i) for i, j, k in zip(i, freqs_keys, k)}
+
+        # Compute a loglinear regression of Z[r] over r. We cast keys and values to
+        # a list for the computation with `linalg.lstsq`.
+        z_keys = list(z.keys())
+        z_values = list(z.values())
+        slope, intercept = scipy.linalg.lstsq(np.c_[np.log(z_keys), (1,) * len(z_keys)], np.log(z_values))[0]
+        # print ('Regression: log(z) = %f*log(r) + %f' % (slope, intercept))
+        if slope > -1.0 and allow_fail:
+            raise RuntimeWarning("In SGT, linear regression slope is > -1.0.")
+
+        # Apply Gale and Sampson's "simple" log-linear smoothing method.
+        r_smoothed = {}
+        use_y = False
+        for r in freqs_keys:
+            # `y` is the log-linear smoothing.
+            y = float(r + 1) * np.exp(slope * np.log(r + 1) + intercept) / np.exp(slope * np.log(r) + intercept)
+
+            # If we've already started using `y` as the estimate for `r`, then
+            # continue doing so; also start doing so if no samples were observed
+            # with count equal to `r+1` (following comments and variable names in
+            # both Sampson's C implementation and in NLTK, we check at which
+            # point we should `switch`)
+            if r + 1 not in freqs_of_freqs:
+                if not use_y:
+                    # An unobserved count was reached before we were able to cross
+                    # the smoothing threshold; this means that assumptions were
+                    # not met and the results will likely be off.
+                    if allow_fail:
+                        raise RuntimeWarning("In SGT, unobserved count before smoothing threshold.")
+
+                use_y = True
+
+            # If we are using `y`, just copy its value to `r_smoothed`, otherwise
+            # perform the actual calculation.
+            if use_y:
+                r_smoothed[r] = y
+            else:
+                # `estim` is the empirical Turing estimate for `r` (equivalent to
+                # `x` in G&S)
+                estim = (float(r + 1) * freqs_of_freqs[r + 1]) / freqs_of_freqs[r]
+
+                nr = float(freqs_of_freqs[r])
+                nr1 = float(freqs_of_freqs[r + 1])
+
+                # `width` is the width of the confidence interval of the empirical
+                # Turing estimate (for which Sampson uses 95% but suggests 90%),
+                # when assuming independence.
+                width = confidence_level * np.sqrt(float(r + 1) ** 2 * (nr1 / nr**2) * (1.0 + (nr1 / nr)))
+
+                # If the difference between `x` and `y` is more than `t`, then the
+                # empirical Turing estimate `x` tends to be more accurate.
+                # Otherwise, use the loglinear smoothed value `y`.
+                if abs(estim - y) > width:
+                    r_smoothed[r] = estim
+                else:
+                    use_y = True
+                    r_smoothed[r] = y
+
+        # (Re)normalize and return the resulting smoothed probabilities, less the
+        # estimated probability mass of unseen species; please note that we might
+        # be unable to calculate some probabilities if the function was not allowed
+        # to fail, mostly due to math domain errors. We default to `p0` in all such
+        # cases.
+        smooth_sum = sum([freqs_of_freqs[r] * r_smooth for r, r_smooth in r_smoothed.items()])
+
+        # Build the probability distribution for the observed samples and for
+        # unobserved ones.
+        if self.logprob:
+            self._unobs = math.log(p0)
+            for sample, count in freqdist.items():
+                prob = (1.0 - p0) * (r_smoothed[count] / smooth_sum)
+                if prob == 0.0:
+                    self._prob[sample] = math.log(p0)
+                else:
+                    self._prob[sample] = math.log(prob)
+        else:
+            self._unobs = p0
+            for sample, count in freqdist.items():
+                prob = (1.0 - p0) * (r_smoothed[count] / smooth_sum)
+                if prob == 0.0:
+                    self._prob[sample] = p0
+                else:
+                    self._prob[sample] = prob
