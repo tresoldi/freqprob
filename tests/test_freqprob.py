@@ -12,7 +12,7 @@ from collections import Counter
 import pytest
 
 # Import the library to test
-from freqprob import MLE, Random, Uniform
+from freqprob import MLE, Lidstone, Random, Uniform
 
 # Set up a bunch of fake distribution to test the methods.
 # We don't use real data as this is only intended to test
@@ -264,3 +264,88 @@ def test_mle_raises():
 
     with pytest.raises(ValueError):
         MLE(TEST_OBS1, 100.0, logprob=False)
+
+
+def test_lidstone_dist_nolog_noobs():
+    """
+    Test the Lidstone distribution without logprob and without unobserved states score.
+
+    For testing purposes, the Lidstone distributions for the tests are initialized
+    with a gamma of 1.5.
+    """
+
+    scorer1 = Lidstone(TEST_OBS1, gamma=1.5, logprob=False)
+    assert scorer1("A") == pytest.approx(0.11627906976744186)
+    assert scorer1("B") == pytest.approx(0.16279069767441862)
+    assert scorer1("F") == pytest.approx(0.06976744186046512)
+
+    scorer2 = Lidstone(TEST_OBS2, gamma=1.5, logprob=False)
+    assert scorer2("0") == pytest.approx(1.56722247157142e-06)
+    assert scorer2("~") == pytest.approx(3.956690748046825e-08)
+    assert scorer2("aaa") == pytest.approx(7.663055031724e-11)
+
+
+def test_lidstone_dist_log_noobs():
+    """
+    Test the Lidstone distribution with logprob and without unobserved states score.
+
+    For testing purposes, the Lidstone distributions for the tests are initialized
+    with a gamma of 1.5.
+    """
+
+    scorer1 = Lidstone(TEST_OBS1, gamma=1.5)
+    assert scorer1("A") == pytest.approx(-2.151762203259462)
+    assert scorer1("B") == pytest.approx(-1.8152899666382492)
+    assert scorer1("F") == pytest.approx(-2.662587827025453)
+
+    scorer2 = Lidstone(TEST_OBS2, gamma=1.5)
+    assert scorer2("0") == pytest.approx(-13.366205631743904)
+    assert scorer2("~") == pytest.approx(-17.045272737737683)
+    assert scorer2("aaa") == pytest.approx(-23.292025289486443)
+
+
+def test_lidstone_dist_nolog_obs():
+    """
+    Test the Lidstone distribution without logprob and with unobserved states score.
+
+    For testing purposes, the Lidstone distributions for the tests are initialized
+    with a gamma of 1.5.
+    """
+
+    scorer1 = Lidstone(TEST_OBS1, gamma=1.5, logprob=False)
+    assert scorer1("A") == pytest.approx(0.11627906976744186)
+    assert scorer1("B") == pytest.approx(0.16279069767441862)
+    assert scorer1("F") == pytest.approx(0.06976744186046512)
+
+    scorer2 = Lidstone(TEST_OBS2, gamma=1.5, logprob=False)
+    assert scorer2("0") == pytest.approx(1.56722247157142e-06)
+    assert scorer2("~") == pytest.approx(3.956690748046825e-08)
+    assert scorer2("aaa") == pytest.approx(7.663055031724e-11)
+
+
+def test_lidstone_dist_log_obs():
+    """
+    Test the Lidstone distribution with logprob and with unobserved states score.
+
+    For testing purposes, the Lidstone distributions for the tests are initialized
+    with a gamma of 1.5.
+    """
+
+    scorer1 = Lidstone(TEST_OBS1, gamma=1.5)
+    assert scorer1("A") == pytest.approx(-2.151762203259462)
+    assert scorer1("B") == pytest.approx(-1.8152899666382492)
+    assert scorer1("F") == pytest.approx(-2.662587827025453)
+
+    scorer2 = Lidstone(TEST_OBS2, gamma=1.5)
+    assert scorer2("0") == pytest.approx(-13.366205631743904)
+    assert scorer2("~") == pytest.approx(-17.045272737737683)
+    assert scorer2("aaa") == pytest.approx(-23.292025289486443)
+
+
+def test_lidstone_raises():
+    """
+    Test the Lidstone distribution raises the correct errors.
+    """
+
+    # TODO: write tests
+    pass
