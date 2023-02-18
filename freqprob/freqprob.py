@@ -33,9 +33,9 @@ class ScoringMethod:
         self._unobs = 1e-10
         self._prob: Dict[str, float] = {}
 
-        # Set .logprob to None, so that calling this superclass directly
-        # will raise an error.
+        # Set .logprob to None, so that calling this superclass directly will raise an error.
         self.logprob: Optional[bool] = None
+        self.name: Optional[str] = None
 
         # Check values for all distributions; this allows to have a single check,
         # so arguments with the same name in different distributions will behave
@@ -72,6 +72,29 @@ class ScoringMethod:
 
         return self._prob.get(element, self._unobs)
 
+    def __str__(self) -> str:
+        """
+        Return a string representation of the smoothing method.
+
+        Returns
+        -------
+        str
+            String representation of the smoothing method.
+        """
+
+        if self.name is None:
+            raise ValueError("The smoothing method has not been (properly) initialized.")
+
+        buffer = []
+        if self.logprob:
+            buffer.append(f"{self.name} log-scorer")
+        else:
+            buffer.append(f"{self.name} scorer")
+
+        buffer.append(f"{len(self._prob)} elements.")
+
+        return ", ".join(buffer)
+
 
 class Uniform(ScoringMethod):
     """
@@ -102,6 +125,7 @@ class Uniform(ScoringMethod):
 
         # Store the parameters
         self.logprob = logprob
+        self.name = "Uniform"
 
         # Calculation couldn't be easier: we just subtract the reserved mass
         # probability from 1.0 and divide by the number of samples.
@@ -147,6 +171,7 @@ class Random(ScoringMethod):
 
         # Store the parameters
         self.logprob = logprob
+        self.name = "Random"
 
         # Store the probabilities, which are computed from a random sampling based (if
         # possible) on the observed counts.
@@ -196,6 +221,7 @@ class MLE(ScoringMethod):
 
         # Store the parameters
         self.logprob = logprob
+        self.name = "MLE"
 
         # Store the probabilities
         value_sum = sum(freqdist.values())
@@ -254,6 +280,7 @@ class Lidstone(ScoringMethod):
 
         # Store the parameters
         self.logprob = logprob
+        self.name = "Lidstone"
 
         # Store the probabilities
         n = sum(freqdist.values())
