@@ -2,7 +2,7 @@ PYTHON_BINARY := python3
 VIRTUAL_ENV := venv
 VIRTUAL_BIN := $(VIRTUAL_ENV)/bin
 PROJECT_NAME := freqprob
-TEST_DIR := test
+TEST_DIR := tests
 
 ## help - Display help about make targets for this Makefile
 help:
