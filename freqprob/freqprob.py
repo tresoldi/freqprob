@@ -232,9 +232,7 @@ class Lidstone(ScoringMethod):
         counts are automatically corrected to avoid domain errors.
     """
 
-    def __init__(
-        self, freqdist: Dict[str, int], gamma: float, bins: Optional[int] = None, logprob: bool = True
-    ):
+    def __init__(self, freqdist: Dict[str, int], gamma: float, bins: Optional[int] = None, logprob: bool = True):
         # Call the parent constructor
         super().__init__()
 
