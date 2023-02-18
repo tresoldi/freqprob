@@ -12,7 +12,9 @@ from collections import Counter
 import pytest
 
 # Import the library to test
-from freqprob import MLE, Lidstone, Random, Uniform
+from freqprob import MLE, Laplace, Lidstone, Random, Uniform
+
+# TODO: add tests with different bin values for the Lidstone family
 
 # Set up a bunch of fake distribution to test the methods.
 # We don't use real data as this is only intended to test
@@ -352,3 +354,76 @@ def test_lidstone_raises():
 
     with pytest.raises(ValueError):
         Lidstone(TEST_OBS1, gamma=-1.0)
+
+
+def test_laplace_dist_nolog_noobs():
+    """
+    Test the Laplace distribution without logprob and without unobserved states score.
+    """
+
+    scorer1 = Laplace(TEST_OBS1, logprob=False)
+    assert scorer1("A") == pytest.approx(0.10526315789473684)
+    assert scorer1("B") == pytest.approx(0.15789473684210525)
+    assert scorer1("F") == pytest.approx(0.05263157894736842)
+
+    scorer2 = Laplace(TEST_OBS2, logprob=False)
+    assert scorer2("0") == pytest.approx(1.5671969360609918e-06)
+    assert scorer2("~") == pytest.approx(3.954136416570094e-08)
+    assert scorer2("aaa") == pytest.approx(5.1087033805815165e-11)
+
+
+def test_laplace_dist_log_noobs():
+    """
+    Test the Laplace distribution with logprob and without unobserved states score.
+    """
+
+    scorer1 = Laplace(TEST_OBS1)
+    assert scorer1("A") == pytest.approx(-2.2512917986064953)
+    assert scorer1("B") == pytest.approx(-1.845826690498331)
+    assert scorer1("F") == pytest.approx(-2.9444389791664407)
+
+    scorer2 = Laplace(TEST_OBS2)
+    assert scorer2("0") == pytest.approx(-13.366221925358195)
+    assert scorer2("~") == pytest.approx(-17.045918518896176)
+    assert scorer2("aaa") == pytest.approx(-23.697490392485903)
+
+
+def test_laplace_dist_nolog_obs():
+    """
+    Test the Laplace distribution without logprob and with unobserved states score.
+    """
+
+    scorer1 = Laplace(TEST_OBS1, logprob=False)
+    assert scorer1("A") == pytest.approx(0.10526315789473684)
+    assert scorer1("B") == pytest.approx(0.15789473684210525)
+    assert scorer1("F") == pytest.approx(0.05263157894736842)
+
+    scorer2 = Laplace(TEST_OBS2, logprob=False)
+    assert scorer2("0") == pytest.approx(1.5671969360609918e-06)
+    assert scorer2("~") == pytest.approx(3.954136416570094e-08)
+    assert scorer2("aaa") == pytest.approx(5.1087033805815165e-11)
+
+
+def test_laplace_dist_log_obs():
+    """
+    Test the Laplace distribution with logprob and with unobserved states score.
+    """
+
+    scorer1 = Laplace(TEST_OBS1)
+    assert scorer1("A") == pytest.approx(-2.2512917986064953)
+    assert scorer1("B") == pytest.approx(-1.845826690498331)
+    assert scorer1("F") == pytest.approx(-2.9444389791664407)
+
+    scorer2 = Laplace(TEST_OBS2)
+    assert scorer2("0") == pytest.approx(-13.366221925358195)
+    assert scorer2("~") == pytest.approx(-17.045918518896176)
+    assert scorer2("aaa") == pytest.approx(-23.697490392485903)
+
+
+def test_laplace_raises():
+    """
+    Test the Laplace distribution raises the correct errors.
+    """
+
+    with pytest.raises(ValueError):
+        Laplace(TEST_OBS1, bins=-1)
