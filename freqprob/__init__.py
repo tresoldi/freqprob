@@ -9,9 +9,7 @@ __email__ = "tiago.tresoldi@lingfil.uu.se"
 
 
 # Import from local modules
-from .freqprob import Uniform
+from .freqprob import Random, Uniform
 
 # Build the namespace
-__all__ = [
-    "Uniform",
-]
+__all__ = ["Uniform", "Random"]

@@ -12,7 +12,7 @@ from collections import Counter
 import pytest
 
 # Import the library to test
-from freqprob import Uniform
+from freqprob import Random, Uniform
 
 # Set up a bunch of fake distribution to test the methods.
 # We don't use real data as this is only intended to test
@@ -112,3 +112,79 @@ def test_uniform_raises():
 
     with pytest.raises(ValueError):
         Uniform(TEST_OBS1, 100.0, logprob=False)
+
+
+def test_random_dist_nolog_noobs():
+    """
+    Test the Random distribution without logprob and without unobserved states score.
+    """
+
+    scorer1 = Random(TEST_OBS1, logprob=False, seed=13)
+    assert scorer1("A") == pytest.approx(0.25)
+    assert scorer1("B") == pytest.approx(0.25)
+    assert scorer1("F") == 0.0
+
+    scorer2 = Random(TEST_OBS2, logprob=False, seed=13)
+    assert scorer2("0") == pytest.approx(0.002699279041816705)
+    assert scorer2("~") == pytest.approx(0.002919468074814642)
+    assert scorer2("aaa") == 0.0
+
+
+def test_random_dist_log_noobs():
+    """
+    Test the Random distribution with logprob and without unobserved states score.
+    """
+
+    scorer1 = Random(TEST_OBS1, seed=13)
+    assert scorer1("A") == pytest.approx(-1.386294)
+    assert scorer1("B") == pytest.approx(-1.386294)
+    assert scorer1("F") == pytest.approx(-23.025850)
+
+    scorer2 = Random(TEST_OBS2, seed=13)
+    assert scorer2("0") == pytest.approx(-5.914770)
+    assert scorer2("~") == pytest.approx(-5.836353)
+    assert scorer2("aaa") == pytest.approx(-23.025850)
+
+
+def test_random_dist_nolog_obs():
+    """
+    Test the Random distribution without logprob and with unobserved states score.
+    """
+
+    scorer1 = Random(TEST_OBS1, 0.1, logprob=False, seed=13)
+    assert scorer1("A") == pytest.approx(0.225)
+    assert scorer1("B") == pytest.approx(0.225)
+    assert scorer1("F") == pytest.approx(0.1)
+
+    scorer2 = Random(TEST_OBS2, 0.1, logprob=False, seed=13)
+    assert scorer2("0") == pytest.approx(0.00242935)
+    assert scorer2("~") == pytest.approx(0.00262752)
+    assert scorer2("aaa") == pytest.approx(0.1)
+
+
+def test_random_dist_log_obs():
+    """
+    Test the Random distribution with logprob and with unobserved states score.
+    """
+
+    scorer1 = Random(TEST_OBS1, 0.1, seed=13)
+    assert scorer1("A") == pytest.approx(-1.491654)
+    assert scorer1("B") == pytest.approx(-1.491654)
+    assert scorer1("F") == pytest.approx(-2.302585)
+
+    scorer2 = Random(TEST_OBS2, 0.1, seed=13)
+    assert scorer2("0") == pytest.approx(-6.020131)
+    assert scorer2("~") == pytest.approx(-5.941714)
+    assert scorer2("aaa") == pytest.approx(-2.302585)
+
+
+def test_random_raises():
+    """
+    Test the Random distribution raises the correct errors.
+    """
+
+    with pytest.raises(ValueError):
+        Random(TEST_OBS1, -1.0, logprob=False)
+
+    with pytest.raises(ValueError):
+        Random(TEST_OBS1, 100.0, logprob=False)
