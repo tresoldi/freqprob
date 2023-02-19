@@ -714,4 +714,4 @@ def test_sgt_raises():
     """
 
     with pytest.raises(RuntimeWarning):
-        scorer = SimpleGoodTuring(TEST_OBS1)
+        SimpleGoodTuring(TEST_OBS1)
