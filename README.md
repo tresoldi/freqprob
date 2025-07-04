@@ -18,7 +18,8 @@ A modern Python library for scoring observation probabilities from frequency cou
 💾 **Memory Efficient**: Compressed representations and streaming updates  
 🔧 **Developer Friendly**: Type hints, comprehensive documentation, and modern tooling  
 📊 **Rich Analytics**: Model comparison, perplexity calculation, and performance benchmarks  
-🧪 **Well Tested**: Extensive test suite with >85% coverage
+🧪 **Well Tested**: Extensive test suite with >85% coverage  
+🔬 **Rigorous Validation**: Numerical stability, statistical correctness, and regression testing
 
 ## Installation
 
@@ -36,6 +37,9 @@ pip install freqprob[memory]
 
 # Jupyter notebook support for tutorials
 pip install freqprob[notebook]
+
+# Validation and testing capabilities
+pip install freqprob[validation]
 
 # All optional dependencies
 pip install freqprob[all]
@@ -68,6 +72,7 @@ batch_scores = vectorized.score_batch(['cat', 'dog', 'bird'])
 - 🎓 [Tutorials](docs/) - Interactive Jupyter notebooks
 - 📚 [API Reference](docs/api_reference.md) - Complete API documentation
 - ⚡ [Performance Comparison](docs/performance_comparison.md) - Benchmarks and optimization tips
+- 🔬 [Validation Guide](docs/validation_guide.md) - Testing and validation procedures
 
 ## Development
 
@@ -98,6 +103,15 @@ hatch run lint:all
 
 # Run benchmarks
 hatch run bench
+
+# Run validation suite
+hatch run validate
+
+# Run specific validation tests
+hatch run test-numerical      # Numerical stability
+hatch run test-statistical    # Statistical correctness
+hatch run test-regression     # Reference implementation compatibility
+hatch run test-property       # Property-based testing
 
 # Build documentation
 hatch run docs:build
