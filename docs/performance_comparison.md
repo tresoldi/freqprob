@@ -9,7 +9,7 @@ FreqProb implements various smoothing techniques, each with different computatio
 ## Benchmark Methodology
 
 ### Test Environment
-- **Python Version**: 3.8+
+- **Python Version**: 3.10+
 - **Hardware**: Modern multi-core CPU with sufficient RAM
 - **Datasets**: Synthetic datasets following realistic distributions (Zipfian, power-law, uniform)
 - **Metrics**: Creation time, query performance, memory usage, perplexity
