@@ -23,6 +23,7 @@ from .base import (
     FrequencyDistribution,
     Probability
 )
+from .cache import cached_sgt_computation, cached_computation
 
 
 @dataclass
@@ -129,6 +130,7 @@ class WittenBell(ScoringMethod):
         self.name = "Witten-Bell"
         self.fit(freqdist)
     
+    @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Witten-Bell probabilities."""
         bins = self.config.bins
@@ -197,6 +199,7 @@ class CertaintyDegree(ScoringMethod):
         self.name = "Certainty Degree"
         self.fit(freqdist)
     
+    @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Certainty Degree probabilities."""
         bins = self.config.bins
@@ -299,6 +302,7 @@ class SimpleGoodTuring(ScoringMethod):
         self.name = "Simple Good-Turing"
         self.fit(freqdist)
     
+    @cached_sgt_computation
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Simple Good-Turing probabilities."""
         p_value = self.config.p_value  # type: ignore

@@ -17,6 +17,9 @@ from .utils import (
     generate_ngrams, word_frequency, ngram_frequency, 
     perplexity, cross_entropy, kl_divergence, model_comparison
 )
+from .cache import clear_all_caches, get_cache_stats
+from .vectorized import VectorizedScorer, BatchScorer, create_vectorized_batch_scorer
+from .lazy import LazyScoringMethod, LazyBatchScorer, create_lazy_mle, create_lazy_laplace
 
 # Build the namespace
 __all__ = [
@@ -40,4 +43,13 @@ __all__ = [
     "cross_entropy",
     "kl_divergence",
     "model_comparison",
+    "clear_all_caches",
+    "get_cache_stats",
+    "VectorizedScorer",
+    "BatchScorer",
+    "create_vectorized_batch_scorer",
+    "LazyScoringMethod",
+    "LazyBatchScorer",
+    "create_lazy_mle",
+    "create_lazy_laplace",
 ]
