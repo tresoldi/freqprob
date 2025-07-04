@@ -19,6 +19,7 @@ from .base import (
     Probability,
     LogProbability
 )
+from .cache import cached_computation
 
 
 @dataclass
@@ -170,6 +171,7 @@ class KneserNey(ScoringMethod):
         self.name = "Kneser-Ney"
         self.fit(freqdist)
     
+    @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """
         Compute Kneser-Ney smoothed probabilities.
@@ -309,6 +311,7 @@ class ModifiedKneserNey(ScoringMethod):
         self.name = "Modified Kneser-Ney"
         self.fit(freqdist)
     
+    @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """
         Compute Modified Kneser-Ney smoothed probabilities.
