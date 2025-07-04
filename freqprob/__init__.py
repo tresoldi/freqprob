@@ -20,6 +20,15 @@ from .utils import (
 from .cache import clear_all_caches, get_cache_stats
 from .vectorized import VectorizedScorer, BatchScorer, create_vectorized_batch_scorer
 from .lazy import LazyScoringMethod, LazyBatchScorer, create_lazy_mle, create_lazy_laplace
+from .streaming import (
+    StreamingFrequencyDistribution, StreamingMLE, StreamingLaplace, 
+    StreamingDataProcessor
+)
+from .memory_efficient import (
+    CompressedFrequencyDistribution, SparseFrequencyDistribution, 
+    QuantizedProbabilityTable, create_compressed_distribution, create_sparse_distribution
+)
+from .profiling import MemoryProfiler, DistributionMemoryAnalyzer, MemoryMonitor
 
 # Build the namespace
 __all__ = [
@@ -52,4 +61,16 @@ __all__ = [
     "LazyBatchScorer",
     "create_lazy_mle",
     "create_lazy_laplace",
+    "StreamingFrequencyDistribution",
+    "StreamingMLE", 
+    "StreamingLaplace",
+    "StreamingDataProcessor",
+    "CompressedFrequencyDistribution",
+    "SparseFrequencyDistribution",
+    "QuantizedProbabilityTable",
+    "create_compressed_distribution",
+    "create_sparse_distribution",
+    "MemoryProfiler",
+    "DistributionMemoryAnalyzer",
+    "MemoryMonitor",
 ]
