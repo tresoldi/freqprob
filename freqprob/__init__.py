@@ -13,6 +13,10 @@ from .basic import MLE, Random, Uniform
 from .lidstone import ELE, Laplace, Lidstone
 from .advanced import CertaintyDegree, SimpleGoodTuring, WittenBell
 from .smoothing import BayesianSmoothing, InterpolatedSmoothing, KneserNey, ModifiedKneserNey
+from .utils import (
+    generate_ngrams, word_frequency, ngram_frequency, 
+    perplexity, cross_entropy, kl_divergence, model_comparison
+)
 
 # Build the namespace
 __all__ = [
@@ -29,4 +33,11 @@ __all__ = [
     "ModifiedKneserNey",
     "InterpolatedSmoothing",
     "BayesianSmoothing",
+    "generate_ngrams",
+    "word_frequency",
+    "ngram_frequency",
+    "perplexity",
+    "cross_entropy",
+    "kl_divergence",
+    "model_comparison",
 ]
