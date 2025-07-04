@@ -127,3 +127,64 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be added to the global gitignore or merged into this project gitignore.  For a PyCharm
+#  project, please add these directories to your VCS ignored files.
+.idea/
+
+# Hatch
+.hatch/
+
+# Ruff
+.ruff_cache/
+
+# Benchmark results
+benchmark_results*/
+*_benchmark_results/
+benchmark-results/
+
+# Security reports
+bandit-report.json
+safety-report.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Poetry (if used)
+poetry.lock
+
+# pdm
+pdm.lock
+.pdm.toml
+
+# Modern Python packaging
+__pypackages__/
+
+# Coverage reports
+cover/
