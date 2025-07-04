@@ -30,6 +30,17 @@ from .memory_efficient import (
 )
 from .profiling import MemoryProfiler, DistributionMemoryAnalyzer, MemoryMonitor
 
+# Validation and profiling tools (optional import)
+try:
+    from .validation import (
+        PerformanceProfiler, ValidationSuite, BenchmarkSuite,
+        PerformanceMetrics, ValidationResult,
+        quick_validate_method, profile_method_performance, compare_method_performance
+    )
+    HAS_VALIDATION = True
+except ImportError:
+    HAS_VALIDATION = False
+
 # Build the namespace
 __all__ = [
     "Uniform",
@@ -74,3 +85,16 @@ __all__ = [
     "DistributionMemoryAnalyzer",
     "MemoryMonitor",
 ]
+
+# Add validation tools to __all__ if available
+if HAS_VALIDATION:
+    __all__.extend([
+        "PerformanceProfiler",
+        "ValidationSuite", 
+        "BenchmarkSuite",
+        "PerformanceMetrics",
+        "ValidationResult",
+        "quick_validate_method",
+        "profile_method_performance",
+        "compare_method_performance"
+    ])

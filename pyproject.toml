@@ -54,7 +54,13 @@ notebook = [
 ]
 # All optional dependencies
 all = [
-    "freqprob[memory,notebook]",
+    "freqprob[memory,notebook,validation]",
+]
+# Validation and testing dependencies
+validation = [
+    "hypothesis>=6.0.0",
+    "nltk>=3.8",
+    "scikit-learn>=1.0.0",
 ]
 # Development dependencies
 dev = [
@@ -81,6 +87,9 @@ dev = [
     "mkdocs>=1.5.0",
     "mkdocs-material>=9.0.0",
     "mkdocstrings[python]>=0.20.0",
+    
+    # Include validation dependencies
+    "freqprob[validation]",
 ]
 
 [project.urls]
@@ -249,6 +258,11 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "memory: marks tests that check memory usage",
+    "numerical: marks numerical stability tests",
+    "statistical: marks statistical correctness tests", 
+    "regression: marks regression tests against reference implementations",
+    "property: marks property-based tests with hypothesis",
+    "validation: marks comprehensive validation tests",
 ]
 filterwarnings = [
     "error",
@@ -308,6 +322,12 @@ dependencies = [
 test = "pytest {args:tests}"
 test-cov = "pytest --cov=freqprob --cov-report=xml --cov-report=html --cov-report=term-missing {args:tests}"
 test-fast = "pytest -n auto {args:tests}"
+test-numerical = "pytest tests/test_numerical_stability.py -v {args}"
+test-statistical = "pytest tests/test_statistical_correctness.py -v {args}"
+test-regression = "pytest tests/test_regression_reference.py -v {args}"
+test-property = "pytest tests/test_property_based.py -v {args}"
+validate = "python scripts/validation_report.py --output-dir validation_results {args}"
+validate-quick = "python scripts/validation_report.py --quick --output-dir quick_validation {args}"
 bench = "python docs/benchmarks.py --quick {args}"
 
 [tool.hatch.envs.lint]
