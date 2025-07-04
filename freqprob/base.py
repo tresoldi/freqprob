@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import Dict, Optional, Union, TypeVar, Generic, Any, Mapping
 
 # Type aliases for clarity
-Element = str
+Element = Union[str, int, float, tuple, frozenset]
 Count = int
 Probability = float
 LogProbability = float
