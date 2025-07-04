@@ -12,6 +12,7 @@ __email__ = "tiago.tresoldi@lingfil.uu.se"
 from .basic import MLE, Random, Uniform
 from .lidstone import ELE, Laplace, Lidstone
 from .advanced import CertaintyDegree, SimpleGoodTuring, WittenBell
+from .smoothing import BayesianSmoothing, InterpolatedSmoothing, KneserNey, ModifiedKneserNey
 
 # Build the namespace
 __all__ = [
@@ -24,4 +25,8 @@ __all__ = [
     "WittenBell",
     "CertaintyDegree",
     "SimpleGoodTuring",
+    "KneserNey",
+    "ModifiedKneserNey",
+    "InterpolatedSmoothing",
+    "BayesianSmoothing",
 ]
