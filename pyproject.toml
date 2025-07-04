@@ -1,7 +1,362 @@
-[tool.black]
-preview = true
-line-length = 120
-skip-string-normalization = true
+[build-system]
+requires = ["hatchling>=1.13.0"]
+build-backend = "hatchling.build"
 
+[project]
+name = "freqprob"
+dynamic = ["version"]
+description = "A Python library for scoring observation probabilities from frequency counts, with multiple smoothing methods."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["nlp", "smoothing", "frequency", "probability", "language-model"]
+authors = [
+    {name = "Tiago Tresoldi", email = "tiago.tresoldi@lingfil.uu.se"},
+]
+maintainers = [
+    {name = "Tiago Tresoldi", email = "tiago.tresoldi@lingfil.uu.se"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+    "Typing :: Typed",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+]
+
+[project.optional-dependencies]
+# Memory profiling capabilities
+memory = [
+    "psutil>=5.8.0",
+]
+# Notebook and plotting for tutorials
+notebook = [
+    "jupyter>=1.0.0",
+    "matplotlib>=3.5.0",
+    "seaborn>=0.11.0",
+]
+# All optional dependencies
+all = [
+    "freqprob[memory,notebook]",
+]
+# Development dependencies
+dev = [
+    # Testing
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.0.0",
+    
+    # Code quality
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+    
+    # Pre-commit hooks
+    "pre-commit>=3.0.0",
+    
+    # Build and release
+    "build>=0.10.0",
+    "hatch>=1.7.0",
+    "twine>=4.0.0",
+    
+    # Documentation
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.20.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/tresoldi/freqprob"
+Documentation = "https://github.com/tresoldi/freqprob/blob/main/docs/user_guide.md"
+Repository = "https://github.com/tresoldi/freqprob.git"
+Issues = "https://github.com/tresoldi/freqprob/issues"
+Changelog = "https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "freqprob/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["freqprob"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/freqprob",
+    "/tests",
+    "/docs",
+    "/README.md",
+    "/LICENSE",
+    "/CHANGELOG.md",
+    "/pyproject.toml",
+]
+
+# Black code formatting
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # Directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+# isort import sorting
 [tool.isort]
 profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+known_first_party = ["freqprob"]
+known_third_party = ["numpy", "scipy", "psutil", "pytest"]
+
+# Ruff linting (replaces flake8, pycodestyle, pyflakes, etc.)
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+extend-exclude = [
+    "__pycache__",
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "B",     # flake8-bugbear
+    "C4",    # flake8-comprehensions
+    "UP",    # pyupgrade
+    "ARG",   # flake8-unused-arguments
+    "SIM",   # flake8-simplify
+    "ICN",   # flake8-import-conventions
+    "PIE",   # flake8-pie
+    "T20",   # flake8-print
+    "PYI",   # flake8-pyi
+    "PT",    # flake8-pytest-style
+    "Q",     # flake8-quotes
+    "RSE",   # flake8-raise
+    "RET",   # flake8-return
+    "TID",   # flake8-tidy-imports
+    "TCH",   # flake8-type-checking
+    "RUF",   # Ruff-specific rules
+]
+
+ignore = [
+    "E501",   # Line too long (black handles this)
+    "B008",   # Do not perform function calls in argument defaults
+    "T201",   # Allow print statements in benchmark scripts
+    "RET504", # Unnecessary variable assignment before return
+    "ARG002", # Unused method argument (common in abstract methods)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ARG001",  # Unused function arguments in tests
+    "ARG002",  # Unused method arguments in tests
+    "S101",    # Use of assert detected (pytest uses assert)
+]
+"docs/benchmarks.py" = [
+    "T201",    # Allow print statements in benchmark script
+    "PLR0912", # Too many branches
+    "PLR0915", # Too many statements
+    "C901",    # Complex function
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["freqprob"]
+known-third-party = ["numpy", "scipy", "psutil", "pytest"]
+
+# MyPy type checking
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = false  # Some third-party decorators are untyped
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "scipy.*",
+    "psutil.*",
+    "matplotlib.*",
+    "seaborn.*",
+]
+ignore_missing_imports = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=freqprob",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-fail-under=85",
+]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "memory: marks tests that check memory usage",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["freqprob"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__init__.py",  # Usually just imports
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+show_missing = true
+skip_covered = false
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# Bandit security configuration
+[tool.bandit]
+exclude_dirs = ["tests", "docs"]
+skips = ["B101", "B601"]  # Skip assert_used and shell_injection_process_vulnerable
+
+[tool.bandit.assert_used]
+skips = ["*_test.py", "*/test_*.py"]
+
+# Hatch environment configuration
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.0.0",
+    "psutil>=5.8.0",  # For memory profiling
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "pytest --cov=freqprob --cov-report=xml --cov-report=html --cov-report=term-missing {args:tests}"
+test-fast = "pytest -n auto {args:tests}"
+bench = "python docs/benchmarks.py --quick {args}"
+
+[tool.hatch.envs.lint]
+detached = true
+dependencies = [
+    "black>=23.0.0",
+    "isort>=5.12.0", 
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+    "bandit[toml]>=1.7.5",
+]
+
+[tool.hatch.envs.lint.scripts]
+typing = "mypy --install-types --non-interactive {args:freqprob tests}"
+style = [
+    "ruff check {args:.}",
+    "black --check --diff {args:.}",
+    "isort --check-only --diff {args:.}",
+]
+format = [
+    "isort {args:.}",
+    "black {args:.}",
+    "ruff check --fix {args:.}",
+]
+security = "bandit -r freqprob/"
+all = [
+    "style",
+    "typing", 
+    "security",
+]
+
+[tool.hatch.envs.docs]
+dependencies = [
+    "jupyter>=1.0.0",
+    "matplotlib>=3.5.0",
+    "seaborn>=0.11.0",
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.20.0",
+]
+
+[tool.hatch.envs.docs.scripts]
+build = "mkdocs build --clean --strict"
+serve = "mkdocs serve --dev-addr localhost:8000"
+notebooks = "jupyter notebook docs/"
+test-notebooks = [
+    "cd docs",
+    "jupyter nbconvert --to notebook --execute tutorial_1_basic_smoothing.ipynb --output test_tutorial_1.ipynb",
+    "jupyter nbconvert --to notebook --execute tutorial_2_advanced_methods.ipynb --output test_tutorial_2.ipynb", 
+    "jupyter nbconvert --to notebook --execute tutorial_3_efficiency_memory.ipynb --output test_tutorial_3.ipynb",
+    "jupyter nbconvert --to notebook --execute tutorial_4_real_world_applications.ipynb --output test_tutorial_4.ipynb",
+]

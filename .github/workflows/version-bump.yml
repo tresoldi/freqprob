@@ -1,0 +1,104 @@
+name: Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Type of version bump'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: 'patch'
+      prerelease:
+        description: 'Create a prerelease version'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install hatch
+
+      - name: Configure git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Get current version
+        id: current_version
+        run: |
+          CURRENT=$(hatch version)
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+
+      - name: Bump version
+        id: bump
+        run: |
+          BUMP_TYPE=${{ inputs.bump_type }}
+          if [ "${{ inputs.prerelease }}" = "true" ]; then
+            NEW_VERSION=$(hatch version $BUMP_TYPE,rc)
+          else
+            NEW_VERSION=$(hatch version $BUMP_TYPE)
+          fi
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update CHANGELOG.md
+        run: |
+          NEW_VERSION=${{ steps.bump.outputs.new }}
+          DATE=$(date +%Y-%m-%d)
+          
+          # Create new changelog entry
+          sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n## [$NEW_VERSION] - $DATE/" CHANGELOG.md
+          
+          # Add changes section if it doesn't exist
+          if ! grep -q "### Added" CHANGELOG.md; then
+            sed -i "/## \[$NEW_VERSION\]/a\\n### Added\n- New features and improvements\n\n### Changed\n- Updates and modifications\n\n### Fixed\n- Bug fixes" CHANGELOG.md
+          fi
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump version to ${{ steps.bump.outputs.new }}"
+          title: "chore: bump version to ${{ steps.bump.outputs.new }}"
+          body: |
+            ## Version Bump: ${{ steps.current_version.outputs.current }} → ${{ steps.bump.outputs.new }}
+            
+            This PR bumps the version from ${{ steps.current_version.outputs.current }} to ${{ steps.bump.outputs.new }}.
+            
+            ### Changes:
+            - Updated version in `freqprob/__init__.py`
+            - Updated `CHANGELOG.md` with new version entry
+            
+            ### Type: ${{ inputs.bump_type }}
+            ${{ inputs.prerelease && '### Prerelease: true' || '' }}
+            
+            Once this PR is merged, create a release by pushing a tag:
+            ```bash
+            git tag v${{ steps.bump.outputs.new }}
+            git push origin v${{ steps.bump.outputs.new }}
+            ```
+          branch: version-bump-${{ steps.bump.outputs.new }}
+          delete-branch: true
