@@ -23,7 +23,7 @@ A modern Python library for scoring observation probabilities from frequency cou
 
 ## Installation
 
-FreqProb requires Python 3.8+ and can be installed via pip:
+FreqProb requires Python 3.10+ and can be installed via pip:
 
 ```bash
 pip install freqprob

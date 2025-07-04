@@ -6,7 +6,7 @@ This guide covers the development workflow, tools, and best practices for FreqPr
 
 ### Prerequisites
 
-- Python 3.8+ 
+- Python 3.10+ 
 - Git
 - Modern terminal/shell
 
@@ -264,7 +264,7 @@ git push origin v1.0.0
 ### Quality Gates
 
 All PRs must pass:
-- ✅ All tests passing on Python 3.8-3.12
+- ✅ All tests passing on Python 3.10-3.12
 - ✅ Code coverage ≥85%
 - ✅ All linting checks passing
 - ✅ Type checking with mypy
