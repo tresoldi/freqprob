@@ -9,17 +9,9 @@ __email__ = "tiago.tresoldi@lingfil.uu.se"
 
 
 # Import from local modules
-from .freqprob import (
-    ELE,
-    MLE,
-    CertaintyDegree,
-    Laplace,
-    Lidstone,
-    Random,
-    SimpleGoodTuring,
-    Uniform,
-    WittenBell,
-)
+from .basic import MLE, Random, Uniform
+from .lidstone import ELE, Laplace, Lidstone
+from .advanced import CertaintyDegree, SimpleGoodTuring, WittenBell
 
 # Build the namespace
 __all__ = [
