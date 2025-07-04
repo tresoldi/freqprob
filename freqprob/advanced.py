@@ -1,13 +1,15 @@
 """
 Advanced probability scoring methods.
 
-This module implements advanced smoothing methods including
-Witten-Bell, Certainty Degree, and Simple Good-Turing.
+This module implements sophisticated smoothing methods including
+Witten-Bell discounting, Certainty Degree estimation, and 
+Simple Good-Turing smoothing. These methods use more complex
+statistical techniques to estimate probability distributions.
 """
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Optional
 
 # Import 3rd-party modules
 import numpy as np
@@ -15,12 +17,26 @@ import scipy  # type: ignore
 import scipy.stats
 import scipy.linalg
 
-from .base import ScoringMethod, ScoringMethodConfig
+from .base import (
+    ScoringMethod, 
+    ScoringMethodConfig,
+    FrequencyDistribution,
+    Probability
+)
 
 
 @dataclass
 class WittenBellConfig(ScoringMethodConfig):
-    """Configuration for Witten-Bell distribution."""
+    """
+    Configuration for Witten-Bell smoothing.
+    
+    Attributes
+    ----------
+    bins : Optional[int]
+        Total number of possible bins/elements (default: vocabulary size)
+    logprob : bool
+        Whether to return log-probabilities (default: True)
+    """
     
     bins: Optional[int] = None
     logprob: bool = True
@@ -28,16 +44,40 @@ class WittenBellConfig(ScoringMethodConfig):
 
 @dataclass
 class CertaintyDegreeConfig(ScoringMethodConfig):
-    """Configuration for Certainty Degree distribution."""
+    """
+    Configuration for Certainty Degree estimation.
+    
+    Attributes
+    ----------
+    bins : Optional[int]
+        Total number of possible bins/elements (default: vocabulary size)
+    unobs_prob : Probability
+        Reserved probability mass for unobserved elements (default: 0.0)
+    logprob : bool
+        Whether to return log-probabilities (default: True)
+    """
     
     bins: Optional[int] = None
-    unobs_prob: float = 0.0
+    unobs_prob: Probability = 0.0
     logprob: bool = True
 
 
 @dataclass
 class SimpleGoodTuringConfig(ScoringMethodConfig):
-    """Configuration for Simple Good-Turing distribution."""
+    """
+    Configuration for Simple Good-Turing smoothing.
+    
+    Attributes
+    ----------
+    p_value : float
+        Confidence level for smoothing threshold (default: 0.05)
+    default_p0 : Optional[float]
+        Fallback probability for unobserved elements (default: None)
+    logprob : bool
+        Whether to return log-probabilities (default: True)
+    allow_fail : bool
+        Whether to raise errors on invalid assumptions (default: True)
+    """
     
     p_value: float = 0.05
     default_p0: Optional[float] = None
@@ -78,13 +118,18 @@ class WittenBell(ScoringMethod):
     
     __slots__ = ()
     
-    def __init__(self, freqdist: Dict[str, int], bins: Optional[int] = None, logprob: bool = True):
+    def __init__(
+        self, 
+        freqdist: FrequencyDistribution, 
+        bins: Optional[int] = None, 
+        logprob: bool = True
+    ) -> None:
         config = WittenBellConfig(bins=bins, logprob=logprob)
         super().__init__(config)
         self.name = "Witten-Bell"
         self.fit(freqdist)
     
-    def _compute_probabilities(self, freqdist: Dict[str, int]) -> None:
+    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Witten-Bell probabilities."""
         bins = self.config.bins
         
@@ -141,14 +186,18 @@ class CertaintyDegree(ScoringMethod):
     __slots__ = ()
     
     def __init__(
-        self, freqdist: Dict[str, int], bins: Optional[int] = None, unobs_prob: float = 0.0, logprob: bool = True
-    ):
+        self, 
+        freqdist: FrequencyDistribution, 
+        bins: Optional[int] = None, 
+        unobs_prob: Probability = 0.0, 
+        logprob: bool = True
+    ) -> None:
         config = CertaintyDegreeConfig(bins=bins, unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "Certainty Degree"
         self.fit(freqdist)
     
-    def _compute_probabilities(self, freqdist: Dict[str, int]) -> None:
+    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Certainty Degree probabilities."""
         bins = self.config.bins
         unobs_prob = self.config.unobs_prob
@@ -234,12 +283,12 @@ class SimpleGoodTuring(ScoringMethod):
     
     def __init__(
         self,
-        freqdist: Dict[str, int],
+        freqdist: FrequencyDistribution,
         p_value: float = 0.05,
         default_p0: Optional[float] = None,
         logprob: bool = True,
         allow_fail: bool = True,
-    ):
+    ) -> None:
         config = SimpleGoodTuringConfig(
             p_value=p_value, 
             default_p0=default_p0, 
@@ -250,11 +299,11 @@ class SimpleGoodTuring(ScoringMethod):
         self.name = "Simple Good-Turing"
         self.fit(freqdist)
     
-    def _compute_probabilities(self, freqdist: Dict[str, int]) -> None:
+    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Simple Good-Turing probabilities."""
-        p_value = self.config.p_value
-        default_p0 = self.config.default_p0
-        allow_fail = self.config.allow_fail
+        p_value = self.config.p_value  # type: ignore
+        default_p0 = self.config.default_p0  # type: ignore
+        allow_fail = self.config.allow_fail  # type: ignore
         
         # Calculate the confidence level from the p_value.
         confidence_level = scipy.stats.norm.ppf(1.0 - (p_value / 2.0))
