@@ -71,7 +71,8 @@ class ValidationReportGenerator:
         }
 
     def log(self, message: str) -> None:
-        """Log a message if verbose mode is enabled."""if self.verbose:
+        """Log a message if verbose mode is enabled."""
+        if self.verbose:
         
             print(f"[{time.strftime('%H:%M:%S')}] {message}")
 
