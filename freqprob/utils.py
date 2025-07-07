@@ -7,31 +7,32 @@ word frequencies, and comparing probability models.
 
 import math
 from collections import Counter
-from typing import Dict, List, Tuple, Union, Iterable, Optional
-from .base import Element, Count, Probability, LogProbability, FrequencyDistribution, ScoringMethod
+from typing import Dict, Iterable, List, Optional, Tuple, Union
+
+from .base import Count, Element, FrequencyDistribution, LogProbability, Probability, ScoringMethod
 
 
 def generate_ngrams(text: Union[str, List[str]], n: int) -> List[Tuple[str, ...]]:
     """
     Generate n-grams from text.
-    
+
     Parameters
     ----------
     text : Union[str, List[str]]
         Input text as string or list of tokens
     n : int
         Size of n-grams to generate
-        
+
     Returns
     -------
     List[Tuple[str, ...]]
         List of n-gram tuples
-        
+
     Examples
     --------
     >>> generate_ngrams("hello world", 2)
     [('h', 'e'), ('e', 'l'), ('l', 'l'), ('l', 'o'), ('o', ' '), (' ', 'w'), ('w', 'o'), ('o', 'r'), ('r', 'l'), ('l', 'd')]
-    
+
     >>> generate_ngrams(["hello", "world", "test"], 2)
     [('hello', 'world'), ('world', 'test')]
     """
@@ -39,37 +40,39 @@ def generate_ngrams(text: Union[str, List[str]], n: int) -> List[Tuple[str, ...]
         tokens = list(text)
     else:
         tokens = text
-    
+
     if n <= 0:
         raise ValueError("n must be positive")
-    
+
     if len(tokens) < n:
         return []
-    
-    return [tuple(tokens[i:i+n]) for i in range(len(tokens) - n + 1)]
+
+    return [tuple(tokens[i : i + n]) for i in range(len(tokens) - n + 1)]
 
 
-def word_frequency(text: Union[str, List[str]], normalize: bool = False) -> Dict[str, Union[int, float]]:
+def word_frequency(
+    text: Union[str, List[str]], normalize: bool = False
+) -> Dict[str, Union[int, float]]:
     """
     Compute word frequency from text.
-    
+
     Parameters
     ----------
     text : Union[str, List[str]]
         Input text as string or list of tokens
     normalize : bool, default=False
         If True, return relative frequencies instead of counts
-        
+
     Returns
     -------
     Dict[str, Union[int, float]]
         Dictionary mapping words to their frequencies
-        
+
     Examples
     --------
     >>> word_frequency("hello world hello")
     {'hello': 2, 'world': 1}
-    
+
     >>> word_frequency(["hello", "world", "hello"], normalize=True)
     {'hello': 0.6666666666666666, 'world': 0.3333333333333333}
     """
@@ -77,20 +80,22 @@ def word_frequency(text: Union[str, List[str]], normalize: bool = False) -> Dict
         tokens = text.split()
     else:
         tokens = text
-    
+
     freq_dict = Counter(tokens)
-    
+
     if normalize:
         total = sum(freq_dict.values())
         return {word: count / total for word, count in freq_dict.items()}
-    
+
     return dict(freq_dict)
 
 
-def ngram_frequency(text: Union[str, List[str]], n: int, normalize: bool = False) -> Dict[Tuple[str, ...], Union[int, float]]:
+def ngram_frequency(
+    text: Union[str, List[str]], n: int, normalize: bool = False
+) -> Dict[Tuple[str, ...], Union[int, float]]:
     """
     Compute n-gram frequency from text.
-    
+
     Parameters
     ----------
     text : Union[str, List[str]]
@@ -99,12 +104,12 @@ def ngram_frequency(text: Union[str, List[str]], n: int, normalize: bool = False
         Size of n-grams to generate
     normalize : bool, default=False
         If True, return relative frequencies instead of counts
-        
+
     Returns
     -------
     Dict[Tuple[str, ...], Union[int, float]]
         Dictionary mapping n-grams to their frequencies
-        
+
     Examples
     --------
     >>> ngram_frequency("hello world", 2)
@@ -112,33 +117,33 @@ def ngram_frequency(text: Union[str, List[str]], n: int, normalize: bool = False
     """
     ngrams = generate_ngrams(text, n)
     freq_dict = Counter(ngrams)
-    
+
     if normalize:
         total = sum(freq_dict.values())
         return {ngram: count / total for ngram, count in freq_dict.items()}
-    
+
     return dict(freq_dict)
 
 
 def perplexity(model: ScoringMethod, test_data: Iterable[Element]) -> float:
     """
     Calculate perplexity of a model on test data.
-    
+
     Perplexity is defined as exp(H(p)) where H(p) is the cross-entropy.
     Lower perplexity indicates better model performance.
-    
+
     Parameters
     ----------
     model : ScoringMethod
         Fitted probability model
     test_data : Iterable[Element]
         Test data elements
-        
+
     Returns
     -------
     float
         Perplexity value
-        
+
     Examples
     --------
     >>> from freqprob import MLE
@@ -148,32 +153,32 @@ def perplexity(model: ScoringMethod, test_data: Iterable[Element]) -> float:
     """
     if not model.logprob:
         raise ValueError("Model must be configured for log probabilities")
-    
+
     log_probs = [model(element) for element in test_data]
     cross_entropy = -sum(log_probs) / len(log_probs)
-    
+
     return math.exp(cross_entropy)
 
 
 def cross_entropy(model: ScoringMethod, test_data: Iterable[Element]) -> float:
     """
     Calculate cross-entropy of a model on test data.
-    
+
     Cross-entropy measures the average number of bits needed to encode
     test data using the model's probability distribution.
-    
+
     Parameters
     ----------
     model : ScoringMethod
         Fitted probability model
     test_data : Iterable[Element]
         Test data elements
-        
+
     Returns
     -------
     float
         Cross-entropy value
-        
+
     Examples
     --------
     >>> from freqprob import MLE
@@ -183,18 +188,20 @@ def cross_entropy(model: ScoringMethod, test_data: Iterable[Element]) -> float:
     """
     if not model.logprob:
         raise ValueError("Model must be configured for log probabilities")
-    
+
     log_probs = [model(element) for element in test_data]
     return -sum(log_probs) / len(log_probs)
 
 
-def kl_divergence(p_model: ScoringMethod, q_model: ScoringMethod, test_data: Iterable[Element]) -> float:
+def kl_divergence(
+    p_model: ScoringMethod, q_model: ScoringMethod, test_data: Iterable[Element]
+) -> float:
     """
     Calculate Kullback-Leibler divergence between two models.
-    
+
     KL divergence measures how much one probability distribution differs
     from another. It's not symmetric: KL(P||Q) ≠ KL(Q||P).
-    
+
     Parameters
     ----------
     p_model : ScoringMethod
@@ -203,12 +210,12 @@ def kl_divergence(p_model: ScoringMethod, q_model: ScoringMethod, test_data: Ite
         Second probability model (approximate)
     test_data : Iterable[Element]
         Test data elements
-        
+
     Returns
     -------
     float
         KL divergence value
-        
+
     Examples
     --------
     >>> from freqprob import MLE, Laplace
@@ -219,38 +226,40 @@ def kl_divergence(p_model: ScoringMethod, q_model: ScoringMethod, test_data: Ite
     """
     if not p_model.logprob or not q_model.logprob:
         raise ValueError("Both models must be configured for log probabilities")
-    
+
     kl_div = 0.0
     for element in test_data:
         p_log_prob = p_model(element)
         q_log_prob = q_model(element)
-        
+
         # Convert to regular probabilities for KL calculation
         p_prob = math.exp(p_log_prob)
         q_prob = math.exp(q_log_prob)
-        
+
         if p_prob > 0 and q_prob > 0:
             kl_div += p_prob * math.log(p_prob / q_prob)
-    
+
     return kl_div
 
 
-def model_comparison(models: Dict[str, ScoringMethod], test_data: Iterable[Element]) -> Dict[str, Dict[str, float]]:
+def model_comparison(
+    models: Dict[str, ScoringMethod], test_data: Iterable[Element]
+) -> Dict[str, Dict[str, float]]:
     """
     Compare multiple models using various metrics.
-    
+
     Parameters
     ----------
     models : Dict[str, ScoringMethod]
         Dictionary mapping model names to fitted models
     test_data : Iterable[Element]
         Test data elements
-        
+
     Returns
     -------
     Dict[str, Dict[str, float]]
         Dictionary with model names as keys and metrics as values
-        
+
     Examples
     --------
     >>> from freqprob import MLE, Laplace
@@ -263,14 +272,14 @@ def model_comparison(models: Dict[str, ScoringMethod], test_data: Iterable[Eleme
     """
     test_data_list = list(test_data)
     results = {}
-    
+
     for name, model in models.items():
         if not model.logprob:
             raise ValueError(f"Model '{name}' must be configured for log probabilities")
-        
+
         results[name] = {
-            'perplexity': perplexity(model, test_data_list),
-            'cross_entropy': cross_entropy(model, test_data_list)
+            "perplexity": perplexity(model, test_data_list),
+            "cross_entropy": cross_entropy(model, test_data_list),
         }
-    
+
     return results
