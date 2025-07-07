@@ -78,7 +78,7 @@ scores = vectorized.score_batch(words)  # Fast batch scoring
 streaming = freqprob.StreamingMLE(max_vocabulary_size=100000)
 for word in massive_text_stream:
     streaming.update_single(word)
-    
+
 # Compare multiple models
 models = {
     'laplace': freqprob.Laplace(word_counts, bins=10000),

@@ -23,8 +23,8 @@ T = TypeVar("T", bound="ScoringMethod")
 
 @dataclass
 class ScoringMethodConfig:
-    """
-    Configuration for scoring methods.
+    """Configuration for scoring methods.
+
 
     This dataclass encapsulates all configuration parameters that can be
     used across different scoring methods, providing type safety and validation.
@@ -57,13 +57,14 @@ class ScoringMethodConfig:
     """
 
     unobs_prob: Optional[Probability] = None
+
     gamma: Optional[float] = None
     bins: Optional[int] = None
     logprob: bool = True
 
     def __post_init__(self) -> None:
-        """
-        Validate configuration parameters after initialization.
+        """Validate configuration parameters after initialization.
+
 
         Raises
         ------
@@ -71,7 +72,9 @@ class ScoringMethodConfig:
             If unobs_prob is not in [0.0, 1.0], gamma is negative,
             or bins is not positive
         """
+
         if self.unobs_prob is not None:
+
             if not 0.0 <= self.unobs_prob <= 1.0:
                 raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
 
@@ -85,8 +88,8 @@ class ScoringMethodConfig:
 
 
 class ScoringMethod(ABC):
-    """
-    Abstract base class for frequency-based probability smoothing methods.
+    """Abstract base class for frequency-based probability smoothing methods.
+
 
     This class provides a unified interface for all probability estimation
     methods, supporting both regular probabilities and log-probabilities.
@@ -129,8 +132,8 @@ class ScoringMethod(ABC):
     __slots__ = ("_unobs", "_prob", "logprob", "name", "config")
 
     def __init__(self, config: ScoringMethodConfig) -> None:
-        """
-        Initialize the scoring method.
+        """Initialize the scoring method.
+
 
         Parameters
         ----------
@@ -143,6 +146,7 @@ class ScoringMethod(ABC):
         not directly by users.
         """
         self.config: ScoringMethodConfig = config
+
         self._unobs: Union[
             Probability, LogProbability
         ] = 1e-10  # Default value to avoid domain errors
@@ -151,8 +155,8 @@ class ScoringMethod(ABC):
         self.name: Optional[str] = None
 
     def __call__(self, element: Element) -> Union[Probability, LogProbability]:
-        """
-        Score a single element.
+        """Score a single element.
+
 
         Parameters
         ----------
@@ -177,8 +181,8 @@ class ScoringMethod(ABC):
         return self._prob.get(element, self._unobs)
 
     def __str__(self) -> str:
-        """
-        Return a string representation of the smoothing method.
+        """Return a string representation of the smoothing method.
+
 
         Returns
         -------
@@ -195,7 +199,9 @@ class ScoringMethod(ABC):
         >>> str(MLE({'a': 1}, logprob=True))
         'MLE log-scorer, 1 elements.'
         """
+
         if self.name is None:
+
             raise ValueError("The smoothing method has not been (properly) initialized.")
 
         buffer = []
@@ -210,8 +216,8 @@ class ScoringMethod(ABC):
 
     @abstractmethod
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Compute probabilities for the given frequency distribution.
+        """Compute probabilities for the given frequency distribution.
+
 
         This method must be implemented by subclasses to compute the
         actual probability values according to their specific smoothing strategy.
@@ -225,11 +231,12 @@ class ScoringMethod(ABC):
         ----
         Implementations should populate self._prob and self._unobs.
         """
+
         pass
 
     def fit(self, freqdist: FrequencyDistribution) -> "ScoringMethod":
-        """
-        Fit the scoring method to a frequency distribution.
+        """Fit the scoring method to a frequency distribution.
+
 
         This method trains the scorer on the provided frequency data,
         computing probability estimates for all observed elements.
@@ -251,4 +258,5 @@ class ScoringMethod(ABC):
         0.6666666666666666
         """
         self._compute_probabilities(freqdist)
+
         return self

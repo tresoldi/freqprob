@@ -6,7 +6,7 @@ This guide covers the development workflow, tools, and best practices for FreqPr
 
 ### Prerequisites
 
-- Python 3.10+ 
+- Python 3.10+
 - Git
 - Modern terminal/shell
 
@@ -165,20 +165,20 @@ Example docstring:
 ```python
 def example_function(param1: str, param2: int = 5) -> bool:
     """Brief description of the function.
-    
+
     Longer description explaining the function's purpose,
     behavior, and any important details.
-    
+
     Args:
         param1: Description of the first parameter.
         param2: Description of the second parameter. Defaults to 5.
-        
+
     Returns:
         Description of the return value.
-        
+
     Raises:
         ValueError: When param1 is empty.
-        
+
     Example:
         >>> result = example_function("test", 10)
         >>> print(result)
@@ -303,11 +303,11 @@ def test_laplace_smoothing_basic():
     """Test basic Laplace smoothing functionality."""
     freqdist = {'cat': 3, 'dog': 2}
     laplace = freqprob.Laplace(freqdist, bins=100, logprob=False)
-    
+
     # Test known word probability
     expected_cat = (3 + 1) / (5 + 100)
     assert abs(laplace('cat') - expected_cat) < 1e-10
-    
+
     # Test unknown word probability  
     expected_unknown = 1 / (5 + 100)
     assert abs(laplace('bird') - expected_unknown) < 1e-10

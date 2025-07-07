@@ -113,7 +113,7 @@ How performance changes with dataset size:
 - **Bayesian**: O(n)
 
 #### Space Complexity:
-- **Basic methods**: O(n) 
+- **Basic methods**: O(n)
 - **SGT**: O(n + k)
 - **Kneser-Ney**: O(m + contexts)
 

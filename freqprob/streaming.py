@@ -18,8 +18,8 @@ from .base import Count, Element, LogProbability, Probability, ScoringMethod, Sc
 
 
 class StreamingFrequencyDistribution:
-    """
-    Memory-efficient streaming frequency distribution with incremental updates.
+    """Memory-efficient streaming frequency distribution with incremental updates.
+
 
     This class supports real-time updates to frequency distributions while
     maintaining memory efficiency through various optimization strategies.
@@ -54,8 +54,8 @@ class StreamingFrequencyDistribution:
         decay_factor: Optional[float] = None,
         compression_threshold: int = 10000,
     ):
-        """
-        Initialize streaming frequency distribution.
+        """Initialize streaming frequency distribution.
+
 
         Parameters
         ----------
@@ -69,6 +69,7 @@ class StreamingFrequencyDistribution:
             Number of updates before triggering compression
         """
         self._counts: Dict[Element, float] = defaultdict(float)
+
         self._total_count: float = 0.0
         self._update_count: int = 0
         self._max_vocab_size = max_vocabulary_size
@@ -82,8 +83,8 @@ class StreamingFrequencyDistribution:
         self._last_access: Dict[Element, int] = {}
 
     def update(self, element: Element, count: int = 1) -> None:
-        """
-        Update count for a single element.
+        """Update count for a single element.
+
 
         Parameters
         ----------
@@ -93,6 +94,7 @@ class StreamingFrequencyDistribution:
             Count increment
         """
         with self._lock:
+
             self._counts[element] += count
             self._total_count += count
             self._update_count += 1
@@ -113,8 +115,8 @@ class StreamingFrequencyDistribution:
                 self._compress()
 
     def update_batch(self, elements: List[Element], counts: Optional[List[int]] = None) -> None:
-        """
-        Update counts for multiple elements efficiently.
+        """Update counts for multiple elements efficiently.
+
 
         Parameters
         ----------
@@ -123,7 +125,9 @@ class StreamingFrequencyDistribution:
         counts : Optional[List[int]]
             Counts for each element (defaults to 1 for all)
         """
+
         if counts is None:
+
             counts = [1] * len(elements)
         elif len(counts) != len(elements):
             raise ValueError("Length of counts must match length of elements")
@@ -150,7 +154,9 @@ class StreamingFrequencyDistribution:
 
     def _apply_decay(self) -> None:
         """Apply exponential decay to all counts."""
+
         if self._decay_factor is None:
+
             return
 
         decay_amount = 1.0 - self._decay_factor
@@ -179,6 +185,7 @@ class StreamingFrequencyDistribution:
     def _remove_low_count_elements(self) -> None:
         """Remove elements with counts below the minimum threshold."""
         to_remove = []
+
         removed_count = 0.0
 
         for element, count in self._counts.items():
@@ -195,7 +202,9 @@ class StreamingFrequencyDistribution:
 
     def _enforce_vocabulary_limit(self) -> None:
         """Enforce maximum vocabulary size by removing least important elements."""
+
         if not self._max_vocab_size or len(self._counts) <= self._max_vocab_size:
+
             return
 
         # Sort by importance (combination of frequency and recency)
@@ -223,8 +232,8 @@ class StreamingFrequencyDistribution:
         self._total_count -= removed_count
 
     def get_count(self, element: Element) -> float:
-        """
-        Get count for an element.
+        """Get count for an element.
+
 
         Parameters
         ----------
@@ -237,11 +246,12 @@ class StreamingFrequencyDistribution:
             Count for the element
         """
         with self._lock:
+
             return self._counts.get(element, 0.0)
 
     def get_frequency(self, element: Element) -> float:
-        """
-        Get relative frequency for an element.
+        """Get relative frequency for an element.
+
 
         Parameters
         ----------
@@ -254,6 +264,7 @@ class StreamingFrequencyDistribution:
             Relative frequency (count / total_count)
         """
         with self._lock:
+
             if self._total_count == 0:
                 return 0.0
             return self._counts.get(element, 0.0) / self._total_count
@@ -261,27 +272,32 @@ class StreamingFrequencyDistribution:
     def get_total_count(self) -> float:
         """Get total count across all elements."""
         with self._lock:
+
             return self._total_count
 
     def get_vocabulary_size(self) -> int:
         """Get current vocabulary size."""
         with self._lock:
+
             return len(self._counts)
 
     def items(self) -> Iterator[Tuple[Element, float]]:
         """Iterate over (element, count) pairs."""
         with self._lock:
+
             # Create a snapshot to avoid modification during iteration
             return iter(dict(self._counts).items())
 
     def keys(self) -> Iterator[Element]:
         """Iterate over elements."""
         with self._lock:
+
             return iter(list(self._counts.keys()))
 
     def values(self) -> Iterator[float]:
         """Iterate over counts."""
         with self._lock:
+
             return iter(list(self._counts.values()))
 
     def __len__(self) -> int:
@@ -291,6 +307,7 @@ class StreamingFrequencyDistribution:
     def __contains__(self, element: Element) -> bool:
         """Check if element is in distribution."""
         with self._lock:
+
             return element in self._counts
 
     def __getitem__(self, element: Element) -> float:
@@ -298,8 +315,8 @@ class StreamingFrequencyDistribution:
         return self.get_count(element)
 
     def to_dict(self) -> Dict[Element, int]:
-        """
-        Convert to regular dictionary with integer counts.
+        """Convert to regular dictionary with integer counts.
+
 
         Returns
         -------
@@ -307,11 +324,12 @@ class StreamingFrequencyDistribution:
             Dictionary representation
         """
         with self._lock:
+
             return {element: int(count) for element, count in self._counts.items()}
 
     def get_statistics(self) -> Dict[str, Any]:
-        """
-        Get statistics about the streaming distribution.
+        """Get statistics about the streaming distribution.
+
 
         Returns
         -------
@@ -319,6 +337,7 @@ class StreamingFrequencyDistribution:
             Statistics dictionary
         """
         with self._lock:
+
             return {
                 "vocabulary_size": len(self._counts),
                 "total_count": self._total_count,
@@ -334,8 +353,8 @@ class StreamingFrequencyDistribution:
 
 
 class IncrementalScoringMethod(ABC):
-    """
-    Abstract base class for scoring methods that support incremental updates.
+    """Abstract base class for scoring methods that support incremental updates.
+
 
     This class defines the interface for scoring methods that can be updated
     incrementally as new data arrives, without recomputing everything from scratch.
@@ -343,8 +362,8 @@ class IncrementalScoringMethod(ABC):
 
     @abstractmethod
     def update_single(self, element: Element, count: int = 1) -> None:
-        """
-        Update the model with a single element observation.
+        """Update the model with a single element observation.
+
 
         Parameters
         ----------
@@ -353,12 +372,13 @@ class IncrementalScoringMethod(ABC):
         count : int, default=1
             Count of observations
         """
+
         pass
 
     @abstractmethod
     def update_batch(self, elements: List[Element], counts: Optional[List[int]] = None) -> None:
-        """
-        Update the model with multiple element observations.
+        """Update the model with multiple element observations.
+
 
         Parameters
         ----------
@@ -367,17 +387,19 @@ class IncrementalScoringMethod(ABC):
         counts : Optional[List[int]]
             Counts for each element
         """
+
         pass
 
     @abstractmethod
     def get_update_count(self) -> int:
         """Get the number of updates performed."""
+
         pass
 
 
 class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
-    """
-    Streaming Maximum Likelihood Estimation with incremental updates.
+    """Streaming Maximum Likelihood Estimation with incremental updates.
+
 
     This implementation maintains a streaming frequency distribution and
     updates probability estimates incrementally as new data arrives.
@@ -411,6 +433,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
     ):
         """Initialize streaming MLE scorer."""
         config = ScoringMethodConfig(unobs_prob=unobs_prob, logprob=logprob)
+
         super().__init__(config)
         self.name = "Streaming MLE"
 
@@ -431,6 +454,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
     def _recompute_probabilities(self) -> None:
         """Recompute probabilities from streaming distribution."""
         total_count = self._stream_dist.get_total_count()
+
         unobs_prob = getattr(self.config, "unobs_prob", None)
 
         if total_count == 0:
@@ -473,7 +497,9 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
 
     def update_batch(self, elements: List[Element], counts: Optional[List[int]] = None) -> None:
         """Update with multiple element observations."""
+
         if counts is None:
+
             counts = [1] * len(elements)
 
         self._stream_dist.update_batch(elements, counts)
@@ -484,6 +510,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
     def _incremental_update(self, element: Element, count: int) -> None:
         """Efficiently update probabilities for a single element change."""
         total_count = self._stream_dist.get_total_count()
+
         element_count = self._stream_dist.get_count(element)
 
         if total_count == 0:
@@ -531,8 +558,8 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         return self._stream_dist.get_statistics()
 
     def save_state(self, filepath: str) -> None:
-        """
-        Save the current state to disk.
+        """Save the current state to disk.
+
 
         Parameters
         ----------
@@ -540,13 +567,14 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
             Path to save the state
         """
         state = {"stream_dist": self._stream_dist, "config": self.config, "name": self.name}
+
         with open(filepath, "wb") as f:
             pickle.dump(state, f)
 
     @classmethod
     def load_state(cls, filepath: str) -> "StreamingMLE":
-        """
-        Load state from disk.
+        """Load state from disk.
+
 
         Parameters
         ----------
@@ -559,6 +587,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
             Loaded streaming MLE instance
         """
         with open(filepath, "rb") as f:
+
             state = pickle.load(f)
 
         instance = cls.__new__(cls)
@@ -574,8 +603,8 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
 
 
 class StreamingLaplace(StreamingMLE):
-    """
-    Streaming Laplace smoothing with incremental updates.
+    """Streaming Laplace smoothing with incremental updates.
+
 
     Extends StreamingMLE to provide Laplace (add-one) smoothing
     in a streaming context.
@@ -611,6 +640,7 @@ class StreamingLaplace(StreamingMLE):
     def _recompute_probabilities(self) -> None:
         """Recompute probabilities with Laplace smoothing."""
         total_count = self._stream_dist.get_total_count()
+
         vocab_size = self._stream_dist.get_vocabulary_size()
         bins = getattr(self.config, "bins", None)
 
@@ -646,8 +676,8 @@ class StreamingLaplace(StreamingMLE):
 
 
 class StreamingDataProcessor:
-    """
-    High-level processor for streaming text data.
+    """High-level processor for streaming text data.
+
 
     This class provides utilities for processing streaming text data
     and maintaining multiple frequency distributions efficiently.
@@ -680,14 +710,15 @@ class StreamingDataProcessor:
     ):
         """Initialize streaming data processor."""
         self.scoring_methods = scoring_methods
+
         self.batch_size = batch_size
         self.auto_save_interval = auto_save_interval
         self._processed_count = 0
         self._batch_buffer: List[Element] = []
 
     def process_element(self, element: Element, count: int = 1) -> None:
-        """
-        Process a single element.
+        """Process a single element.
+
 
         Parameters
         ----------
@@ -696,15 +727,17 @@ class StreamingDataProcessor:
         count : int, default=1
             Count for the element
         """
+
         for method in self.scoring_methods.values():
+
             method.update_single(element, count)
 
         self._processed_count += count
         self._check_auto_save()
 
     def process_batch(self, elements: List[Element], counts: Optional[List[int]] = None) -> None:
-        """
-        Process a batch of elements.
+        """Process a batch of elements.
+
 
         Parameters
         ----------
@@ -713,22 +746,26 @@ class StreamingDataProcessor:
         counts : Optional[List[int]]
             Counts for each element
         """
+
         for method in self.scoring_methods.values():
+
             method.update_batch(elements, counts)
 
         self._processed_count += len(elements)
         self._check_auto_save()
 
     def process_text_stream(self, text_stream: Iterator[str]) -> None:
-        """
-        Process a stream of text tokens.
+        """Process a stream of text tokens.
+
 
         Parameters
         ----------
         text_stream : Iterator[str]
             Stream of text tokens
         """
+
         for token in text_stream:
+
             self._batch_buffer.append(token)
 
             if len(self._batch_buffer) >= self.batch_size:
@@ -741,8 +778,8 @@ class StreamingDataProcessor:
             self._batch_buffer.clear()
 
     def get_score(self, method_name: str, element: Element) -> Union[float, float]:
-        """
-        Get score for an element from a specific method.
+        """Get score for an element from a specific method.
+
 
         Parameters
         ----------
@@ -756,14 +793,16 @@ class StreamingDataProcessor:
         Union[float, float]
             Score for the element
         """
+
         if method_name not in self.scoring_methods:
+
             raise ValueError(f"Unknown scoring method: {method_name}")
 
         return self.scoring_methods[method_name](element)
 
     def get_statistics(self) -> Dict[str, Any]:
-        """
-        Get statistics for all scoring methods.
+        """Get statistics for all scoring methods.
+
 
         Returns
         -------
@@ -788,19 +827,23 @@ class StreamingDataProcessor:
 
     def _check_auto_save(self) -> None:
         """Check if automatic saving should be triggered."""
+
         if self.auto_save_interval and self._processed_count % self.auto_save_interval == 0:
+
             self.save_all_states(f"auto_save_{self._processed_count}")
 
     def save_all_states(self, base_filename: str) -> None:
-        """
-        Save states of all scoring methods.
+        """Save states of all scoring methods.
+
 
         Parameters
         ----------
         base_filename : str
             Base filename for saving states
         """
+
         for name, method in self.scoring_methods.items():
+
             if hasattr(method, "save_state"):
                 method.save_state(f"{base_filename}_{name}.pkl")
 

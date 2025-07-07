@@ -233,11 +233,11 @@ from hypothesis import given, strategies as st
 @given(freq_dist=frequency_distribution())
 def test_probability_axioms(freq_dist):
     mle = freqprob.MLE(freq_dist, logprob=False)
-    
+
     # All probabilities non-negative
     for word in freq_dist:
         assert mle(word) >= 0
-    
+
     # Probabilities sum to 1
     total_prob = sum(mle(word) for word in freq_dist)
     assert abs(total_prob - 1.0) < 1e-14
@@ -248,12 +248,12 @@ def test_probability_axioms(freq_dist):
 @given(freq_dist=frequency_distribution())
 def test_scaling_invariance(freq_dist):
     scale_factor = 5
-    scaled_dist = {word: count * scale_factor 
+    scaled_dist = {word: count * scale_factor
                    for word, count in freq_dist.items()}
-    
+
     original_mle = freqprob.MLE(freq_dist, logprob=False)
     scaled_mle = freqprob.MLE(scaled_dist, logprob=False)
-    
+
     # Probabilities should be identical
     for word in freq_dist:
         assert abs(original_mle(word) - scaled_mle(word)) < 1e-14
@@ -287,13 +287,13 @@ profiler = PerformanceProfiler()
 # Test scaling with vocabulary size
 vocab_sizes = [100, 500, 1000, 2000]
 for size in vocab_sizes:
-    test_dist = {f'word_{i}': max(1, int(1000/(i+1))) 
+    test_dist = {f'word_{i}': max(1, int(1000/(i+1)))
                  for i in range(size)}
-    
+
     metrics = profiler.profile_method_creation(
         freqprob.Laplace, test_dist, bins=size*2
     )
-    
+
     print(f"Size {size}: {metrics.duration_seconds:.4f}s")
 ```
 
@@ -380,7 +380,7 @@ methods_to_test = [
 
 # Run validation
 results = validator.run_comprehensive_validation(
-    methods_to_test, 
+    methods_to_test,
     test_distributions,
     bins=1000,  # Common parameter
     alpha=0.5   # For Bayesian smoothing
@@ -411,16 +411,16 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           pip install -e .[dev]
           pip install hypothesis nltk scipy
-      
+
       - name: Run validation suite
         run: |
           python scripts/validation_report.py --quick --output-dir validation_results
-      
+
       - name: Upload validation results
         uses: actions/upload-artifact@v3
         with:
