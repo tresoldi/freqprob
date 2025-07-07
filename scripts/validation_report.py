@@ -39,17 +39,17 @@ except ImportError:
 
 class ValidationReportGenerator:
     """Comprehensive validation report generator for FreqProb."""
+
     def __init__(self, output_dir: Path, verbose: bool = True):
-    
         """Initialize the validation report generator.
-        
+
 
         Args:
             output_dir: Directory to save reports and artifacts
             verbose: Whether to print progress information
         """
         self.output_dir = Path(output_dir)
-        
+
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.verbose = verbose
 
@@ -73,13 +73,12 @@ class ValidationReportGenerator:
     def log(self, message: str) -> None:
         """Log a message if verbose mode is enabled."""
         if self.verbose:
-        
+
             print(f"[{time.strftime('%H:%M:%S')}] {message}")
 
     def generate_test_distributions(self) -> list[dict[str, int]]:
         """Generate diverse test distributions for validation."""
         distributions = []
-        
 
         # Small uniform distribution
         distributions.append({f"word_{i}": 10 for i in range(5)})
@@ -121,8 +120,8 @@ class ValidationReportGenerator:
         return distributions
 
     def run_numerical_stability_tests(self) -> dict[str, Any]:
-        """Run numerical stability tests."""self.log("Running numerical stability tests...")
-        
+        """Run numerical stability tests."""
+        self.log("Running numerical stability tests...")
 
         test_distributions = self.generate_test_distributions()
         stability_results = {}
@@ -157,7 +156,6 @@ class ValidationReportGenerator:
     def run_statistical_correctness_tests(self) -> dict[str, Any]:
         """Run statistical correctness validation."""
         self.log("Running statistical correctness tests...")
-        
 
         test_dist = {"apple": 60, "banana": 30, "cherry": 10}
         correctness_results = {}
@@ -185,7 +183,6 @@ class ValidationReportGenerator:
     def run_regression_tests(self) -> dict[str, Any]:
         """Run regression tests against reference implementations."""
         self.log("Running regression tests...")
-        
 
         # Run the regression test module
         try:
@@ -217,7 +214,6 @@ class ValidationReportGenerator:
     def run_performance_benchmarks(self) -> dict[str, Any]:
         """Run performance benchmarks."""
         self.log("Running performance benchmarks...")
-        
 
         test_dist = {f"word_{i}": max(1, int(1000 / (i + 1))) for i in range(100)}
         performance_results = {}
@@ -269,7 +265,6 @@ class ValidationReportGenerator:
     def run_property_based_tests(self) -> dict[str, Any]:
         """Run property-based tests with Hypothesis."""
         self.log("Running property-based tests...")
-        
 
         try:
             result = subprocess.run(
@@ -301,7 +296,6 @@ class ValidationReportGenerator:
     def generate_summary_statistics(self, results: dict[str, Any]) -> dict[str, Any]:
         """Generate overall summary statistics."""
         summary = {
-        
             "validation_overview": {},
             "performance_overview": {},
             "overall_status": "UNKNOWN",
@@ -331,9 +325,9 @@ class ValidationReportGenerator:
             summary["validation_overview"]["statistical_correctness"] = {
                 "total_tests": correctness_total,
                 "passed_tests": correctness_passed,
-                "success_rate": correctness_passed / correctness_total
-                if correctness_total > 0
-                else 0,
+                "success_rate": (
+                    correctness_passed / correctness_total if correctness_total > 0 else 0
+                ),
             }
 
         # Performance summary
@@ -410,8 +404,9 @@ class ValidationReportGenerator:
     <h2>Numerical Stability Tests</h2>
     <table>
         <tr><th>Method</th><th>Total Tests</th><th>Passed</th><th>Failed</th><th>Success Rate</th></tr>
-"""for method, data in results["numerical_stability"].items():
-            
+"""
+            for method, data in results["numerical_stability"].items():
+
                 success_rate = (
                     data["passed"] / data["total_tests"] if data["total_tests"] > 0 else 0
                 )
@@ -424,8 +419,8 @@ class ValidationReportGenerator:
             <td>{data['passed']}</td>
             <td>{data['failed']}</td>
             <td>{success_rate:.1%}</td>
-        </tr>"""html_content += "</table>"
-            
+        </tr>"""
+        html_content += "</table>"
 
         # Statistical Correctness Section
         if "statistical_correctness" in results:
@@ -433,8 +428,9 @@ class ValidationReportGenerator:
     <h2>Statistical Correctness Tests</h2>
     <table>
         <tr><th>Method</th><th>Status</th><th>Error Message</th></tr>
-"""for method, data in results["statistical_correctness"].items():
-            
+"""
+            for method, data in results["statistical_correctness"].items():
+
                 status = "PASSED" if data["passed"] else "FAILED"
                 status_class = "status-passed" if data["passed"] else "status-failed"
                 error_msg = data.get("error_message", "") or "N/A"
@@ -444,8 +440,8 @@ class ValidationReportGenerator:
             <td>{method}</td>
             <td><span class="{'passed' if data['passed'] else 'failed'}">{status}</span></td>
             <td>{error_msg}</td>
-        </tr>"""html_content += "</table>"
-            
+        </tr>"""
+        html_content += "</table>"
 
         # Performance Benchmarks Section
         if "performance_benchmarks" in results:
@@ -454,8 +450,9 @@ class ValidationReportGenerator:
     <h3>Method Comparison</h3>
     <table>
         <tr><th>Method</th><th>Duration (s)</th><th>Memory Peak (MB)</th><th>Memory Delta (MB)</th></tr>
-"""if "method_comparison" in results["performance_benchmarks"]:
-            
+"""
+            if "method_comparison" in results["performance_benchmarks"]:
+
                 for method, data in results["performance_benchmarks"]["method_comparison"].items():
                     html_content += f"""
         <tr>
@@ -463,8 +460,8 @@ class ValidationReportGenerator:
             <td class="metric">{data['duration_seconds']:.4f}</td>
             <td class="metric">{data['memory_peak_mb']:.2f}</td>
             <td class="metric">{data['memory_delta_mb']:.2f}</td>
-        </tr>"""html_content += "</table>"
-            
+        </tr>"""
+        html_content += "</table>"
 
         # Test Results Summary
         regression_status = results.get("regression_tests", {}).get("summary", "NOT_RUN")
@@ -500,7 +497,6 @@ class ValidationReportGenerator:
     def run_full_validation(self) -> dict[str, Any]:
         """Run complete validation suite."""
         self.log("Starting comprehensive FreqProb validation...")
-        
 
         try:
             # Run all validation components
@@ -560,7 +556,7 @@ class ValidationReportGenerator:
 def main():
     """Main entry point for validation report generation."""
     parser = argparse.ArgumentParser(description="Generate FreqProb validation report")
-    
+
     parser.add_argument(
         "--output-dir",
         type=Path,
