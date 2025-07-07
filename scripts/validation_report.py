@@ -38,7 +38,8 @@ except ImportError:
 
 
 class ValidationReportGenerator:
-    """Comprehensive validation report generator for FreqProb."""def __init__(self, output_dir: Path, verbose: bool = True):
+    """Comprehensive validation report generator for FreqProb."""
+    def __init__(self, output_dir: Path, verbose: bool = True):
     
         """Initialize the validation report generator.
         
@@ -46,7 +47,8 @@ class ValidationReportGenerator:
         Args:
             output_dir: Directory to save reports and artifacts
             verbose: Whether to print progress information
-        """self.output_dir = Path(output_dir)
+        """
+        self.output_dir = Path(output_dir)
         
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.verbose = verbose
