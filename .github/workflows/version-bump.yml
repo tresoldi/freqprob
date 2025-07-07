@@ -68,10 +68,10 @@ jobs:
         run: |
           NEW_VERSION=${{ steps.bump.outputs.new }}
           DATE=$(date +%Y-%m-%d)
-          
+
           # Create new changelog entry
           sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n## [$NEW_VERSION] - $DATE/" CHANGELOG.md
-          
+
           # Add changes section if it doesn't exist
           if ! grep -q "### Added" CHANGELOG.md; then
             sed -i "/## \[$NEW_VERSION\]/a\\n### Added\n- New features and improvements\n\n### Changed\n- Updates and modifications\n\n### Fixed\n- Bug fixes" CHANGELOG.md
@@ -85,16 +85,16 @@ jobs:
           title: "chore: bump version to ${{ steps.bump.outputs.new }}"
           body: |
             ## Version Bump: ${{ steps.current_version.outputs.current }} → ${{ steps.bump.outputs.new }}
-            
+
             This PR bumps the version from ${{ steps.current_version.outputs.current }} to ${{ steps.bump.outputs.new }}.
-            
+
             ### Changes:
             - Updated version in `freqprob/__init__.py`
             - Updated `CHANGELOG.md` with new version entry
-            
+
             ### Type: ${{ inputs.bump_type }}
             ${{ inputs.prerelease && '### Prerelease: true' || '' }}
-            
+
             Once this PR is merged, create a release by pushing a tag:
             ```bash
             git tag v${{ steps.bump.outputs.new }}

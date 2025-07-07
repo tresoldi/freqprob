@@ -66,7 +66,7 @@ jobs:
           python -c "import freqprob; print('Version:', freqprob.__version__)"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
@@ -82,7 +82,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
@@ -98,24 +98,24 @@ jobs:
         run: |
           # Extract changes from CHANGELOG.md for this version
           VERSION=${{ steps.version.outputs.version }}
-          
+
           # Create release notes
           cat > release_notes.md << EOF
           ## FreqProb v$VERSION
-          
+
           ### What's Changed
           See [CHANGELOG.md](https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md) for detailed changes.
-          
+
           ### Installation
           \`\`\`bash
           pip install freqprob==$VERSION
           \`\`\`
-          
+
           ### Quick Links
           - [Documentation](https://github.com/tresoldi/freqprob/blob/main/docs/user_guide.md)
           - [API Reference](https://github.com/tresoldi/freqprob/blob/main/docs/api_reference.md)
           - [Tutorials](https://github.com/tresoldi/freqprob/tree/main/docs)
-          
+
           Full Changelog: https://github.com/tresoldi/freqprob/compare/v${{ github.event.before }}...v$VERSION
           EOF
 
@@ -139,7 +139,7 @@ jobs:
       url: https://pypi.org/project/freqprob/
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
@@ -162,7 +162,7 @@ jobs:
       url: https://test.pypi.org/project/freqprob/
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/

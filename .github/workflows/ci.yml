@@ -113,7 +113,7 @@ jobs:
           hatch run python benchmarks.py --quick --output benchmark_results --format json
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
           path: docs/benchmark_results/
@@ -143,7 +143,7 @@ jobs:
           safety check --json --output safety-report.json || true
 
       - name: Upload security reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-reports
           path: |
@@ -178,7 +178,7 @@ jobs:
           python -c "import freqprob; print(freqprob.__version__)"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
