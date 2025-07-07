@@ -1,6 +1,4 @@
-"""
-freqprob __init__.py
-"""
+"""freqprob __init__.py"""
 
 # Version of the freqprob package
 __version__ = "0.2.0"

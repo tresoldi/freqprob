@@ -137,8 +137,7 @@ class CompressedFrequencyDistribution:
         return int(self._original_count_range[0] + normalized * range_size)
 
     def update(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Update with a frequency distribution.
+        """Update with a frequency distribution.
 
         Parameters
         ----------
@@ -174,8 +173,7 @@ class CompressedFrequencyDistribution:
             self._total_count += count  # Keep exact total
 
     def get_count(self, element: Element) -> int:
-        """
-        Get count for an element.
+        """Get count for an element.
 
         Parameters
         ----------
@@ -230,8 +228,7 @@ class CompressedFrequencyDistribution:
         return dict(self.items())
 
     def get_memory_usage(self) -> Dict[str, int]:
-        """
-        Get detailed memory usage information.
+        """Get detailed memory usage information.
 
         Returns
         -------
@@ -263,8 +260,7 @@ class CompressedFrequencyDistribution:
         }
 
     def compress_to_bytes(self) -> bytes:
-        """
-        Compress the entire distribution to bytes.
+        """Compress the entire distribution to bytes.
 
         Returns
         -------
@@ -291,8 +287,7 @@ class CompressedFrequencyDistribution:
     def decompress_from_bytes(
         cls, compressed_data: bytes, use_compression: bool = True
     ) -> "CompressedFrequencyDistribution":
-        """
-        Decompress distribution from bytes.
+        """Decompress distribution from bytes.
 
         Parameters
         ----------
@@ -333,8 +328,7 @@ class CompressedFrequencyDistribution:
 
 
 class SparseFrequencyDistribution:
-    """
-    Sparse representation for frequency distributions with many zero counts.
+    """Sparse representation for frequency distributions with many zero counts.
 
     This class is optimized for distributions where most elements have zero
     counts, using sparse data structures for memory efficiency.
@@ -370,8 +364,7 @@ class SparseFrequencyDistribution:
             self._needs_resort = False
 
     def update(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Update with a frequency distribution.
+        """Update with a frequency distribution.
 
         Parameters
         ----------
@@ -391,8 +384,7 @@ class SparseFrequencyDistribution:
                     self._needs_resort = True
 
     def increment(self, element: Element, count: int = 1) -> None:
-        """
-        Increment count for a single element.
+        """Increment count for a single element.
 
         Parameters
         ----------
@@ -412,8 +404,7 @@ class SparseFrequencyDistribution:
             self._needs_resort = True
 
     def get_count(self, element: Element) -> int:
-        """
-        Get count for an element.
+        """Get count for an element.
 
         Parameters
         ----------
@@ -445,8 +436,7 @@ class SparseFrequencyDistribution:
             self._needs_resort = False
 
     def get_top_k(self, k: int) -> List[Tuple[Element, int]]:
-        """
-        Get top-k most frequent elements.
+        """Get top-k most frequent elements.
 
         Parameters
         ----------
@@ -467,8 +457,7 @@ class SparseFrequencyDistribution:
         return [(element, count) for count, element in self._sorted_elements[:k]]
 
     def get_elements_with_count_range(self, min_count: int, max_count: int) -> List[Element]:
-        """
-        Get elements with counts in a specific range.
+        """Get elements with counts in a specific range.
 
         Parameters
         ----------
@@ -489,8 +478,7 @@ class SparseFrequencyDistribution:
         return result
 
     def get_count_histogram(self) -> Dict[int, int]:
-        """
-        Get histogram of counts (count -> frequency of that count).
+        """Get histogram of counts (count -> frequency of that count).
 
         Returns
         -------
@@ -519,8 +507,7 @@ class SparseFrequencyDistribution:
         return dict(self._sparse_counts)
 
     def get_memory_usage(self) -> Dict[str, int]:
-        """
-        Get memory usage information.
+        """Get memory usage information.
 
         Returns
         -------
@@ -545,8 +532,7 @@ class SparseFrequencyDistribution:
 
 
 class QuantizedProbabilityTable:
-    """
-    Quantized probability table for memory-efficient probability storage.
+    """Quantized probability table for memory-efficient probability storage.
 
     This class stores probabilities using quantization to reduce memory usage
     while maintaining reasonable precision for most applications.
@@ -590,8 +576,7 @@ class QuantizedProbabilityTable:
         self._default_quantized_prob = 0  # Minimum quantization level
 
     def _quantize_probability(self, prob: float) -> int:
-        """
-        Quantize a probability value.
+        """Quantize a probability value.
 
         Parameters
         ----------
@@ -618,8 +603,7 @@ class QuantizedProbabilityTable:
         return max(0, min(quantized, self.num_quantization_levels - 1))
 
     def _dequantize_probability(self, quantized_prob: int) -> float:
-        """
-        Dequantize a probability value.
+        """Dequantize a probability value.
 
         Parameters
         ----------
@@ -643,8 +627,7 @@ class QuantizedProbabilityTable:
             return self._min_prob + normalized * self._prob_range
 
     def set_probabilities(self, probabilities: Dict[Element, float]) -> None:
-        """
-        Set probabilities for multiple elements.
+        """Set probabilities for multiple elements.
 
         Parameters
         ----------
@@ -656,8 +639,7 @@ class QuantizedProbabilityTable:
             self._quantized_probs[element] = self._quantize_probability(prob)
 
     def set_probability(self, element: Element, probability: float) -> None:
-        """
-        Set probability for a single element.
+        """Set probability for a single element.
 
         Parameters
         ----------
@@ -669,8 +651,7 @@ class QuantizedProbabilityTable:
         self._quantized_probs[element] = self._quantize_probability(probability)
 
     def get_probability(self, element: Element) -> float:
-        """
-        Get probability for an element.
+        """Get probability for an element.
 
         Parameters
         ----------
@@ -686,8 +667,7 @@ class QuantizedProbabilityTable:
         return self._dequantize_probability(quantized)
 
     def set_default_probability(self, default_prob: float) -> None:
-        """
-        Set default probability for unobserved elements.
+        """Set default probability for unobserved elements.
 
         Parameters
         ----------
@@ -701,8 +681,7 @@ class QuantizedProbabilityTable:
         return list(self._quantized_probs.keys())
 
     def get_memory_usage(self) -> Dict[str, int]:
-        """
-        Get memory usage information.
+        """Get memory usage information.
 
         Returns
         -------
@@ -718,8 +697,7 @@ class QuantizedProbabilityTable:
     def get_quantization_error_stats(
         self, original_probs: Dict[Element, float]
     ) -> Dict[str, float]:
-        """
-        Analyze quantization error compared to original probabilities.
+        """Analyze quantization error compared to original probabilities.
 
         Parameters
         ----------
@@ -768,8 +746,7 @@ def memory_usage_comparison(
     compressed_dist: CompressedFrequencyDistribution,
     sparse_dist: SparseFrequencyDistribution,
 ) -> Dict[str, Dict[str, int]]:
-    """
-    Compare memory usage between different representations.
+    """Compare memory usage between different representations.
 
     Parameters
     ----------
@@ -805,8 +782,7 @@ def create_compressed_distribution(
     quantization_levels: Optional[int] = None,
     use_compression: bool = True,
 ) -> CompressedFrequencyDistribution:
-    """
-    Create a compressed frequency distribution from a regular one.
+    """Create a compressed frequency distribution from a regular one.
 
     Parameters
     ----------
@@ -832,8 +808,7 @@ def create_compressed_distribution(
 def create_sparse_distribution(
     freqdist: FrequencyDistribution, default_count: int = 0
 ) -> SparseFrequencyDistribution:
-    """
-    Create a sparse frequency distribution from a regular one.
+    """Create a sparse frequency distribution from a regular one.
 
     Parameters
     ----------
