@@ -8,35 +8,52 @@ __author__ = "Tiago Tresoldi"
 __email__ = "tiago.tresoldi@lingfil.uu.se"
 
 
+from .advanced import CertaintyDegree, SimpleGoodTuring, WittenBell
+
 # Import from local modules
 from .basic import MLE, Random, Uniform
-from .lidstone import ELE, Laplace, Lidstone
-from .advanced import CertaintyDegree, SimpleGoodTuring, WittenBell
-from .smoothing import BayesianSmoothing, InterpolatedSmoothing, KneserNey, ModifiedKneserNey
-from .utils import (
-    generate_ngrams, word_frequency, ngram_frequency, 
-    perplexity, cross_entropy, kl_divergence, model_comparison
-)
 from .cache import clear_all_caches, get_cache_stats
-from .vectorized import VectorizedScorer, BatchScorer, create_vectorized_batch_scorer
-from .lazy import LazyScoringMethod, LazyBatchScorer, create_lazy_mle, create_lazy_laplace
-from .streaming import (
-    StreamingFrequencyDistribution, StreamingMLE, StreamingLaplace, 
-    StreamingDataProcessor
-)
+from .lazy import LazyBatchScorer, LazyScoringMethod, create_lazy_laplace, create_lazy_mle
+from .lidstone import ELE, Laplace, Lidstone
 from .memory_efficient import (
-    CompressedFrequencyDistribution, SparseFrequencyDistribution, 
-    QuantizedProbabilityTable, create_compressed_distribution, create_sparse_distribution
+    CompressedFrequencyDistribution,
+    QuantizedProbabilityTable,
+    SparseFrequencyDistribution,
+    create_compressed_distribution,
+    create_sparse_distribution,
 )
-from .profiling import MemoryProfiler, DistributionMemoryAnalyzer, MemoryMonitor
+from .profiling import DistributionMemoryAnalyzer, MemoryMonitor, MemoryProfiler
+from .smoothing import BayesianSmoothing, InterpolatedSmoothing, KneserNey, ModifiedKneserNey
+from .streaming import (
+    StreamingDataProcessor,
+    StreamingFrequencyDistribution,
+    StreamingLaplace,
+    StreamingMLE,
+)
+from .utils import (
+    cross_entropy,
+    generate_ngrams,
+    kl_divergence,
+    model_comparison,
+    ngram_frequency,
+    perplexity,
+    word_frequency,
+)
+from .vectorized import BatchScorer, VectorizedScorer, create_vectorized_batch_scorer
 
 # Validation and profiling tools (optional import)
 try:
     from .validation import (
-        PerformanceProfiler, ValidationSuite, BenchmarkSuite,
-        PerformanceMetrics, ValidationResult,
-        quick_validate_method, profile_method_performance, compare_method_performance
+        BenchmarkSuite,
+        PerformanceMetrics,
+        PerformanceProfiler,
+        ValidationResult,
+        ValidationSuite,
+        compare_method_performance,
+        profile_method_performance,
+        quick_validate_method,
     )
+
     HAS_VALIDATION = True
 except ImportError:
     HAS_VALIDATION = False
@@ -73,7 +90,7 @@ __all__ = [
     "create_lazy_mle",
     "create_lazy_laplace",
     "StreamingFrequencyDistribution",
-    "StreamingMLE", 
+    "StreamingMLE",
     "StreamingLaplace",
     "StreamingDataProcessor",
     "CompressedFrequencyDistribution",
@@ -88,13 +105,15 @@ __all__ = [
 
 # Add validation tools to __all__ if available
 if HAS_VALIDATION:
-    __all__.extend([
-        "PerformanceProfiler",
-        "ValidationSuite", 
-        "BenchmarkSuite",
-        "PerformanceMetrics",
-        "ValidationResult",
-        "quick_validate_method",
-        "profile_method_performance",
-        "compare_method_performance"
-    ])
+    __all__.extend(
+        [
+            "PerformanceProfiler",
+            "ValidationSuite",
+            "BenchmarkSuite",
+            "PerformanceMetrics",
+            "ValidationResult",
+            "quick_validate_method",
+            "profile_method_performance",
+            "compare_method_performance",
+        ]
+    )

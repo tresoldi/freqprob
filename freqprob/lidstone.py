@@ -11,19 +11,14 @@ import math
 from dataclasses import dataclass
 from typing import Optional
 
-from .base import (
-    ScoringMethod, 
-    ScoringMethodConfig,
-    FrequencyDistribution,
-    Probability
-)
+from .base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
 
 
 @dataclass
 class LidstoneConfig(ScoringMethodConfig):
     """
     Configuration for Lidstone smoothing.
-    
+
     Attributes
     ----------
     gamma : float
@@ -33,7 +28,7 @@ class LidstoneConfig(ScoringMethodConfig):
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
-    
+
     gamma: float = 1.0
     bins: Optional[int] = None
     logprob: bool = True
@@ -43,7 +38,7 @@ class LidstoneConfig(ScoringMethodConfig):
 class LaplaceConfig(ScoringMethodConfig):
     """
     Configuration for Laplace smoothing (Lidstone with γ=1).
-    
+
     Attributes
     ----------
     bins : Optional[int]
@@ -51,7 +46,7 @@ class LaplaceConfig(ScoringMethodConfig):
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
-    
+
     bins: Optional[int] = None
     logprob: bool = True
 
@@ -60,7 +55,7 @@ class LaplaceConfig(ScoringMethodConfig):
 class ELEConfig(ScoringMethodConfig):
     """
     Configuration for Expected Likelihood Estimation (Lidstone with γ=0.5).
-    
+
     Attributes
     ----------
     bins : Optional[int]
@@ -68,7 +63,7 @@ class ELEConfig(ScoringMethodConfig):
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
-    
+
     bins: Optional[int] = None
     logprob: bool = True
 
@@ -85,7 +80,7 @@ class Lidstone(ScoringMethod):
     Mathematical Formulation
     ------------------------
     For elements with counts cᵢ, total count N = Σⱼcⱼ, and B bins:
-    
+
     P(wᵢ) = (cᵢ + γ) / (N + B×γ)  for observed elements wᵢ ∈ V
     P(w)  = γ / (N + B×γ)         for unobserved elements w ∉ V
 
@@ -126,7 +121,7 @@ class Lidstone(ScoringMethod):
     >>> smooth('cherry')     # 2/(4+2×2) = 2/8
     0.25
 
-    >>> # Lower gamma = less smoothing  
+    >>> # Lower gamma = less smoothing
     >>> minimal = Lidstone(freqdist, gamma=0.1, logprob=False)
     >>> minimal('apple')     # (3+0.1)/(4+2×0.1) ≈ 3.1/4.2
     0.7380952380952381
@@ -151,33 +146,33 @@ class Lidstone(ScoringMethod):
     The choice of γ represents a bias-variance tradeoff:
     - Small γ: Low bias but high variance (closer to MLE)
     - Large γ: Higher bias but lower variance (more uniform)
-    
+
     When bins > vocabulary size, the method reserves more probability
     mass for potential unseen elements.
     """
-    
+
     __slots__ = ()
-    
+
     def __init__(
-        self, 
-        freqdist: FrequencyDistribution, 
-        gamma: float, 
-        bins: Optional[int] = None, 
-        logprob: bool = True
+        self,
+        freqdist: FrequencyDistribution,
+        gamma: float,
+        bins: Optional[int] = None,
+        logprob: bool = True,
     ) -> None:
         # Default bins to vocabulary size if not specified
         if bins is None:
             bins = len(freqdist)
-        
+
         config = LidstoneConfig(gamma=gamma, bins=bins, logprob=logprob)
         super().__init__(config)
         self.name = "Lidstone"
         self.fit(freqdist)
-    
+
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """
         Compute Lidstone smoothed probabilities.
-        
+
         Parameters
         ----------
         freqdist : FrequencyDistribution
@@ -185,24 +180,20 @@ class Lidstone(ScoringMethod):
         """
         gamma = self.config.gamma
         bins = self.config.bins
-        
+
         # Calculate normalization factors
         total_count = sum(freqdist.values())
         denominator = total_count + bins * gamma
-        
+
         if self.logprob:
             # Log-probability computation
             self._prob = {
-                elem: math.log((count + gamma) / denominator)
-                for elem, count in freqdist.items()
+                elem: math.log((count + gamma) / denominator) for elem, count in freqdist.items()
             }
             self._unobs = math.log(gamma / denominator)
         else:
             # Regular probability computation
-            self._prob = {
-                elem: (count + gamma) / denominator
-                for elem, count in freqdist.items()
-            }
+            self._prob = {elem: (count + gamma) / denominator for elem, count in freqdist.items()}
             self._unobs = gamma / denominator
 
 
@@ -210,7 +201,7 @@ class Laplace(Lidstone):
     """
     Laplace smoothing probability distribution.
 
-    A special case of Lidstone smoothing with γ = 1.0, also known as 
+    A special case of Lidstone smoothing with γ = 1.0, also known as
     "add-one smoothing." This is the most commonly used additive smoothing
     method, corresponding to a uniform Dirichlet prior.
 
@@ -249,14 +240,11 @@ class Laplace(Lidstone):
     - Has nice theoretical properties (uniform prior)
     - Computationally efficient
     """
-    
+
     __slots__ = ()
-    
+
     def __init__(
-        self, 
-        freqdist: FrequencyDistribution, 
-        bins: Optional[int] = None, 
-        logprob: bool = True
+        self, freqdist: FrequencyDistribution, bins: Optional[int] = None, logprob: bool = True
     ) -> None:
         # Call parent with gamma=1.0 for Laplace smoothing
         super().__init__(freqdist, gamma=1.0, bins=bins, logprob=logprob)
@@ -273,7 +261,7 @@ class ELE(Lidstone):
 
     Mathematical Formulation
     ------------------------
-    P(wᵢ) = (cᵢ + 0.5) / (N + 0.5×B)  for observed elements wᵢ ∈ V  
+    P(wᵢ) = (cᵢ + 0.5) / (N + 0.5×B)  for observed elements wᵢ ∈ V
     P(w)  = 0.5 / (N + 0.5×B)         for unobserved elements w ∉ V
 
     This corresponds to adding half a virtual observation to each element.
@@ -306,14 +294,11 @@ class ELE(Lidstone):
     - Often performs well empirically
     - Reduces overfitting while maintaining sensitivity to data
     """
-    
+
     __slots__ = ()
-    
+
     def __init__(
-        self, 
-        freqdist: FrequencyDistribution, 
-        bins: Optional[int] = None, 
-        logprob: bool = True
+        self, freqdist: FrequencyDistribution, bins: Optional[int] = None, logprob: bool = True
     ) -> None:
         # Call parent with gamma=0.5 for ELE
         super().__init__(freqdist, gamma=0.5, bins=bins, logprob=logprob)

@@ -13,12 +13,12 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from .base import (
-    ScoringMethod, 
-    ScoringMethodConfig, 
-    FrequencyDistribution,
     Element,
+    FrequencyDistribution,
+    LogProbability,
     Probability,
-    LogProbability
+    ScoringMethod,
+    ScoringMethodConfig,
 )
 
 
@@ -26,7 +26,7 @@ from .base import (
 class UniformConfig(ScoringMethodConfig):
     """
     Configuration for Uniform distribution.
-    
+
     Attributes
     ----------
     unobs_prob : Probability
@@ -34,7 +34,7 @@ class UniformConfig(ScoringMethodConfig):
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
-    
+
     unobs_prob: Probability = 0.0
     logprob: bool = True
 
@@ -43,7 +43,7 @@ class UniformConfig(ScoringMethodConfig):
 class RandomConfig(ScoringMethodConfig):
     """
     Configuration for Random distribution.
-    
+
     Attributes
     ----------
     unobs_prob : Probability
@@ -53,7 +53,7 @@ class RandomConfig(ScoringMethodConfig):
     seed : Optional[int]
         Random seed for reproducible results (default: None)
     """
-    
+
     unobs_prob: Probability = 0.0
     logprob: bool = True
     seed: Optional[int] = None
@@ -63,7 +63,7 @@ class RandomConfig(ScoringMethodConfig):
 class MLEConfig(ScoringMethodConfig):
     """
     Configuration for Maximum Likelihood Estimation.
-    
+
     Attributes
     ----------
     unobs_prob : Probability
@@ -71,7 +71,7 @@ class MLEConfig(ScoringMethodConfig):
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
-    
+
     unobs_prob: Probability = 0.0
     logprob: bool = True
 
@@ -80,7 +80,7 @@ class Uniform(ScoringMethod):
     """
     Uniform probability distribution.
 
-    The simplest smoothing method that assigns equal probability to all 
+    The simplest smoothing method that assigns equal probability to all
     observed elements, ignoring their frequency counts. This serves as
     a baseline method and can be useful when no frequency information
     should influence the probability estimates.
@@ -88,7 +88,7 @@ class Uniform(ScoringMethod):
     Mathematical Formulation
     ------------------------
     For a vocabulary of size |V| with reserved mass p₀:
-    
+
     P(wᵢ) = (1 - p₀) / |V|  for observed words wᵢ ∈ V
     P(w)  = p₀              for unobserved words w ∉ V
 
@@ -101,49 +101,46 @@ class Uniform(ScoringMethod):
         Reserved probability mass for unobserved elements (0.0 ≤ p₀ ≤ 1.0)
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
-        
+
     Examples
     --------
     >>> freqdist = {'apple': 10, 'banana': 1}  # counts ignored
     >>> uniform = Uniform(freqdist, unobs_prob=0.1, logprob=False)
     >>> uniform('apple')   # Same as banana despite higher count
     0.45
-    >>> uniform('banana')  # Same probability 
+    >>> uniform('banana')  # Same probability
     0.45
     >>> uniform('cherry')  # Unobserved element
     0.1
-    
+
     With log-probabilities:
     >>> uniform_log = Uniform(freqdist, logprob=True)
     >>> uniform_log('apple')
     -0.6931471805599453
-    >>> uniform_log('banana') 
+    >>> uniform_log('banana')
     -0.6931471805599453
-    
+
     Notes
     -----
     This method completely ignores frequency information, making it
     useful as a non-informative prior or baseline. For methods that
     utilize frequency counts, see MLE, Lidstone, or other smoothing methods.
     """
-    
+
     __slots__ = ()
-    
+
     def __init__(
-        self, 
-        freqdist: FrequencyDistribution, 
-        unobs_prob: Probability = 0.0, 
-        logprob: bool = True
+        self, freqdist: FrequencyDistribution, unobs_prob: Probability = 0.0, logprob: bool = True
     ) -> None:
         config = UniformConfig(unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "Uniform"
         self.fit(freqdist)
-    
+
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """
         Compute uniform probabilities for all elements.
-        
+
         Parameters
         ----------
         freqdist : FrequencyDistribution
@@ -151,7 +148,7 @@ class Uniform(ScoringMethod):
         """
         unobs_prob = self.config.unobs_prob
         vocab_size = len(freqdist)
-        
+
         if self.logprob:
             # Avoid domain errors by ensuring unobs_prob >= machine epsilon
             unobs_prob = max(unobs_prob, self._unobs)
@@ -190,71 +187,68 @@ class Random(ScoringMethod):
         Whether to return log-probabilities or probabilities
     seed : Optional[int], default=None
         Random seed for reproducible results
-        
+
     Examples
     --------
     >>> freqdist = {'apple': 5, 'banana': 2, 'cherry': 8}
     >>> random_dist = Random(freqdist, seed=42, logprob=False)
-    >>> random_dist('apple')  # Random probability 
+    >>> random_dist('apple')  # Random probability
     0.3157894736842105
     >>> random_dist('banana')
     0.21052631578947367
-    
+
     Reproducible results with seed:
     >>> random1 = Random(freqdist, seed=123, logprob=False)
     >>> random2 = Random(freqdist, seed=123, logprob=False)
     >>> random1('apple') == random2('apple')
     True
-    
+
     Notes
     -----
     This method is primarily useful for:
     - Testing and debugging other components
     - Providing a randomized baseline for comparison
     - Simulating noisy probability estimates
-    
+
     The random counts are constrained to the range [min_count, max_count]
     from the original distribution to maintain some relationship to the data.
     """
-    
+
     __slots__ = ()
-    
+
     def __init__(
-        self, 
-        freqdist: FrequencyDistribution, 
-        unobs_prob: Probability = 0.0, 
-        logprob: bool = True, 
-        seed: Optional[int] = None
+        self,
+        freqdist: FrequencyDistribution,
+        unobs_prob: Probability = 0.0,
+        logprob: bool = True,
+        seed: Optional[int] = None,
     ) -> None:
         config = RandomConfig(unobs_prob=unobs_prob, logprob=logprob, seed=seed)
         super().__init__(config)
         self.name = "Random"
         self.fit(freqdist)
-    
+
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """
         Compute random probabilities based on randomized counts.
-        
+
         Parameters
         ----------
         freqdist : FrequencyDistribution
             Original frequency distribution used to determine count range
         """
         unobs_prob = self.config.unobs_prob
-        
+
         # Generate random counts within the observed range
         if not freqdist:
             return  # Handle empty distribution
-            
+
         min_count, max_count = min(freqdist.values()), max(freqdist.values())
         random.seed(self.config.seed)  # type: ignore
-        
+
         # Ensure minimum count is at least 1 to avoid zero probabilities
         min_count = max(min_count, 1)
-        random_counts = {
-            elem: random.randint(min_count, max_count) 
-            for elem in freqdist
-        }
+        random_counts = {elem: random.randint(min_count, max_count) for elem in freqdist}
         total_random_counts = sum(random_counts.values())
 
         if self.logprob:
@@ -286,7 +280,7 @@ class MLE(ScoringMethod):
     Mathematical Formulation
     ------------------------
     For elements with counts cᵢ and total count N = Σⱼcⱼ:
-    
+
     P(wᵢ) = (1 - p₀) × cᵢ / N  for observed elements wᵢ ∈ V
     P(w)  = p₀                 for unobserved elements w ∉ V
 
@@ -308,7 +302,7 @@ class MLE(ScoringMethod):
     >>> mle = MLE(freqdist, unobs_prob=0.0, logprob=False)
     >>> mle('apple')      # Most frequent
     0.6
-    >>> mle('banana')     # Medium frequency  
+    >>> mle('banana')     # Medium frequency
     0.3
     >>> mle('cherry')     # Least frequent
     0.1
@@ -326,7 +320,7 @@ class MLE(ScoringMethod):
     >>> mle_log = MLE(freqdist, logprob=True)
     >>> mle_log('apple')
     -0.5108256237659907
-    >>> mle_log('banana')  
+    >>> mle_log('banana')
     -1.2039728043259361
 
     Properties
@@ -343,40 +337,37 @@ class MLE(ScoringMethod):
     it can be problematic for sparse data due to zero probabilities for
     unobserved events. Consider Lidstone/Laplace smoothing for small datasets.
     """
-    
+
     __slots__ = ()
-    
+
     def __init__(
-        self, 
-        freqdist: FrequencyDistribution, 
-        unobs_prob: Probability = 0.0, 
-        logprob: bool = True
+        self, freqdist: FrequencyDistribution, unobs_prob: Probability = 0.0, logprob: bool = True
     ) -> None:
         config = MLEConfig(unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "MLE"
         self.fit(freqdist)
-    
+
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """
         Compute Maximum Likelihood probability estimates.
-        
+
         Parameters
         ----------
         freqdist : FrequencyDistribution
             Frequency distribution with element counts
         """
         unobs_prob = self.config.unobs_prob
-        
+
         # Calculate total count for normalization
         total_count = sum(freqdist.values())
-        
+
         if total_count == 0:
             # Handle empty distribution edge case
             return
-            
+
         available_mass = 1.0 - unobs_prob
-        
+
         if self.logprob:
             unobs_prob = max(unobs_prob, self._unobs)  # Avoid domain errors
             self._prob = {
@@ -386,7 +377,6 @@ class MLE(ScoringMethod):
             self._unobs = math.log(unobs_prob)
         else:
             self._prob = {
-                elem: (count / total_count) * available_mass
-                for elem, count in freqdist.items()
+                elem: (count / total_count) * available_mass for elem, count in freqdist.items()
             }
             self._unobs = unobs_prob

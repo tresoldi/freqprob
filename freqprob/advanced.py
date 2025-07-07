@@ -14,23 +14,18 @@ from typing import Optional
 # Import 3rd-party modules
 import numpy as np
 import scipy  # type: ignore
-import scipy.stats
 import scipy.linalg
+import scipy.stats
 
-from .base import (
-    ScoringMethod, 
-    ScoringMethodConfig,
-    FrequencyDistribution,
-    Probability
-)
-from .cache import cached_sgt_computation, cached_computation
+from .base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
+from .cache import cached_computation, cached_sgt_computation
 
 
 @dataclass
 class WittenBellConfig(ScoringMethodConfig):
     """
     Configuration for Witten-Bell smoothing.
-    
+
     Attributes
     ----------
     bins : Optional[int]
@@ -38,7 +33,7 @@ class WittenBellConfig(ScoringMethodConfig):
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
-    
+
     bins: Optional[int] = None
     logprob: bool = True
 
@@ -47,7 +42,7 @@ class WittenBellConfig(ScoringMethodConfig):
 class CertaintyDegreeConfig(ScoringMethodConfig):
     """
     Configuration for Certainty Degree estimation.
-    
+
     Attributes
     ----------
     bins : Optional[int]
@@ -57,7 +52,7 @@ class CertaintyDegreeConfig(ScoringMethodConfig):
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
-    
+
     bins: Optional[int] = None
     unobs_prob: Probability = 0.0
     logprob: bool = True
@@ -67,7 +62,7 @@ class CertaintyDegreeConfig(ScoringMethodConfig):
 class SimpleGoodTuringConfig(ScoringMethodConfig):
     """
     Configuration for Simple Good-Turing smoothing.
-    
+
     Attributes
     ----------
     p_value : float
@@ -79,7 +74,7 @@ class SimpleGoodTuringConfig(ScoringMethodConfig):
     allow_fail : bool
         Whether to raise errors on invalid assumptions (default: True)
     """
-    
+
     p_value: float = 0.05
     default_p0: Optional[float] = None
     logprob: bool = True
@@ -116,25 +111,22 @@ class WittenBell(ScoringMethod):
         probabilities themselves. When using the log-probabilities, the
         counts are automatically corrected to avoid domain errors.
     """
-    
+
     __slots__ = ()
-    
+
     def __init__(
-        self, 
-        freqdist: FrequencyDistribution, 
-        bins: Optional[int] = None, 
-        logprob: bool = True
+        self, freqdist: FrequencyDistribution, bins: Optional[int] = None, logprob: bool = True
     ) -> None:
         config = WittenBellConfig(bins=bins, logprob=logprob)
         super().__init__(config)
         self.name = "Witten-Bell"
         self.fit(freqdist)
-    
+
     @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Witten-Bell probabilities."""
         bins = self.config.bins
-        
+
         # Store the probabilities
         n = sum(freqdist.values())
         t = len(freqdist)
@@ -184,27 +176,27 @@ class CertaintyDegree(ScoringMethod):
         probabilities themselves. When using the log-probabilities, the
         counts are automatically corrected to avoid domain errors.
     """
-    
+
     __slots__ = ()
-    
+
     def __init__(
-        self, 
-        freqdist: FrequencyDistribution, 
-        bins: Optional[int] = None, 
-        unobs_prob: Probability = 0.0, 
-        logprob: bool = True
+        self,
+        freqdist: FrequencyDistribution,
+        bins: Optional[int] = None,
+        unobs_prob: Probability = 0.0,
+        logprob: bool = True,
     ) -> None:
         config = CertaintyDegreeConfig(bins=bins, unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "Certainty Degree"
         self.fit(freqdist)
-    
+
     @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Certainty Degree probabilities."""
         bins = self.config.bins
         unobs_prob = self.config.unobs_prob
-        
+
         # Obtain the parameters for probability calculation.
         n = sum(freqdist.values())
         b = len(freqdist)
@@ -223,7 +215,9 @@ class CertaintyDegree(ScoringMethod):
         if self.logprob:
             unobs_prob = max(unobs_prob, self._unobs)
             prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
-            self._prob = {sample: math.log((count / n) * prob_space) for sample, count in freqdist.items()}
+            self._prob = {
+                sample: math.log((count / n) * prob_space) for sample, count in freqdist.items()
+            }
             self._unobs = math.log(-(prob_space - 1.0))
         else:
             prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
@@ -281,9 +275,9 @@ class SimpleGoodTuring(ScoringMethod):
         might result in an unreliable probability distribution; defaults to
         True.
     """
-    
+
     __slots__ = ()
-    
+
     def __init__(
         self,
         freqdist: FrequencyDistribution,
@@ -293,22 +287,19 @@ class SimpleGoodTuring(ScoringMethod):
         allow_fail: bool = True,
     ) -> None:
         config = SimpleGoodTuringConfig(
-            p_value=p_value, 
-            default_p0=default_p0, 
-            logprob=logprob, 
-            allow_fail=allow_fail
+            p_value=p_value, default_p0=default_p0, logprob=logprob, allow_fail=allow_fail
         )
         super().__init__(config)
         self.name = "Simple Good-Turing"
         self.fit(freqdist)
-    
+
     @cached_sgt_computation
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Simple Good-Turing probabilities."""
         p_value = self.config.p_value  # type: ignore
         default_p0 = self.config.default_p0  # type: ignore
         allow_fail = self.config.allow_fail  # type: ignore
-        
+
         # Calculate the confidence level from the p_value.
         confidence_level = scipy.stats.norm.ppf(1.0 - (p_value / 2.0))
 
@@ -349,7 +340,9 @@ class SimpleGoodTuring(ScoringMethod):
         # a list for the computation with `linalg.lstsq`.
         z_keys = list(z.keys())
         z_values = list(z.values())
-        slope, intercept = scipy.linalg.lstsq(np.c_[np.log(z_keys), (1,) * len(z_keys)], np.log(z_values))[0]
+        slope, intercept = scipy.linalg.lstsq(
+            np.c_[np.log(z_keys), (1,) * len(z_keys)], np.log(z_values)
+        )[0]
         if slope > -1.0 and allow_fail:
             raise RuntimeWarning("In SGT, linear regression slope is > -1.0.")
 
@@ -358,7 +351,11 @@ class SimpleGoodTuring(ScoringMethod):
         use_y = False
         for r in freqs_keys:
             # `y` is the log-linear smoothing.
-            y = float(r + 1) * np.exp(slope * np.log(r + 1) + intercept) / np.exp(slope * np.log(r) + intercept)
+            y = (
+                float(r + 1)
+                * np.exp(slope * np.log(r + 1) + intercept)
+                / np.exp(slope * np.log(r) + intercept)
+            )
 
             # If we've already started using `y` as the estimate for `r`, then
             # continue doing so; also start doing so if no samples were observed
@@ -390,7 +387,9 @@ class SimpleGoodTuring(ScoringMethod):
                 # `width` is the width of the confidence interval of the empirical
                 # Turing estimate (for which Sampson uses 95% but suggests 90%),
                 # when assuming independence.
-                width = confidence_level * np.sqrt(float(r + 1) ** 2 * (nr1 / nr**2) * (1.0 + (nr1 / nr)))
+                width = confidence_level * np.sqrt(
+                    float(r + 1) ** 2 * (nr1 / nr**2) * (1.0 + (nr1 / nr))
+                )
 
                 # If the difference between `x` and `y` is more than `t`, then the
                 # empirical Turing estimate `x` tends to be more accurate.
