@@ -77,7 +77,8 @@ class ValidationReportGenerator:
             print(f"[{time.strftime('%H:%M:%S')}] {message}")
 
     def generate_test_distributions(self) -> list[dict[str, int]]:
-        """Generate diverse test distributions for validation."""distributions = []
+        """Generate diverse test distributions for validation."""
+        distributions = []
         
 
         # Small uniform distribution
@@ -154,7 +155,8 @@ class ValidationReportGenerator:
         return stability_results
 
     def run_statistical_correctness_tests(self) -> dict[str, Any]:
-        """Run statistical correctness validation."""self.log("Running statistical correctness tests...")
+        """Run statistical correctness validation."""
+        self.log("Running statistical correctness tests...")
         
 
         test_dist = {"apple": 60, "banana": 30, "cherry": 10}
@@ -181,7 +183,8 @@ class ValidationReportGenerator:
         return correctness_results
 
     def run_regression_tests(self) -> dict[str, Any]:
-        """Run regression tests against reference implementations."""self.log("Running regression tests...")
+        """Run regression tests against reference implementations."""
+        self.log("Running regression tests...")
         
 
         # Run the regression test module
@@ -212,7 +215,8 @@ class ValidationReportGenerator:
         return regression_results
 
     def run_performance_benchmarks(self) -> dict[str, Any]:
-        """Run performance benchmarks."""self.log("Running performance benchmarks...")
+        """Run performance benchmarks."""
+        self.log("Running performance benchmarks...")
         
 
         test_dist = {f"word_{i}": max(1, int(1000 / (i + 1))) for i in range(100)}
@@ -263,7 +267,8 @@ class ValidationReportGenerator:
         return performance_results
 
     def run_property_based_tests(self) -> dict[str, Any]:
-        """Run property-based tests with Hypothesis."""self.log("Running property-based tests...")
+        """Run property-based tests with Hypothesis."""
+        self.log("Running property-based tests...")
         
 
         try:
@@ -294,7 +299,8 @@ class ValidationReportGenerator:
         return property_results
 
     def generate_summary_statistics(self, results: dict[str, Any]) -> dict[str, Any]:
-        """Generate overall summary statistics."""summary = {
+        """Generate overall summary statistics."""
+        summary = {
         
             "validation_overview": {},
             "performance_overview": {},
@@ -359,7 +365,8 @@ class ValidationReportGenerator:
         return summary
 
     def generate_html_report(self, results: dict[str, Any]) -> None:
-        """Generate HTML validation report."""html_content = f"""
+        """Generate HTML validation report."""
+        html_content = f"""
         
 <!DOCTYPE html>
 <html>
@@ -491,7 +498,8 @@ class ValidationReportGenerator:
         self.log(f"HTML report saved to {html_path}")
 
     def run_full_validation(self) -> dict[str, Any]:
-        """Run complete validation suite."""self.log("Starting comprehensive FreqProb validation...")
+        """Run complete validation suite."""
+        self.log("Starting comprehensive FreqProb validation...")
         
 
         try:
@@ -550,7 +558,8 @@ class ValidationReportGenerator:
 
 
 def main():
-    """Main entry point for validation report generation."""parser = argparse.ArgumentParser(description="Generate FreqProb validation report")
+    """Main entry point for validation report generation."""
+    parser = argparse.ArgumentParser(description="Generate FreqProb validation report")
     
     parser.add_argument(
         "--output-dir",
