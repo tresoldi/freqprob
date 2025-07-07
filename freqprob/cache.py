@@ -1,5 +1,4 @@
-"""
-Caching and memoization utilities for computational efficiency.
+"""Caching and memoization utilities for computational efficiency.
 
 This module provides caching mechanisms to speed up expensive calculations
 in probability smoothing methods, particularly for computationally intensive
@@ -15,8 +14,7 @@ from .base import FrequencyDistribution
 
 
 class ComputationCache:
-    """
-    Cache for expensive computations in scoring methods.
+    """Cache for expensive computations in scoring methods.
 
     This cache stores the results of computationally intensive operations
     to avoid redundant calculations when the same parameters are used.
@@ -30,8 +28,7 @@ class ComputationCache:
     """
 
     def __init__(self, max_size: Optional[int] = 1000):
-        """
-        Initialize the computation cache.
+        """Initialize the computation cache.
 
         Parameters
         ----------
@@ -42,8 +39,7 @@ class ComputationCache:
         self.max_size = max_size
 
     def _generate_key(self, freqdist: FrequencyDistribution, **kwargs) -> str:
-        """
-        Generate a unique cache key for the given parameters.
+        """Generate a unique cache key for the given parameters.
 
         Parameters
         ----------
@@ -66,8 +62,7 @@ class ComputationCache:
         return hashlib.sha256(hash_input).hexdigest()
 
     def get(self, freqdist: FrequencyDistribution, **kwargs) -> Optional[Any]:
-        """
-        Retrieve cached result for the given parameters.
+        """Retrieve cached result for the given parameters.
 
         Parameters
         ----------
@@ -85,8 +80,7 @@ class ComputationCache:
         return self._cache.get(key)
 
     def set(self, freqdist: FrequencyDistribution, result: Any, **kwargs) -> None:
-        """
-        Store result in cache for the given parameters.
+        """Store result in cache for the given parameters.
 
         Parameters
         ----------
@@ -122,8 +116,7 @@ _general_cache = ComputationCache(max_size=1000)
 
 
 def cached_sgt_computation(func: Callable) -> Callable:
-    """
-    Decorator to cache Simple Good-Turing computations.
+    """Decorator to cache Simple Good-Turing computations.
 
     Parameters
     ----------
@@ -164,8 +157,7 @@ def cached_sgt_computation(func: Callable) -> Callable:
 
 
 def cached_computation(cache_instance: ComputationCache = None) -> Callable:
-    """
-    Generic decorator to cache expensive computations.
+    """Generic decorator to cache expensive computations.
 
     Parameters
     ----------
@@ -219,8 +211,7 @@ def clear_all_caches() -> None:
 
 
 def get_cache_stats() -> Dict[str, int]:
-    """
-    Get statistics about cache usage.
+    """Get statistics about cache usage.
 
     Returns
     -------
@@ -231,16 +222,14 @@ def get_cache_stats() -> Dict[str, int]:
 
 
 class MemoizedProperty:
-    """
-    Property decorator that caches the result of expensive property calculations.
+    """Property decorator that caches the result of expensive property calculations.
 
     This is useful for properties that perform expensive computations but
     should behave like normal attributes.
     """
 
     def __init__(self, func: Callable):
-        """
-        Initialize memoized property.
+        """Initialize memoized property.
 
         Parameters
         ----------

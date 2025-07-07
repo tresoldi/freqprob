@@ -1,5 +1,4 @@
-"""
-Lazy evaluation support for efficient probability calculations.
+"""Lazy evaluation support for efficient probability calculations.
 
 This module provides lazy evaluation mechanisms that defer expensive
 computations until they are actually needed, improving performance
@@ -14,8 +13,7 @@ from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodCo
 
 
 class LazyProbabilityComputer(ABC):
-    """
-    Abstract base class for lazy probability computation strategies.
+    """Abstract base class for lazy probability computation strategies.
 
     This class defines the interface for different lazy evaluation
     strategies that can be used with scoring methods.
@@ -25,8 +23,7 @@ class LazyProbabilityComputer(ABC):
     def compute_probability(
         self, element: Element, freqdist: FrequencyDistribution, config: ScoringMethodConfig
     ) -> float:
-        """
-        Compute probability for a single element on demand.
+        """Compute probability for a single element on demand.
 
         Parameters
         ----------
@@ -48,8 +45,7 @@ class LazyProbabilityComputer(ABC):
     def compute_unobserved_probability(
         self, freqdist: FrequencyDistribution, config: ScoringMethodConfig
     ) -> float:
-        """
-        Compute probability for unobserved elements.
+        """Compute probability for unobserved elements.
 
         Parameters
         ----------
@@ -139,8 +135,7 @@ class LazyLaplaceComputer(LazyProbabilityComputer):
 
 
 class LazyScoringMethod(ScoringMethod):
-    """
-    Scoring method with lazy evaluation of probabilities.
+    """Scoring method with lazy evaluation of probabilities.
 
     This class wraps any scoring method to provide lazy evaluation,
     computing probabilities only when they are actually requested.
@@ -170,8 +165,7 @@ class LazyScoringMethod(ScoringMethod):
     def __init__(
         self, lazy_computer: LazyProbabilityComputer, config: ScoringMethodConfig, name: str
     ):
-        """
-        Initialize lazy scoring method.
+        """Initialize lazy scoring method.
 
         Parameters
         ----------
@@ -197,8 +191,7 @@ class LazyScoringMethod(ScoringMethod):
         # Don't compute anything yet - this is the lazy part!
 
     def __call__(self, element: Element) -> Union[float, float]:
-        """
-        Score element with lazy computation.
+        """Score element with lazy computation.
 
         Parameters
         ----------
@@ -257,8 +250,7 @@ class LazyScoringMethod(ScoringMethod):
         return self._unobs
 
     def precompute_batch(self, elements: Set[Element]) -> None:
-        """
-        Precompute probabilities for a batch of elements.
+        """Precompute probabilities for a batch of elements.
 
         This can be useful when you know you'll need several elements
         and want to compute them all at once for efficiency.
@@ -277,8 +269,7 @@ class LazyScoringMethod(ScoringMethod):
                 self(element)
 
     def get_computed_elements(self) -> Set[Element]:
-        """
-        Get the set of elements that have been computed so far.
+        """Get the set of elements that have been computed so far.
 
         Returns
         -------
@@ -288,8 +279,7 @@ class LazyScoringMethod(ScoringMethod):
         return self._computed_elements.copy()
 
     def force_full_computation(self) -> None:
-        """
-        Force computation of all probabilities in the distribution.
+        """Force computation of all probabilities in the distribution.
 
         This converts the lazy scorer to a regular scorer by computing
         all probabilities immediately.
@@ -306,8 +296,7 @@ class LazyScoringMethod(ScoringMethod):
 
 
 class LazyBatchScorer:
-    """
-    Batch scorer with lazy evaluation and intelligent caching.
+    """Batch scorer with lazy evaluation and intelligent caching.
 
     This scorer optimizes batch operations by:
     1. Using lazy evaluation to avoid unnecessary computations
@@ -331,8 +320,7 @@ class LazyBatchScorer:
     """
 
     def __init__(self, lazy_scorer: LazyScoringMethod):
-        """
-        Initialize lazy batch scorer.
+        """Initialize lazy batch scorer.
 
         Parameters
         ----------
@@ -343,8 +331,7 @@ class LazyBatchScorer:
         self._access_count: Dict[Element, int] = {}
 
     def score_batch(self, elements: list) -> list:
-        """
-        Score a batch of elements with lazy evaluation.
+        """Score a batch of elements with lazy evaluation.
 
         Parameters
         ----------
@@ -369,8 +356,7 @@ class LazyBatchScorer:
         return [self.lazy_scorer(element) for element in elements]
 
     def score_streaming(self, element_stream):
-        """
-        Score elements from a stream with adaptive lazy evaluation.
+        """Score elements from a stream with adaptive lazy evaluation.
 
         Parameters
         ----------
@@ -398,8 +384,7 @@ class LazyBatchScorer:
             yield self.lazy_scorer(element)
 
     def get_access_statistics(self) -> Dict[str, Any]:
-        """
-        Get statistics about element access patterns.
+        """Get statistics about element access patterns.
 
         Returns
         -------
@@ -428,8 +413,7 @@ class LazyBatchScorer:
 def create_lazy_mle(
     freqdist: FrequencyDistribution, unobs_prob: Optional[float] = None, logprob: bool = True
 ) -> LazyScoringMethod:
-    """
-    Create a lazy MLE scorer.
+    """Create a lazy MLE scorer.
 
     Parameters
     ----------
@@ -457,8 +441,7 @@ def create_lazy_mle(
 def create_lazy_laplace(
     freqdist: FrequencyDistribution, bins: Optional[int] = None, logprob: bool = True
 ) -> LazyScoringMethod:
-    """
-    Create a lazy Laplace scorer.
+    """Create a lazy Laplace scorer.
 
     Parameters
     ----------

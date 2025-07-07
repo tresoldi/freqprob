@@ -1,5 +1,4 @@
-"""
-Performance profiling and validation tools for FreqProb.
+"""Performance profiling and validation tools for FreqProb.
 
 This module provides comprehensive profiling tools for analyzing performance,
 memory usage, and computational efficiency of smoothing methods.
@@ -90,8 +89,7 @@ class PerformanceProfiler:
     """Advanced performance profiler for FreqProb methods."""
 
     def __init__(self, enable_detailed_tracking: bool = True):
-        """
-        Initialize the performance profiler.
+        """Initialize the performance profiler.
 
         Args:
             enable_detailed_tracking: Whether to enable detailed memory/CPU tracking
@@ -104,8 +102,7 @@ class PerformanceProfiler:
     def profile_operation(
         self, operation_name: str, iterations: int = 1, **metadata
     ) -> Generator[None, None, None]:
-        """
-        Context manager for profiling operations.
+        """Context manager for profiling operations.
 
         Args:
             operation_name: Name of the operation being profiled
@@ -379,8 +376,7 @@ class ValidationSuite:
     """Comprehensive validation suite for FreqProb methods."""
 
     def __init__(self, profiler: Optional[PerformanceProfiler] = None):
-        """
-        Initialize validation suite.
+        """Initialize validation suite.
 
         Args:
             profiler: Optional performance profiler to use

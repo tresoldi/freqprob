@@ -1,5 +1,4 @@
-"""
-Utility functions for common NLP tasks and model comparison.
+"""Utility functions for common NLP tasks and model comparison.
 
 This module provides convenience functions for generating n-grams, computing
 word frequencies, and comparing probability models.
@@ -13,8 +12,7 @@ from .base import Count, Element, FrequencyDistribution, LogProbability, Probabi
 
 
 def generate_ngrams(text: Union[str, List[str]], n: int) -> List[Tuple[str, ...]]:
-    """
-    Generate n-grams from text.
+    """Generate n-grams from text.
 
     Parameters
     ----------
@@ -53,8 +51,7 @@ def generate_ngrams(text: Union[str, List[str]], n: int) -> List[Tuple[str, ...]
 def word_frequency(
     text: Union[str, List[str]], normalize: bool = False
 ) -> Dict[str, Union[int, float]]:
-    """
-    Compute word frequency from text.
+    """Compute word frequency from text.
 
     Parameters
     ----------
@@ -93,8 +90,7 @@ def word_frequency(
 def ngram_frequency(
     text: Union[str, List[str]], n: int, normalize: bool = False
 ) -> Dict[Tuple[str, ...], Union[int, float]]:
-    """
-    Compute n-gram frequency from text.
+    """Compute n-gram frequency from text.
 
     Parameters
     ----------
@@ -126,8 +122,7 @@ def ngram_frequency(
 
 
 def perplexity(model: ScoringMethod, test_data: Iterable[Element]) -> float:
-    """
-    Calculate perplexity of a model on test data.
+    """Calculate perplexity of a model on test data.
 
     Perplexity is defined as exp(H(p)) where H(p) is the cross-entropy.
     Lower perplexity indicates better model performance.
@@ -161,8 +156,7 @@ def perplexity(model: ScoringMethod, test_data: Iterable[Element]) -> float:
 
 
 def cross_entropy(model: ScoringMethod, test_data: Iterable[Element]) -> float:
-    """
-    Calculate cross-entropy of a model on test data.
+    """Calculate cross-entropy of a model on test data.
 
     Cross-entropy measures the average number of bits needed to encode
     test data using the model's probability distribution.
@@ -196,8 +190,7 @@ def cross_entropy(model: ScoringMethod, test_data: Iterable[Element]) -> float:
 def kl_divergence(
     p_model: ScoringMethod, q_model: ScoringMethod, test_data: Iterable[Element]
 ) -> float:
-    """
-    Calculate Kullback-Leibler divergence between two models.
+    """Calculate Kullback-Leibler divergence between two models.
 
     KL divergence measures how much one probability distribution differs
     from another. It's not symmetric: KL(P||Q) ≠ KL(Q||P).
@@ -245,8 +238,7 @@ def kl_divergence(
 def model_comparison(
     models: Dict[str, ScoringMethod], test_data: Iterable[Element]
 ) -> Dict[str, Dict[str, float]]:
-    """
-    Compare multiple models using various metrics.
+    """Compare multiple models using various metrics.
 
     Parameters
     ----------
