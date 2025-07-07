@@ -39,11 +39,14 @@ random.seed(1305)
 TEST_OBS1 = Counter([char for char in "ABBCCCDDDDEEEE"])
 
 TEST_SAMPLES = [char for char in string.printable]
-TEST_TWO_CHAR_SAMPLES = [[char1 + char2 for char2 in string.digits] for char1 in string.ascii_letters[:10]]
+TEST_TWO_CHAR_SAMPLES = [
+    [char1 + char2 for char2 in string.digits] for char1 in string.ascii_letters[:10]
+]
 TEST_SAMPLES += itertools.chain.from_iterable(TEST_TWO_CHAR_SAMPLES)
 
 TEST_OBS2 = {
-    sample: (random.randint(1, 1000) ** random.randint(1, 3)) + random.randint(1, 100) for sample in TEST_SAMPLES
+    sample: (random.randint(1, 1000) ** random.randint(1, 3)) + random.randint(1, 100)
+    for sample in TEST_SAMPLES
 }
 TEST_OBS2["x"] = 100
 TEST_OBS2["y"] = 100
@@ -95,7 +98,9 @@ def test_uniform_dist_nolog_obs():
     scorer2 = Uniform(TEST_OBS2, 0.1, logprob=False)
     assert scorer2("0") == scorer2("~")
     assert scorer2("x") == scorer2("z")
-    assert scorer2("0") < scorer2("aaa")  # This is the only difference with the parallel test, due to unobs
+    assert scorer2("0") < scorer2(
+        "aaa"
+    )  # This is the only difference with the parallel test, due to unobs
 
 
 def test_uniform_dist_log_obs():
@@ -111,7 +116,9 @@ def test_uniform_dist_log_obs():
     scorer2 = Uniform(TEST_OBS2, 0.1)
     assert scorer2("0") == scorer2("~")
     assert scorer2("x") == scorer2("z")
-    assert scorer2("0") < scorer2("aaa")  # This is the only difference with the parallel test, due to unobs
+    assert scorer2("0") < scorer2(
+        "aaa"
+    )  # This is the only difference with the parallel test, due to unobs
 
 
 def test_uniform_raises():
@@ -581,8 +588,6 @@ def test_wb_raises():
     Test the Witten-Bell distribution raises the correct errors.
     """
 
-    pass
-
 
 def test_cb_dist_nolog_noobs():
     """
@@ -652,8 +657,6 @@ def test_cb_raises():
     """
     Test the Certainty Degree distribution raises the correct errors.
     """
-
-    pass
 
 
 def test_sgt_dist_nolog_noobs():

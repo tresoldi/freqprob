@@ -16,8 +16,8 @@ from .base import FrequencyDistribution, Probability, ScoringMethod, ScoringMeth
 
 @dataclass
 class LidstoneConfig(ScoringMethodConfig):
-    """
-    Configuration for Lidstone smoothing.
+    """Configuration for Lidstone smoothing.
+
 
     Attributes
     ----------
@@ -30,14 +30,15 @@ class LidstoneConfig(ScoringMethodConfig):
     """
 
     gamma: float = 1.0
+
     bins: Optional[int] = None
     logprob: bool = True
 
 
 @dataclass
 class LaplaceConfig(ScoringMethodConfig):
-    """
-    Configuration for Laplace smoothing (Lidstone with γ=1).
+    """Configuration for Laplace smoothing (Lidstone with γ=1).
+
 
     Attributes
     ----------
@@ -48,13 +49,14 @@ class LaplaceConfig(ScoringMethodConfig):
     """
 
     bins: Optional[int] = None
+
     logprob: bool = True
 
 
 @dataclass
 class ELEConfig(ScoringMethodConfig):
-    """
-    Configuration for Expected Likelihood Estimation (Lidstone with γ=0.5).
+    """Configuration for Expected Likelihood Estimation (Lidstone with γ=0.5).
+
 
     Attributes
     ----------
@@ -65,12 +67,13 @@ class ELEConfig(ScoringMethodConfig):
     """
 
     bins: Optional[int] = None
+
     logprob: bool = True
 
 
 class Lidstone(ScoringMethod):
-    """
-    Lidstone additive smoothing probability distribution.
+    """Lidstone additive smoothing probability distribution.
+
 
     Also known as "additive smoothing," this method addresses the zero
     probability problem by adding a virtual count γ (gamma) to each possible
@@ -170,8 +173,8 @@ class Lidstone(ScoringMethod):
         self.fit(freqdist)
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Compute Lidstone smoothed probabilities.
+        """Compute Lidstone smoothed probabilities.
+
 
         Parameters
         ----------
@@ -179,6 +182,7 @@ class Lidstone(ScoringMethod):
             Frequency distribution with element counts
         """
         gamma = self.config.gamma
+
         bins = self.config.bins
 
         # Calculate normalization factors
@@ -198,8 +202,8 @@ class Lidstone(ScoringMethod):
 
 
 class Laplace(Lidstone):
-    """
-    Laplace smoothing probability distribution.
+    """Laplace smoothing probability distribution.
+
 
     A special case of Lidstone smoothing with γ = 1.0, also known as
     "add-one smoothing." This is the most commonly used additive smoothing
@@ -252,8 +256,8 @@ class Laplace(Lidstone):
 
 
 class ELE(Lidstone):
-    """
-    Expected Likelihood Estimation probability distribution.
+    """Expected Likelihood Estimation probability distribution.
+
 
     A special case of Lidstone smoothing with γ = 0.5, corresponding to
     the Jeffreys prior for multinomial distributions. This provides a

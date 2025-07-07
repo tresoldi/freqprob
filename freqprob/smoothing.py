@@ -24,8 +24,8 @@ from .cache import cached_computation
 
 @dataclass
 class KneserNeyConfig(ScoringMethodConfig):
-    """
-    Configuration for Kneser-Ney smoothing.
+    """Configuration for Kneser-Ney smoothing.
+
 
     Attributes
     ----------
@@ -36,13 +36,14 @@ class KneserNeyConfig(ScoringMethodConfig):
     """
 
     discount: float = 0.75
+
     logprob: bool = True
 
 
 @dataclass
 class ModifiedKneserNeyConfig(ScoringMethodConfig):
-    """
-    Configuration for Modified Kneser-Ney smoothing.
+    """Configuration for Modified Kneser-Ney smoothing.
+
 
     Attributes
     ----------
@@ -55,8 +56,8 @@ class ModifiedKneserNeyConfig(ScoringMethodConfig):
 
 @dataclass
 class InterpolatedConfig(ScoringMethodConfig):
-    """
-    Configuration for interpolated smoothing methods.
+    """Configuration for interpolated smoothing methods.
+
 
     Attributes
     ----------
@@ -67,13 +68,14 @@ class InterpolatedConfig(ScoringMethodConfig):
     """
 
     lambda_weight: float = 0.7
+
     logprob: bool = True
 
 
 @dataclass
 class BayesianConfig(ScoringMethodConfig):
-    """
-    Configuration for Bayesian smoothing methods.
+    """Configuration for Bayesian smoothing methods.
+
 
     Attributes
     ----------
@@ -84,12 +86,13 @@ class BayesianConfig(ScoringMethodConfig):
     """
 
     alpha: float = 1.0
+
     logprob: bool = True
 
 
 class KneserNey(ScoringMethod):
-    """
-    Kneser-Ney smoothing probability distribution.
+    """Kneser-Ney smoothing probability distribution.
+
 
     Kneser-Ney smoothing is one of the most effective smoothing methods for
     language modeling. It uses absolute discounting combined with interpolation
@@ -170,8 +173,8 @@ class KneserNey(ScoringMethod):
 
     @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Compute Kneser-Ney smoothed probabilities.
+        """Compute Kneser-Ney smoothed probabilities.
+
 
         Parameters
         ----------
@@ -240,8 +243,8 @@ class KneserNey(ScoringMethod):
 
 
 class ModifiedKneserNey(ScoringMethod):
-    """
-    Modified Kneser-Ney smoothing probability distribution.
+    """Modified Kneser-Ney smoothing probability distribution.
+
 
     An enhanced version of Kneser-Ney smoothing that uses different discount
     values for different frequency counts. This typically provides better
@@ -306,8 +309,8 @@ class ModifiedKneserNey(ScoringMethod):
 
     @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Compute Modified Kneser-Ney smoothed probabilities.
+        """Compute Modified Kneser-Ney smoothed probabilities.
+
 
         Parameters
         ----------
@@ -422,8 +425,8 @@ class ModifiedKneserNey(ScoringMethod):
 
 
 class InterpolatedSmoothing(ScoringMethod):
-    """
-    Linear interpolation smoothing between multiple models.
+    """Linear interpolation smoothing between multiple models.
+
 
     Combines probability estimates from different models (e.g., different n-gram
     orders) using weighted linear interpolation. This is a fundamental technique
@@ -492,8 +495,8 @@ class InterpolatedSmoothing(ScoringMethod):
         self.fit(high_order_dist)  # Primary distribution
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Compute interpolated probabilities.
+        """Compute interpolated probabilities.
+
 
         Parameters
         ----------
@@ -541,8 +544,8 @@ class InterpolatedSmoothing(ScoringMethod):
 
 
 class BayesianSmoothing(ScoringMethod):
-    """
-    Bayesian smoothing with Dirichlet prior.
+    """Bayesian smoothing with Dirichlet prior.
+
 
     Uses a Dirichlet prior distribution to provide Bayesian probability estimates.
     This method is theoretically principled and provides natural uncertainty
@@ -631,8 +634,8 @@ class BayesianSmoothing(ScoringMethod):
         self.fit(freqdist)
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Compute Bayesian smoothed probabilities.
+        """Compute Bayesian smoothed probabilities.
+
 
         Parameters
         ----------

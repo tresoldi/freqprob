@@ -441,7 +441,7 @@ stream_dist = StreamingFrequencyDistribution(
 # Process streaming data
 for token in data_stream:
     stream_dist.update(token)
-    
+
 # Automatically maintains vocabulary size limit
 print(f"Vocabulary size: {stream_dist.get_vocabulary_size()}")
 ```
@@ -478,7 +478,7 @@ large_freqdist = {f'word_{i}': max(1, 10000-i) for i in range(100000)}
 
 # With quantization for additional compression
 compressed = create_compressed_distribution(
-    large_freqdist, 
+    large_freqdist,
     quantization_levels=1024,  # Trade-off: memory vs precision
     use_compression=True
 )
@@ -576,13 +576,13 @@ print(f"KL divergence: {kl_div:.4f}")  # Lower means more similar
 def evaluate_smoothing_method(method_class, train_data, test_data, **kwargs):
     """Evaluate a smoothing method on held-out data."""
     model = method_class(train_data, logprob=True, **kwargs)
-    
+
     metrics = {
         'perplexity': perplexity(model, test_data),
         'cross_entropy': cross_entropy(model, test_data),
         'coverage': sum(1 for item in test_data if model(item) > -20) / len(test_data)
     }
-    
+
     return metrics
 
 # Compare different gamma values for Lidstone
@@ -628,18 +628,18 @@ import numpy as np
 def tune_lidstone_gamma(train_data, val_data):
     """Find optimal gamma for Lidstone smoothing."""
     param_grid = {'gamma': np.logspace(-3, 1, 20)}  # 0.001 to 10
-    
+
     best_gamma = None
     best_perplexity = float('inf')
-    
+
     for params in ParameterGrid(param_grid):
         model = freqprob.Lidstone(train_data, logprob=True, **params)
         pp = perplexity(model, val_data)
-        
+
         if pp < best_perplexity:
             best_perplexity = pp
             best_gamma = params['gamma']
-    
+
     return best_gamma, best_perplexity
 
 gamma, pp = tune_lidstone_gamma(train_freqdist, val_data)
@@ -717,7 +717,7 @@ print(f"Computed only {computed_ratio:.1%} of probabilities")
 def build_ngram_model(text_corpus, n=3):
     """Build an n-gram language model with Kneser-Ney smoothing."""
     from freqprob import generate_ngrams, ngram_frequency, KneserNey
-    
+
     # Generate n-grams
     ngrams = []
     for sentence in text_corpus:
@@ -725,13 +725,13 @@ def build_ngram_model(text_corpus, n=3):
         # Add sentence boundaries
         padded = ['<s>'] * (n-1) + tokens + ['</s>']
         ngrams.extend(generate_ngrams(padded, n))
-    
+
     # Create frequency distribution
     ngram_freqdist = ngram_frequency(ngrams, n=1)  # Already n-grams
-    
+
     # Train Kneser-Ney model
     model = KneserNey(ngram_freqdist, discount=0.75, logprob=True)
-    
+
     return model
 
 # Usage
@@ -743,7 +743,7 @@ def sentence_probability(model, sentence, n=3):
     tokens = sentence.split()
     padded = ['<s>'] * (n-1) + tokens + ['</s>']
     ngrams = generate_ngrams(padded, n)
-    
+
     log_prob = sum(model(ngram) for ngram in ngrams)
     return math.exp(log_prob)
 
@@ -758,28 +758,28 @@ print(f"P(sentence) = {prob:.2e}")
 def extract_smoothed_features(documents, smoothing_method=freqprob.Laplace):
     """Extract features with smoothed probability estimates."""
     from collections import Counter
-    
+
     # Build vocabulary and document frequencies
     vocab = set()
     doc_freqs = []
-    
+
     for doc in documents:
         words = doc.split()
         vocab.update(words)
         doc_freqs.append(Counter(words))
-    
+
     # Create smoothed models for each document
     models = []
     for doc_freq in doc_freqs:
         model = smoothing_method(doc_freq, logprob=False)
         models.append(model)
-    
+
     # Extract feature vectors
     features = []
     for model in models:
         feature_vector = [model(word) for word in sorted(vocab)]
         features.append(feature_vector)
-    
+
     return features, sorted(vocab)
 
 # Usage
@@ -801,31 +801,31 @@ print(f"Feature vectors: {len(features)} x {len(features[0])}")
 def build_document_language_model(document, background_model, lambda_mix=0.8):
     """Build a smoothed document language model."""
     from freqprob import word_frequency, InterpolatedSmoothing
-    
+
     # Document term frequencies
     doc_freqdist = word_frequency(document.split())
-    
+
     # Create document-specific and background models
     doc_model = freqprob.MLE(doc_freqdist, logprob=True)
-    
+
     # Interpolate with background model
     interpolated = InterpolatedSmoothing(
         doc_freqdist, background_model._freqdist,
         lambda_weight=lambda_mix, logprob=True
     )
-    
+
     return interpolated
 
 def score_query(query, doc_models):
     """Score a query against document models."""
     query_terms = query.split()
-    
+
     scores = []
     for doc_model in doc_models:
         # Query likelihood
         log_likelihood = sum(doc_model(term) for term in query_terms)
         scores.append(log_likelihood)
-    
+
     return scores
 
 # Usage
@@ -862,37 +862,37 @@ for rank, (doc_idx, score) in enumerate(ranked_docs, 1):
 ```python
 class StreamingTopicDetector:
     """Real-time topic detection using streaming language models."""
-    
+
     def __init__(self, topics, max_vocab_size=10000):
         self.topics = topics
         self.topic_models = {}
-        
+
         # Initialize streaming models for each topic
         for topic in topics:
             self.topic_models[topic] = freqprob.StreamingMLE(
                 max_vocabulary_size=max_vocab_size,
                 logprob=True
             )
-    
+
     def update_topic(self, topic, text):
         """Update topic model with new text."""
         words = text.split()
         self.topic_models[topic].update_batch(words)
-    
+
     def classify_text(self, text):
         """Classify text into most likely topic."""
         words = text.split()
-        
+
         topic_scores = {}
         for topic, model in self.topic_models.items():
             # Calculate log-likelihood
             score = sum(model(word) for word in words)
             topic_scores[topic] = score
-        
+
         # Return most likely topic
         best_topic = max(topic_scores, key=topic_scores.get)
         return best_topic, topic_scores[best_topic]
-    
+
     def get_topic_statistics(self):
         """Get statistics for all topic models."""
         stats = {}

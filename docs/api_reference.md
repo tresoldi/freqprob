@@ -63,7 +63,7 @@ class MLE(ScoringMethod)
 
 **Constructor:**
 ```python
-MLE(freqdist: FrequencyDistribution, 
+MLE(freqdist: FrequencyDistribution,
     unobs_prob: Optional[float] = None,
     logprob: bool = True)
 ```
@@ -473,7 +473,7 @@ CertaintyDegree(freqdist: FrequencyDistribution,
 Calculate perplexity of a model on test data.
 
 ```python
-def perplexity(model: ScoringMethod, 
+def perplexity(model: ScoringMethod,
                test_data: List[Element]) -> float
 ```
 
@@ -502,7 +502,7 @@ $$PP = \exp\left(-\frac{1}{N}\sum_{i=1}^{N} \log P(w_i)\right)$$
 Calculate cross-entropy between model and test data.
 
 ```python
-def cross_entropy(model: ScoringMethod, 
+def cross_entropy(model: ScoringMethod,
                   test_data: List[Element]) -> float
 ```
 
@@ -526,7 +526,7 @@ print(f"Cross-entropy: {ce:.2f} bits")
 Calculate KL divergence between two models.
 
 ```python
-def kl_divergence(p_model: ScoringMethod, 
+def kl_divergence(p_model: ScoringMethod,
                   q_model: ScoringMethod,
                   test_data: List[Element]) -> float
 ```
@@ -823,7 +823,7 @@ def create_compressed_distribution(
 ```python
 large_freqdist = {f'word_{i}': max(1, 1000-i) for i in range(10000)}
 compressed = freqprob.create_compressed_distribution(
-    large_freqdist, 
+    large_freqdist,
     quantization_levels=1024
 )
 print(compressed.get_memory_usage())
@@ -974,7 +974,7 @@ def update_single(self, element: Element, count: int = 1) -> None
 Update with multiple observations.
 
 ```python
-def update_batch(self, elements: List[Element], 
+def update_batch(self, elements: List[Element],
                  counts: Optional[List[int]] = None) -> None
 ```
 
@@ -1091,11 +1091,11 @@ class ScoringMethodConfig:
 class IncrementalScoringMethod(ABC):
     @abstractmethod
     def update_single(self, element: Element, count: int = 1) -> None: ...
-    
+
     @abstractmethod
-    def update_batch(self, elements: List[Element], 
+    def update_batch(self, elements: List[Element],
                      counts: Optional[List[int]] = None) -> None: ...
-    
+
     @abstractmethod
     def get_update_count(self) -> int: ...
 ```

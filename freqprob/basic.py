@@ -24,8 +24,8 @@ from .base import (
 
 @dataclass
 class UniformConfig(ScoringMethodConfig):
-    """
-    Configuration for Uniform distribution.
+    """Configuration for Uniform distribution.
+
 
     Attributes
     ----------
@@ -36,13 +36,14 @@ class UniformConfig(ScoringMethodConfig):
     """
 
     unobs_prob: Probability = 0.0
+
     logprob: bool = True
 
 
 @dataclass
 class RandomConfig(ScoringMethodConfig):
-    """
-    Configuration for Random distribution.
+    """Configuration for Random distribution.
+
 
     Attributes
     ----------
@@ -55,14 +56,15 @@ class RandomConfig(ScoringMethodConfig):
     """
 
     unobs_prob: Probability = 0.0
+
     logprob: bool = True
     seed: Optional[int] = None
 
 
 @dataclass
 class MLEConfig(ScoringMethodConfig):
-    """
-    Configuration for Maximum Likelihood Estimation.
+    """Configuration for Maximum Likelihood Estimation.
+
 
     Attributes
     ----------
@@ -73,12 +75,13 @@ class MLEConfig(ScoringMethodConfig):
     """
 
     unobs_prob: Probability = 0.0
+
     logprob: bool = True
 
 
 class Uniform(ScoringMethod):
-    """
-    Uniform probability distribution.
+    """Uniform probability distribution.
+
 
     The simplest smoothing method that assigns equal probability to all
     observed elements, ignoring their frequency counts. This serves as
@@ -138,8 +141,8 @@ class Uniform(ScoringMethod):
         self.fit(freqdist)
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Compute uniform probabilities for all elements.
+        """Compute uniform probabilities for all elements.
+
 
         Parameters
         ----------
@@ -147,6 +150,7 @@ class Uniform(ScoringMethod):
             Frequency distribution (counts are ignored, only vocabulary size used)
         """
         unobs_prob = self.config.unobs_prob
+
         vocab_size = len(freqdist)
 
         if self.logprob:
@@ -163,8 +167,8 @@ class Uniform(ScoringMethod):
 
 
 class Random(ScoringMethod):
-    """
-    Random probability distribution.
+    """Random probability distribution.
+
 
     Assigns random probabilities to elements, useful for testing and as a
     baseline that provides non-deterministic probability estimates. The random
@@ -229,8 +233,8 @@ class Random(ScoringMethod):
         self.fit(freqdist)
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Compute random probabilities based on randomized counts.
+        """Compute random probabilities based on randomized counts.
+
 
         Parameters
         ----------
@@ -269,8 +273,8 @@ class Random(ScoringMethod):
 
 
 class MLE(ScoringMethod):
-    """
-    Maximum Likelihood Estimation probability distribution.
+    """Maximum Likelihood Estimation probability distribution.
+
 
     The most intuitive probability estimation method that directly uses
     observed frequencies as probability estimates. This is the natural
@@ -349,8 +353,8 @@ class MLE(ScoringMethod):
         self.fit(freqdist)
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """
-        Compute Maximum Likelihood probability estimates.
+        """Compute Maximum Likelihood probability estimates.
+
 
         Parameters
         ----------

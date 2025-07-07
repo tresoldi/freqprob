@@ -34,10 +34,10 @@ run_benchmark() {
     local name="$1"
     local args="$2"
     local output_subdir="$OUTPUT_DIR/$name"
-    
+
     echo "Running $name benchmark..."
     echo "Command: python3 benchmarks.py $args --output $output_subdir"
-    
+
     if python3 benchmarks.py $args --output "$output_subdir"; then
         echo "✓ $name benchmark completed successfully"
         echo "  Results saved to: $output_subdir/"
@@ -88,13 +88,13 @@ else
     echo "Running comprehensive benchmarks..."
     echo "This may take several minutes depending on your system."
     echo
-    
+
     # Full benchmark suite
     run_benchmark "comprehensive" "--format all"
-    
+
     # Additional specialized benchmarks if time permits
     echo "Running additional specialized benchmarks..."
-    
+
     # Memory-focused benchmark (if psutil available)
     if python3 -c "import psutil" 2>/dev/null; then
         echo "✓ psutil available - including memory benchmarks"
@@ -155,7 +155,7 @@ echo
 for result_dir in "$OUTPUT_DIR"/*; do
     if [ -d "$result_dir" ] && [ -f "$result_dir/benchmark_analysis.json" ]; then
         echo "Results from: $(basename "$result_dir")"
-        
+
         # Extract summary using Python
         python3 << EOF
 import json
@@ -164,26 +164,26 @@ import sys
 try:
     with open("$result_dir/benchmark_analysis.json", "r") as f:
         analysis = json.load(f)
-    
+
     summary = analysis.get("summary", {})
     best = analysis.get("best_performers", {})
     failures = analysis.get("failure_analysis", {})
-    
+
     print(f"  Total results: {summary.get('total_results', 'N/A')}")
     print(f"  Methods tested: {len(summary.get('methods_tested', []))}")
     print(f"  Datasets tested: {len(summary.get('datasets_tested', []))}")
-    
+
     if best:
         print("  Best performers:")
         for metric, info in best.items():
             method = info.get('method', 'N/A')
             value = info.get('value', 'N/A')
             print(f"    {metric}: {method} ({value})")
-    
+
     total_failures = failures.get('total_failures', 0)
     if total_failures > 0:
         print(f"  ⚠ {total_failures} method failures detected")
-    
+
 except Exception as e:
     print(f"  Error reading analysis: {e}")
 
