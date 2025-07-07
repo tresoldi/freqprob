@@ -66,26 +66,26 @@ dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "pytest-xdist>=3.0.0",
-    
+
     # Code quality
     "black>=23.0.0",
     "isort>=5.12.0",
     "ruff>=0.1.0",
     "mypy>=1.5.0",
-    
+
     # Pre-commit hooks
     "pre-commit>=3.0.0",
-    
+
     # Build and release
     "build>=0.10.0",
     "hatch>=1.7.0",
     "twine>=4.0.0",
-    
+
     # Documentation
     "mkdocs>=1.5.0",
     "mkdocs-material>=9.0.0",
     "mkdocstrings[python]>=0.20.0",
-    
+
     # Include validation dependencies
     "freqprob[validation]",
 ]
@@ -117,7 +117,7 @@ include = [
 # Black code formatting
 [tool.black]
 line-length = 100
-target-version = ["py310", "py311", "py312"]
+target-version = ["py310", "py311"]
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -257,7 +257,7 @@ markers = [
     "integration: marks tests as integration tests",
     "memory: marks tests that check memory usage",
     "numerical: marks numerical stability tests",
-    "statistical: marks statistical correctness tests", 
+    "statistical: marks statistical correctness tests",
     "regression: marks regression tests against reference implementations",
     "property: marks property-based tests with hypothesis",
     "validation: marks comprehensive validation tests",
@@ -332,7 +332,7 @@ bench = "python docs/benchmarks.py --quick {args}"
 detached = true
 dependencies = [
     "black>=23.0.0",
-    "isort>=5.12.0", 
+    "isort>=5.12.0",
     "ruff>=0.1.0",
     "mypy>=1.5.0",
     "bandit[toml]>=1.7.5",
@@ -353,7 +353,7 @@ format = [
 security = "bandit -r freqprob/"
 all = [
     "style",
-    "typing", 
+    "typing",
     "security",
 ]
 
@@ -374,7 +374,7 @@ notebooks = "jupyter notebook docs/"
 test-notebooks = [
     "cd docs",
     "jupyter nbconvert --to notebook --execute tutorial_1_basic_smoothing.ipynb --output test_tutorial_1.ipynb",
-    "jupyter nbconvert --to notebook --execute tutorial_2_advanced_methods.ipynb --output test_tutorial_2.ipynb", 
+    "jupyter nbconvert --to notebook --execute tutorial_2_advanced_methods.ipynb --output test_tutorial_2.ipynb",
     "jupyter nbconvert --to notebook --execute tutorial_3_efficiency_memory.ipynb --output test_tutorial_3.ipynb",
     "jupyter nbconvert --to notebook --execute tutorial_4_real_world_applications.ipynb --output test_tutorial_4.ipynb",
 ]
