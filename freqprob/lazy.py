@@ -7,7 +7,7 @@ when only a subset of probabilities are accessed.
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Iterator
 
 from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
@@ -63,7 +63,7 @@ class LazyProbabilityComputer(ABC):
 class LazyMLEComputer(LazyProbabilityComputer):
     """Lazy computation for Maximum Likelihood Estimation."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._total_count: int | None = None
         self._unobs_prob: float | None = None
 
@@ -101,7 +101,7 @@ class LazyMLEComputer(LazyProbabilityComputer):
 class LazyLaplaceComputer(LazyProbabilityComputer):
     """Lazy computation for Laplace smoothing."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._total_count: int | None = None
         self._vocab_size: int | None = None
 
@@ -229,6 +229,8 @@ class LazyScoringMethod(ScoringMethod):
     def _get_unobserved_probability(self) -> float:
         """Get unobserved probability, computing it lazily if needed."""
         if not self._unobs_computed:
+            if self._freqdist is None:
+                raise ValueError("Scoring method has not been fitted")
             unobs_prob = self.lazy_computer.compute_unobserved_probability(
                 self._freqdist, self.config
             )
@@ -351,7 +353,7 @@ class LazyBatchScorer:
         # Score all elements
         return [self.lazy_scorer(element) for element in elements]
 
-    def score_streaming(self, element_stream):
+    def score_streaming(self, element_stream) -> Iterator[float]:
         """Score elements from a stream with adaptive lazy evaluation.
 
         Parameters
