@@ -444,7 +444,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         self._prob.clear()
 
         # Compute probabilities for observed elements
-        for element in self._stream_dist.keys():
+        for element in self._stream_dist:
             count = self._stream_dist.get_count(element)
             prob = count / total_count
 
@@ -633,7 +633,7 @@ class StreamingLaplace(StreamingMLE):
         denominator = total_count + bins
 
         # Compute probabilities for observed elements
-        for element in self._stream_dist.keys():
+        for element in self._stream_dist:
             count = self._stream_dist.get_count(element)
             prob = (count + 1.0) / denominator
 
