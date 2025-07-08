@@ -7,6 +7,7 @@ range of generated inputs.
 """
 
 import math
+from typing import Any
 
 import pytest
 
@@ -25,7 +26,7 @@ except ImportError:
 
 # Hypothesis strategies for generating test data
 @st.composite
-def frequency_distribution(draw, min_vocab=1, max_vocab=100, min_count=1, max_count=1000):
+def frequency_distribution(draw, min_vocab: int = 1, max_vocab: int = 100, min_count: int = 1, max_count: int = 1000) -> dict[str, int]:  # type: ignore
     """Generate a valid frequency distribution."""
     vocab_size = draw(st.integers(min_value=min_vocab, max_value=max_vocab))
 
@@ -45,7 +46,7 @@ def frequency_distribution(draw, min_vocab=1, max_vocab=100, min_count=1, max_co
 
 
 @st.composite
-def smoothing_parameters(draw):
+def smoothing_parameters(draw) -> dict[str, Any]:  # type: ignore
     """Generate valid smoothing parameters."""
     return {
         "gamma": draw(st.floats(min_value=0.01, max_value=10.0, allow_nan=False)),
@@ -60,7 +61,7 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution())
     @settings(max_examples=50, deadline=5000)
-    def test_mle_probability_axioms(self, freq_dist):
+    def test_mle_probability_axioms(self, freq_dist: dict[str, int]) -> None:
         """Test that MLE satisfies basic probability axioms."""
         mle = freqprob.MLE(freq_dist, logprob=False)
 
@@ -83,7 +84,7 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution(), params=smoothing_parameters())
     @settings(max_examples=30, deadline=5000)
-    def test_laplace_smoothing_properties(self, freq_dist, params):
+    def test_laplace_smoothing_properties(self, freq_dist: dict[str, int], params: dict[str, Any]) -> None:
         """Test Laplace smoothing properties."""
         bins = params["bins"]
 
@@ -121,7 +122,7 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution(), params=smoothing_parameters())
     @settings(max_examples=30, deadline=5000)
-    def test_lidstone_generalization(self, freq_dist, params):
+    def test_lidstone_generalization(self, freq_dist: dict[str, int], params: dict[str, Any]) -> None:
         """Test Lidstone smoothing as generalization of add-k."""
         gamma = params["gamma"]
         bins = max(params["bins"], len(freq_dist))
@@ -151,7 +152,7 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution())
     @settings(max_examples=30, deadline=5000)
-    def test_ele_lidstone_equivalence(self, freq_dist):
+    def test_ele_lidstone_equivalence(self, freq_dist: dict[str, int]) -> None:
         """Test that ELE is equivalent to Lidstone with gamma=0.5."""
         bins = len(freq_dist) * 2  # Reasonable bins value
 
@@ -175,7 +176,7 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution(), params=smoothing_parameters())
     @settings(max_examples=30, deadline=5000)
-    def test_bayesian_smoothing_properties(self, freq_dist, params):
+    def test_bayesian_smoothing_properties(self, freq_dist: dict[str, int], params: dict[str, Any]) -> None:
         """Test Bayesian smoothing with Dirichlet prior."""
         alpha = params["alpha"]
 
@@ -203,7 +204,7 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution())
     @settings(max_examples=20, deadline=10000)
-    def test_log_linear_consistency(self, freq_dist):
+    def test_log_linear_consistency(self, freq_dist: dict[str, int]) -> None:
         """Test consistency between log and linear probability representations."""
         methods = [
             freqprob.MLE,
@@ -212,10 +213,10 @@ class TestPropertyBasedSmoothing:
         ]
 
         for method_factory in methods:
-            linear_method = method_factory(freq_dist)
+            linear_method = method_factory(freq_dist)  # type: ignore
             linear_method.logprob = False
 
-            log_method = method_factory(freq_dist)
+            log_method = method_factory(freq_dist)  # type: ignore
             log_method.logprob = True
 
             for word in freq_dist:
@@ -232,7 +233,7 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution())
     @settings(max_examples=20, deadline=5000)
-    def test_scaling_invariance(self, freq_dist):
+    def test_scaling_invariance(self, freq_dist: dict[str, int]) -> None:
         """Test that relative probabilities are preserved under count scaling."""
         # Skip very small distributions
         assume(len(freq_dist) >= 2)
@@ -254,7 +255,7 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution())
     @settings(max_examples=15, deadline=10000)
-    def test_smoothing_reduces_zero_probabilities(self, freq_dist):
+    def test_smoothing_reduces_zero_probabilities(self, freq_dist: dict[str, int]) -> None:
         """Test that smoothing methods assign positive probability to unseen events."""
         bins = len(freq_dist) * 2
 
@@ -275,7 +276,7 @@ class TestPropertyBasedSmoothing:
 
     @given(data=st.data())
     @settings(max_examples=10, deadline=15000)
-    def test_method_comparison_consistency(self, data):
+    def test_method_comparison_consistency(self, data: Any) -> None:
         """Test model comparison utility consistency."""
         # Generate test data
         freq_dist = data.draw(frequency_distribution(min_vocab=5, max_vocab=20))
@@ -317,7 +318,7 @@ class TestPropertyBasedUtilities:
 
     @given(st.lists(st.text(min_size=1, max_size=10), min_size=2, max_size=20))
     @settings(max_examples=30, deadline=5000)
-    def test_ngram_generation_properties(self, tokens):
+    def test_ngram_generation_properties(self, tokens: list[str]) -> None:
         """Test n-gram generation properties."""
         for n in range(1, min(5, len(tokens) + 1)):
             ngrams = freqprob.generate_ngrams(tokens, n)
@@ -340,7 +341,7 @@ class TestPropertyBasedUtilities:
 
     @given(st.lists(st.text(min_size=1, max_size=10), min_size=1, max_size=50))
     @settings(max_examples=30, deadline=5000)
-    def test_word_frequency_properties(self, tokens):
+    def test_word_frequency_properties(self, tokens: list[str]) -> None:
         """Test word frequency calculation properties."""
         freq_dict = freqprob.word_frequency(tokens)
 
@@ -362,7 +363,7 @@ class TestPropertyBasedUtilities:
 
     @given(st.lists(st.text(min_size=1, max_size=10), min_size=3, max_size=20))
     @settings(max_examples=20, deadline=5000)
-    def test_ngram_frequency_properties(self, tokens):
+    def test_ngram_frequency_properties(self, tokens: list[str]) -> None:
         """Test n-gram frequency calculation properties."""
         for n in range(2, min(4, len(tokens))):
             ngram_freq = freqprob.ngram_frequency(tokens, n)
@@ -373,7 +374,7 @@ class TestPropertyBasedUtilities:
 
             # Property 2: Generated n-grams match direct generation
             direct_ngrams = freqprob.generate_ngrams(tokens, n)
-            expected_freq = {}
+            expected_freq: dict[tuple[str, ...], int] = {}
             for ngram in direct_ngrams:
                 expected_freq[ngram] = expected_freq.get(ngram, 0) + 1
 
@@ -385,7 +386,7 @@ class TestPropertyBasedVectorized:
 
     @given(freq_dist=frequency_distribution())
     @settings(max_examples=20, deadline=10000)
-    def test_vectorized_consistency(self, freq_dist):
+    def test_vectorized_consistency(self, freq_dist: dict[str, int]) -> None:
         """Test vectorized operations match individual calls."""
         mle = freqprob.MLE(freq_dist, logprob=False)
         vectorized = freqprob.VectorizedScorer(mle)
@@ -412,13 +413,13 @@ class TestPropertyBasedVectorized:
 class FreqProbStateMachine(RuleBasedStateMachine):
     """Stateful property-based testing for FreqProb."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.freq_dist = {"initial": 1}  # Start with minimal distribution
-        self.methods = {}
+        self.methods: dict[str, Any] = {}
 
     @rule(word=st.text(min_size=1, max_size=10), count=st.integers(min_value=1, max_value=100))
-    def add_word(self, word, count):
+    def add_word(self, word: str, count: int) -> None:
         """Add or update a word in the frequency distribution."""
         self.freq_dist[word] = self.freq_dist.get(word, 0) + count
 
@@ -433,7 +434,7 @@ class FreqProbStateMachine(RuleBasedStateMachine):
             pass
 
     @rule(word=st.text(min_size=1, max_size=10))
-    def query_word(self, word):
+    def query_word(self, word: str) -> None:
         """Query probability of a word."""
         for method_name, method in self.methods.items():
             try:
@@ -445,7 +446,7 @@ class FreqProbStateMachine(RuleBasedStateMachine):
                 pass
 
     @invariant()
-    def probability_axioms_hold(self):
+    def probability_axioms_hold(self) -> None:
         """Invariant: Probability axioms should always hold."""
         if not self.methods:
             return
@@ -462,7 +463,7 @@ class FreqProbStateMachine(RuleBasedStateMachine):
                 pass
 
     @invariant()
-    def consistency_between_methods(self):
+    def consistency_between_methods(self) -> None:
         """Invariant: Methods should be internally consistent."""
         if len(self.methods) < 2:
             return
