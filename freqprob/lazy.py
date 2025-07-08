@@ -7,7 +7,7 @@ when only a subset of probabilities are accessed.
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
+from typing import Any
 
 from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
@@ -64,8 +64,8 @@ class LazyMLEComputer(LazyProbabilityComputer):
     """Lazy computation for Maximum Likelihood Estimation."""
 
     def __init__(self):
-        self._total_count: Optional[int] = None
-        self._unobs_prob: Optional[float] = None
+        self._total_count: int | None = None
+        self._unobs_prob: float | None = None
 
     def compute_probability(
         self, element: Element, freqdist: FrequencyDistribution, config: ScoringMethodConfig
@@ -84,9 +84,8 @@ class LazyMLEComputer(LazyProbabilityComputer):
         if hasattr(config, "unobs_prob") and config.unobs_prob is not None:
             if count == 0:
                 return config.unobs_prob
-            else:
-                # Adjust observed probabilities
-                return prob * (1.0 - config.unobs_prob)
+            # Adjust observed probabilities
+            return prob * (1.0 - config.unobs_prob)
 
         return prob
 
@@ -103,8 +102,8 @@ class LazyLaplaceComputer(LazyProbabilityComputer):
     """Lazy computation for Laplace smoothing."""
 
     def __init__(self):
-        self._total_count: Optional[int] = None
-        self._vocab_size: Optional[int] = None
+        self._total_count: int | None = None
+        self._vocab_size: int | None = None
 
     def compute_probability(
         self, element: Element, freqdist: FrequencyDistribution, config: ScoringMethodConfig

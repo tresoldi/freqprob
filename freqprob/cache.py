@@ -9,7 +9,7 @@ import hashlib
 import pickle
 from collections.abc import Callable
 from functools import wraps
-from typing import Any, Optional
+from typing import Any
 
 from .base import FrequencyDistribution
 
@@ -24,16 +24,16 @@ class ComputationCache:
     ----------
     _cache : Dict[str, Any]
         Internal cache storage mapping cache keys to computed results
-    max_size : Optional[int]
+    max_size : int | None
         Maximum number of entries to keep in cache (None for unlimited)
     """
 
-    def __init__(self, max_size: Optional[int] = 1000):
+    def __init__(self, max_size: int | None = 1000):
         """Initialize the computation cache.
 
         Parameters
         ----------
-        max_size : Optional[int], default=1000
+        max_size : int | None, default=1000
             Maximum number of cache entries. If None, cache has no size limit.
         """
         self._cache: dict[str, Any] = {}
@@ -62,7 +62,7 @@ class ComputationCache:
         hash_input = pickle.dumps((sorted_items, sorted_kwargs), protocol=pickle.HIGHEST_PROTOCOL)
         return hashlib.sha256(hash_input).hexdigest()
 
-    def get(self, freqdist: FrequencyDistribution, **kwargs) -> Optional[Any]:
+    def get(self, freqdist: FrequencyDistribution, **kwargs) -> Any | None:
         """Retrieve cached result for the given parameters.
 
         Parameters
