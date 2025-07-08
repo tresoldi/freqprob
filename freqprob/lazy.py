@@ -7,7 +7,7 @@ when only a subset of probabilities are accessed.
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Iterator
+from typing import Any, Iterator, Iterable
 
 from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
@@ -353,7 +353,7 @@ class LazyBatchScorer:
         # Score all elements
         return [self.lazy_scorer(element) for element in elements]
 
-    def score_streaming(self, element_stream) -> Iterator[float]:
+    def score_streaming(self, element_stream: Iterable[Element]) -> Iterator[float]:
         """Score elements from a stream with adaptive lazy evaluation.
 
         Parameters
