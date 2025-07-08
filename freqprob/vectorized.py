@@ -370,11 +370,12 @@ def elements_to_numpy(elements: Iterable[str | int | float]) -> np.ndarray:
     first_elem = elem_list[0]
     if isinstance(first_elem, str):
         return np.array(elem_list, dtype="U")  # Unicode string
-    if isinstance(first_elem, int):
+    elif isinstance(first_elem, int):
         return np.array(elem_list, dtype=np.int64)
-    if isinstance(first_elem, float):
+    elif isinstance(first_elem, float):
         return np.array(elem_list, dtype=np.float64)
-    return np.array(elem_list, dtype=object)
+    else:
+        return np.array(elem_list, dtype=object)  # type: ignore[unreachable]
 
 
 def scores_to_probabilities(log_scores: np.ndarray) -> np.ndarray:
@@ -393,7 +394,8 @@ def scores_to_probabilities(log_scores: np.ndarray) -> np.ndarray:
     # Use log-sum-exp trick for numerical stability
     max_score = np.max(log_scores)
     exp_scores = np.exp(log_scores - max_score)
-    return exp_scores / np.sum(exp_scores)
+    result: np.ndarray = exp_scores / np.sum(exp_scores)
+    return result
 
 
 def normalize_scores(scores: np.ndarray, method: str = "softmax") -> np.ndarray:
@@ -413,14 +415,18 @@ def normalize_scores(scores: np.ndarray, method: str = "softmax") -> np.ndarray:
     """
     if method == "softmax":
         return scores_to_probabilities(scores)
-    if method == "minmax":
+    elif method == "minmax":
         min_score, max_score = np.min(scores), np.max(scores)
         if max_score == min_score:
-            return np.ones_like(scores) / len(scores)
-        return (scores - min_score) / (max_score - min_score)
-    if method == "zscore":
+            result: np.ndarray = np.ones_like(scores) / len(scores)
+            return result
+        result = (scores - min_score) / (max_score - min_score)
+        return result
+    elif method == "zscore":
         mean_score, std_score = np.mean(scores), np.std(scores)
         if std_score == 0:
             return np.zeros_like(scores)
-        return (scores - mean_score) / std_score
-    raise ValueError(f"Unknown normalization method: {method}")
+        result = (scores - mean_score) / std_score
+        return result
+    else:
+        raise ValueError(f"Unknown normalization method: {method}")
