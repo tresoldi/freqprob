@@ -13,11 +13,11 @@ from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any
+from typing import Any, Iterator
 
 import psutil
 
-from .base import FrequencyDistribution
+from .base import FrequencyDistribution, ScoringMethod
 
 
 @dataclass
@@ -155,7 +155,7 @@ class MemoryProfiler:
         return snapshot
 
     @contextmanager
-    def profile_operation(self, operation_name: str):
+    def profile_operation(self, operation_name: str) -> Iterator[None]:
         """Context manager for profiling an operation.
 
 
@@ -277,7 +277,7 @@ class MemoryProfiler:
         }
 
 
-def profile_memory_usage(operation_name: str | None = None):
+def profile_memory_usage(operation_name: str | None = None) -> Callable:
     """Decorator for profiling memory usage of functions.
 
 
@@ -301,20 +301,20 @@ def profile_memory_usage(operation_name: str | None = None):
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             profiler = getattr(wrapper, "_profiler", None)
             if profiler is None:
                 profiler = MemoryProfiler()
-                wrapper._profiler = profiler
+                setattr(wrapper, "_profiler", profiler)
 
             op_name = operation_name or func.__name__
             with profiler.profile_operation(op_name):
                 return func(*args, **kwargs)
 
-        def get_profiler():
+        def get_profiler() -> Any:
             return getattr(wrapper, "_profiler", None)
 
-        wrapper.get_profiler = get_profiler
+        setattr(wrapper, "get_profiler", get_profiler)
         return wrapper
 
     return decorator
@@ -335,7 +335,7 @@ class DistributionMemoryAnalyzer:
     >>> print(comparison['memory_savings'])
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize distribution memory analyzer."""
         self.profiler = MemoryProfiler()
 
@@ -383,7 +383,7 @@ class DistributionMemoryAnalyzer:
         """
         from .memory_efficient import create_compressed_distribution, create_sparse_distribution
 
-        results = {}
+        results: dict[str, Any] = {}
 
         # Measure original dictionary
         with self.profiler.profile_operation("measure_original"):
@@ -411,7 +411,7 @@ class DistributionMemoryAnalyzer:
         # Calculate savings
         original_total = original_memory["total_mb"] * 1024 * 1024  # Convert to bytes
 
-        savings = {}
+        savings: dict[str, dict[str, float]] = {}
         for name, memory_info in [
             ("compressed", compressed_memory),
             ("quantized", quantized_memory),
@@ -456,13 +456,14 @@ class DistributionMemoryAnalyzer:
         if methods_to_test is None:
             methods_to_test = ["MLE", "Laplace", "StreamingMLE"]
 
-        results = {}
+        results: dict[str, Any] = {}
 
         for method_name in methods_to_test:
-            method_results = {}
+            method_results: dict[str, Any] = {}
 
             try:
                 # Create scorer
+                scorer: ScoringMethod
                 with self.profiler.profile_operation(f"create_{method_name}"):
                     if method_name == "MLE":
                         from .basic import MLE
@@ -629,7 +630,7 @@ class MemoryMonitor:
 # Utility functions
 
 
-def get_object_memory_usage(obj: Any) -> dict[str, int]:
+def get_object_memory_usage(obj: Any) -> dict[str, int | float | str]:
     """Get detailed memory usage information for an object.
 
 
@@ -640,7 +641,7 @@ def get_object_memory_usage(obj: Any) -> dict[str, int]:
 
     Returns
     -------
-    Dict[str, int]
+    Dict[str, int | float | str]
         Memory usage breakdown
     """
     # Basic object size
