@@ -19,7 +19,7 @@ import sys
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -57,7 +57,7 @@ class BenchmarkResult:
         metric: str,
         value: float,
         unit: str = "",
-        metadata: Optional[dict] = None,
+        metadata: dict | None = None,
     ):
         self.method = method
         self.dataset = dataset
@@ -72,12 +72,11 @@ class BenchmarkResult:
         def convert_numpy(obj):
             if hasattr(obj, "item"):  # numpy scalar
                 return obj.item()
-            elif isinstance(obj, dict):
+            if isinstance(obj, dict):
                 return {k: convert_numpy(v) for k, v in obj.items()}
-            elif isinstance(obj, list):
+            if isinstance(obj, list):
                 return [convert_numpy(item) for item in obj]
-            else:
-                return obj
+            return obj
 
         return {
             "method": self.method,

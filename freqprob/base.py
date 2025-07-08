@@ -125,7 +125,7 @@ class ScoringMethod(ABC):
     0.0
     """
 
-    __slots__ = ("_unobs", "_prob", "logprob", "name", "config")
+    __slots__ = ("_prob", "_unobs", "config", "logprob", "name")
 
     def __init__(self, config: ScoringMethodConfig) -> None:
         """Initialize the scoring method.

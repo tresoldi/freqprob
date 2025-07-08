@@ -11,7 +11,6 @@ import pickle
 import sys
 from collections import defaultdict
 from collections.abc import Iterator
-from typing import Optional
 
 from .base import Element, FrequencyDistribution
 
@@ -48,7 +47,7 @@ class CompressedFrequencyDistribution:
 
     def __init__(
         self,
-        quantization_levels: Optional[int] = None,
+        quantization_levels: int | None = None,
         use_compression: bool = True,
         intern_strings: bool = True,
     ):
@@ -620,8 +619,7 @@ class QuantizedProbabilityTable:
         if self.log_space:
             log_prob = self._min_log_prob + normalized * self._log_range
             return math.exp(log_prob)
-        else:
-            return self._min_prob + normalized * self._prob_range
+        return self._min_prob + normalized * self._prob_range
 
     def set_probabilities(self, probabilities: dict[Element, float]) -> None:
         """Set probabilities for multiple elements.
@@ -776,7 +774,7 @@ def memory_usage_comparison(
 
 def create_compressed_distribution(
     freqdist: FrequencyDistribution,
-    quantization_levels: Optional[int] = None,
+    quantization_levels: int | None = None,
     use_compression: bool = True,
 ) -> CompressedFrequencyDistribution:
     """Create a compressed frequency distribution from a regular one.

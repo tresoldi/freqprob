@@ -5,7 +5,7 @@ allowing efficient processing of large datasets without Python loops.
 """
 
 from collections.abc import Iterable
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 
@@ -66,7 +66,7 @@ class VectorizedScorer:
             self._prob_array = np.array([])
             self._default_prob = 0.0
 
-    def score_batch(self, elements: Union[list[Element], np.ndarray]) -> np.ndarray:
+    def score_batch(self, elements: list[Element] | np.ndarray) -> np.ndarray:
         """Score a batch of elements efficiently using vectorized operations.
 
         Parameters
@@ -349,7 +349,7 @@ class BatchScorer:
 # Numpy array conversion utilities
 
 
-def elements_to_numpy(elements: Iterable[Union[str, int, float]]) -> np.ndarray:
+def elements_to_numpy(elements: Iterable[str | int | float]) -> np.ndarray:
     """Convert elements to numpy array with appropriate dtype.
 
     Parameters
@@ -370,12 +370,11 @@ def elements_to_numpy(elements: Iterable[Union[str, int, float]]) -> np.ndarray:
     first_elem = elem_list[0]
     if isinstance(first_elem, str):
         return np.array(elem_list, dtype="U")  # Unicode string
-    elif isinstance(first_elem, int):
+    if isinstance(first_elem, int):
         return np.array(elem_list, dtype=np.int64)
-    elif isinstance(first_elem, float):
+    if isinstance(first_elem, float):
         return np.array(elem_list, dtype=np.float64)
-    else:
-        return np.array(elem_list, dtype=object)
+    return np.array(elem_list, dtype=object)
 
 
 def scores_to_probabilities(log_scores: np.ndarray) -> np.ndarray:
@@ -414,15 +413,14 @@ def normalize_scores(scores: np.ndarray, method: str = "softmax") -> np.ndarray:
     """
     if method == "softmax":
         return scores_to_probabilities(scores)
-    elif method == "minmax":
+    if method == "minmax":
         min_score, max_score = np.min(scores), np.max(scores)
         if max_score == min_score:
             return np.ones_like(scores) / len(scores)
         return (scores - min_score) / (max_score - min_score)
-    elif method == "zscore":
+    if method == "zscore":
         mean_score, std_score = np.mean(scores), np.std(scores)
         if std_score == 0:
             return np.zeros_like(scores)
         return (scores - mean_score) / std_score
-    else:
-        raise ValueError(f"Unknown normalization method: {method}")
+    raise ValueError(f"Unknown normalization method: {method}")

@@ -55,7 +55,7 @@ class TestStatisticalCorrectness:
         assert abs(actual_unknown - expected_unknown) < 1e-15
 
         # Test probability mass conservation
-        total_observed_mass = sum(laplace(word) for word in counts.keys())
+        total_observed_mass = sum(laplace(word) for word in counts)
         unobserved_words = bins - len(counts)
         total_unobserved_mass = unobserved_words * expected_unknown
         total_mass = total_observed_mass + total_unobserved_mass
@@ -81,7 +81,7 @@ class TestStatisticalCorrectness:
         lidstone_1 = freqprob.Lidstone(counts, gamma=1.0, bins=bins, logprob=False)
         laplace = freqprob.Laplace(counts, bins=bins, logprob=False)
 
-        for word in counts.keys():
+        for word in counts:
             assert abs(lidstone_1(word) - laplace(word)) < 1e-15
 
     def test_ele_relationship_to_lidstone(self):
@@ -92,7 +92,7 @@ class TestStatisticalCorrectness:
         ele = freqprob.ELE(counts, bins=bins, logprob=False)
         lidstone_half = freqprob.Lidstone(counts, gamma=0.5, bins=bins, logprob=False)
 
-        for word in counts.keys():
+        for word in counts:
             assert abs(ele(word) - lidstone_half(word)) < 1e-15
 
         # Test unknown word
@@ -109,7 +109,7 @@ class TestStatisticalCorrectness:
         vocab_size = len(counts)
         expected_observed = (1.0 - unobs_prob) / vocab_size
 
-        for word in counts.keys():
+        for word in counts:
             actual = uniform(word)
             assert abs(actual - expected_observed) < 1e-15
 
@@ -137,7 +137,7 @@ class TestStatisticalCorrectness:
         bayesian_1 = freqprob.BayesianSmoothing(counts, alpha=1.0, logprob=False)
 
         # Should sum to 1 for observed vocabulary
-        total_prob = sum(bayesian_1(word) for word in counts.keys())
+        total_prob = sum(bayesian_1(word) for word in counts)
         assert abs(total_prob - 1.0) < 1e-14
 
     def test_probability_axioms(self):
@@ -155,7 +155,7 @@ class TestStatisticalCorrectness:
 
         for method in methods:
             # Axiom 1: All probabilities are non-negative
-            for word in counts.keys():
+            for word in counts:
                 assert method(word) >= 0
 
             # Test unknown word (may be 0 for some methods)
@@ -163,7 +163,7 @@ class TestStatisticalCorrectness:
             assert unknown_prob >= 0
 
             # Axiom 2: Probabilities are ≤ 1
-            for word in counts.keys():
+            for word in counts:
                 assert method(word) <= 1.0
             assert unknown_prob <= 1.0
 
@@ -179,7 +179,7 @@ class TestStatisticalCorrectness:
             scaled_mle = freqprob.MLE(scaled_counts, logprob=False)
 
             # MLE probabilities should be identical
-            for word in base_counts.keys():
+            for word in base_counts:
                 base_prob = base_mle(word)
                 scaled_prob = scaled_mle(word)
                 assert abs(base_prob - scaled_prob) < 1e-15
@@ -367,7 +367,7 @@ class TestStatisticalCorrectness:
             assert not math.isinf(metrics["perplexity"])
             assert not math.isinf(metrics["cross_entropy"])
 
-    @pytest.mark.slow()
+    @pytest.mark.slow
     def test_large_vocabulary_statistical_properties(self):
         """Test statistical properties with large vocabularies."""
         # Create large Zipfian distribution

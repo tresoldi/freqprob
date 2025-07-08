@@ -7,12 +7,11 @@ word frequencies, and comparing probability models.
 import math
 from collections import Counter
 from collections.abc import Iterable
-from typing import Union
 
 from .base import Element, ScoringMethod
 
 
-def generate_ngrams(text: Union[str, list[str]], n: int) -> list[tuple[str, ...]]:
+def generate_ngrams(text: str | list[str], n: int) -> list[tuple[str, ...]]:
     """Generate n-grams from text.
 
     Parameters
@@ -50,8 +49,8 @@ def generate_ngrams(text: Union[str, list[str]], n: int) -> list[tuple[str, ...]
 
 
 def word_frequency(
-    text: Union[str, list[str]], normalize: bool = False
-) -> dict[str, Union[int, float]]:
+    text: str | list[str], normalize: bool = False
+) -> dict[str, int | float]:
     """Compute word frequency from text.
 
     Parameters
@@ -89,8 +88,8 @@ def word_frequency(
 
 
 def ngram_frequency(
-    text: Union[str, list[str]], n: int, normalize: bool = False
-) -> dict[tuple[str, ...], Union[int, float]]:
+    text: str | list[str], n: int, normalize: bool = False
+) -> dict[tuple[str, ...], int | float]:
     """Compute n-gram frequency from text.
 
     Parameters

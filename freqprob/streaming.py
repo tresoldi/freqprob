@@ -12,7 +12,7 @@ import threading
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Iterator
-from typing import Any, Optional, Union
+from typing import Any
 
 from .base import Element, ScoringMethod, ScoringMethodConfig
 
@@ -49,9 +49,9 @@ class StreamingFrequencyDistribution:
 
     def __init__(
         self,
-        max_vocabulary_size: Optional[int] = None,
+        max_vocabulary_size: int | None = None,
         min_count_threshold: int = 1,
-        decay_factor: Optional[float] = None,
+        decay_factor: float | None = None,
         compression_threshold: int = 10000,
     ):
         """Initialize streaming frequency distribution.
@@ -113,7 +113,7 @@ class StreamingFrequencyDistribution:
             ):
                 self._compress()
 
-    def update_batch(self, elements: list[Element], counts: Optional[list[int]] = None) -> None:
+    def update_batch(self, elements: list[Element], counts: list[int] | None = None) -> None:
         """Update counts for multiple elements efficiently.
 
 
@@ -360,7 +360,7 @@ class IncrementalScoringMethod(ABC):
         """
 
     @abstractmethod
-    def update_batch(self, elements: list[Element], counts: Optional[list[int]] = None) -> None:
+    def update_batch(self, elements: list[Element], counts: list[int] | None = None) -> None:
         """Update the model with multiple element observations.
 
 
@@ -406,9 +406,9 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
 
     def __init__(
         self,
-        initial_freqdist: Optional[dict[Element, int]] = None,
-        max_vocabulary_size: Optional[int] = None,
-        unobs_prob: Optional[float] = None,
+        initial_freqdist: dict[Element, int] | None = None,
+        max_vocabulary_size: int | None = None,
+        unobs_prob: float | None = None,
         logprob: bool = True,
     ):
         """Initialize streaming MLE scorer."""
@@ -475,7 +475,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         # Efficient incremental update instead of full recomputation
         self._incremental_update(element, count)
 
-    def update_batch(self, elements: list[Element], counts: Optional[list[int]] = None) -> None:
+    def update_batch(self, elements: list[Element], counts: list[int] | None = None) -> None:
         """Update with multiple element observations."""
 
         if counts is None:
@@ -601,9 +601,9 @@ class StreamingLaplace(StreamingMLE):
 
     def __init__(
         self,
-        initial_freqdist: Optional[dict[Element, int]] = None,
-        max_vocabulary_size: Optional[int] = None,
-        bins: Optional[int] = None,
+        initial_freqdist: dict[Element, int] | None = None,
+        max_vocabulary_size: int | None = None,
+        bins: int | None = None,
         logprob: bool = True,
     ):
         """Initialize streaming Laplace scorer."""
@@ -684,7 +684,7 @@ class StreamingDataProcessor:
         self,
         scoring_methods: dict[str, IncrementalScoringMethod],
         batch_size: int = 1000,
-        auto_save_interval: Optional[int] = None,
+        auto_save_interval: int | None = None,
     ):
         """Initialize streaming data processor."""
         self.scoring_methods = scoring_methods
@@ -712,7 +712,7 @@ class StreamingDataProcessor:
         self._processed_count += count
         self._check_auto_save()
 
-    def process_batch(self, elements: list[Element], counts: Optional[list[int]] = None) -> None:
+    def process_batch(self, elements: list[Element], counts: list[int] | None = None) -> None:
         """Process a batch of elements.
 
 
@@ -752,7 +752,7 @@ class StreamingDataProcessor:
             self.process_batch(self._batch_buffer)
             self._batch_buffer.clear()
 
-    def get_score(self, method_name: str, element: Element) -> Union[float, float]:
+    def get_score(self, method_name: str, element: Element) -> float:
         """Get score for an element from a specific method.
 
 

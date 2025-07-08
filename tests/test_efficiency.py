@@ -356,7 +356,7 @@ class TestLazyEvaluation:
 
         computed = lazy_scorer.get_computed_elements()
         assert len(computed) == 3
-        assert all(elem in computed for elem in freqdist.keys())
+        assert all(elem in computed for elem in freqdist)
 
     def test_lazy_batch_scorer(self):
         """Test lazy batch scorer."""
