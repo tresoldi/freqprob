@@ -236,16 +236,16 @@ class CompressedFrequencyDistribution:
             element_to_id_size += sys.getsizeof(k) + sys.getsizeof(v)
 
         id_to_element_size = sys.getsizeof(self._id_to_element)
-        for k, v in self._id_to_element.items():
-            id_to_element_size += sys.getsizeof(k) + sys.getsizeof(v)  # type: ignore[operator]
+        for elem_id, element in self._id_to_element.items():
+            id_to_element_size += sys.getsizeof(elem_id) + sys.getsizeof(element)
 
         counts_size = self._counts.buffer_info()[1] * self._counts.itemsize
 
         string_cache_size = 0
         if self.intern_strings:
             string_cache_size = sys.getsizeof(self._string_cache)
-            for k, v in self._string_cache.items():
-                string_cache_size += sys.getsizeof(k) + sys.getsizeof(v)  # type: ignore[operator]
+            for key, value in self._string_cache.items():
+                string_cache_size += sys.getsizeof(key) + sys.getsizeof(value)
 
         return {
             "element_to_id_mapping": element_to_id_size,
