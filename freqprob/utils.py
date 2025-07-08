@@ -34,10 +34,7 @@ def generate_ngrams(text: str | list[str], n: int) -> list[tuple[str, ...]]:
     >>> generate_ngrams(["hello", "world", "test"], 2)
     [('hello', 'world'), ('world', 'test')]
     """
-    if isinstance(text, str):
-        tokens = list(text)
-    else:
-        tokens = text
+    tokens = list(text) if isinstance(text, str) else text
 
     if n <= 0:
         raise ValueError("n must be positive")
@@ -73,10 +70,7 @@ def word_frequency(
     >>> word_frequency(["hello", "world", "hello"], normalize=True)
     {'hello': 0.6666666666666666, 'world': 0.3333333333333333}
     """
-    if isinstance(text, str):
-        tokens = text.split()
-    else:
-        tokens = text
+    tokens = text.split() if isinstance(text, str) else text
 
     freq_dict = Counter(tokens)
 

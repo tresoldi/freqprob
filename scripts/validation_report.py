@@ -17,9 +17,6 @@ from typing import Any
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import freqprob
-from freqprob.validation import BenchmarkSuite, PerformanceProfiler, ValidationSuite
-
 try:
     import numpy as np
 
@@ -27,13 +24,10 @@ try:
 except ImportError:
     HAS_NUMPY = False
 
-try:
-    import matplotlib.pyplot as plt
-    import seaborn as sns
+HAS_PLOTTING = False
 
-    HAS_PLOTTING = True
-except ImportError:
-    HAS_PLOTTING = False
+import freqprob
+from freqprob.validation import BenchmarkSuite, PerformanceProfiler, ValidationSuite
 
 
 class ValidationReportGenerator:
