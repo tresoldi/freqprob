@@ -68,11 +68,11 @@ def test_generate_ngrams_edge_cases():
     assert generate_ngrams(["hi"], 5) == []
 
     # n = 0 should raise error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="n must be positive"):
         generate_ngrams("test", 0)
 
     # Negative n should raise error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="n must be positive"):
         generate_ngrams("test", -1)
 
 
@@ -137,7 +137,7 @@ def test_perplexity():
 
     # Test with model not using log probabilities
     model_no_log = MLE({"a": 2, "b": 1}, logprob=False)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Model must be configured for log probabilities"):
         perplexity(model_no_log, test_data)
 
 
@@ -157,7 +157,7 @@ def test_cross_entropy():
 
     # Test with model not using log probabilities
     model_no_log = MLE({"a": 2, "b": 1}, logprob=False)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Model must be configured for log probabilities"):
         cross_entropy(model_no_log, test_data)
 
 
@@ -180,10 +180,10 @@ def test_kl_divergence():
     p_model_no_log = MLE({"a": 2, "b": 1}, logprob=False)
     q_model_no_log = Laplace({"a": 2, "b": 1}, logprob=False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Both models must be configured for log probabilities"):
         kl_divergence(p_model_no_log, q_model, test_data)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Both models must be configured for log probabilities"):
         kl_divergence(p_model, q_model_no_log, test_data)
 
 
@@ -205,7 +205,7 @@ def test_model_comparison():
     assert "mle" in results
     assert "laplace" in results
 
-    for model_name, metrics in results.items():
+    for metrics in results.values():
         assert "perplexity" in metrics
         assert "cross_entropy" in metrics
         assert metrics["perplexity"] > 0
@@ -217,7 +217,7 @@ def test_model_comparison():
         "laplace": Laplace({"a": 2, "b": 1}, logprob=True),
     }
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Model.*must be configured for log probabilities"):
         model_comparison(models_no_log, test_data)
 
 
@@ -250,9 +250,6 @@ def test_different_data_types():
 def test_utils_with_ngrams():
     """Test utility functions with n-gram data."""
     text = "hello world hello"
-
-    # Generate bigrams
-    bigrams = generate_ngrams(text.split(), 2)
 
     # Create frequency distribution
     freq_dist = ngram_frequency(text.split(), 2)
