@@ -36,9 +36,9 @@ from freqprob import (
 # all with a randomly generated frequency)
 random.seed(1305)
 
-TEST_OBS1 = Counter([char for char in "ABBCCCDDDDEEEE"])
+TEST_OBS1 = Counter(list("ABBCCCDDDDEEEE"))
 
-TEST_SAMPLES = [char for char in string.printable]
+TEST_SAMPLES = list(string.printable)
 TEST_TWO_CHAR_SAMPLES = [
     [char1 + char2 for char2 in string.digits] for char1 in string.ascii_letters[:10]
 ]
