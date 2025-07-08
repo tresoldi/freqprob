@@ -180,8 +180,11 @@ class Lidstone(ScoringMethod):
             Frequency distribution with element counts
         """
         gamma = self.config.gamma
-
         bins = self.config.bins
+
+        # Ensure gamma and bins are not None (they are set in __init__)
+        assert gamma is not None, "Gamma must be set in LidstoneConfig"
+        assert bins is not None, "Bins must be set in LidstoneConfig"
 
         # Calculate normalization factors
         total_count = sum(freqdist.values())
