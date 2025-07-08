@@ -176,7 +176,7 @@ class LazyScoringMethod(ScoringMethod):
         super().__init__(config)
         self.lazy_computer = lazy_computer
         self.name = name
-        self._freqdist: Optional[FrequencyDistribution] = None
+        self._freqdist: FrequencyDistribution | None = None
         self._computed_elements: set[Element] = set()
         self._unobs_computed = False
 
@@ -187,7 +187,7 @@ class LazyScoringMethod(ScoringMethod):
         self._unobs_computed = False
         # Don't compute anything yet - this is the lazy part!
 
-    def __call__(self, element: Element) -> Union[float, float]:
+    def __call__(self, element: Element) -> float:
         """Score element with lazy computation.
 
         Parameters
@@ -223,9 +223,8 @@ class LazyScoringMethod(ScoringMethod):
 
             self._computed_elements.add(element)
             return self._prob[element]
-        else:
-            # Return unobserved probability
-            return self._get_unobserved_probability()
+        # Return unobserved probability
+        return self._get_unobserved_probability()
 
     def _get_unobserved_probability(self) -> float:
         """Get unobserved probability, computing it lazily if needed."""
@@ -408,7 +407,7 @@ class LazyBatchScorer:
 
 
 def create_lazy_mle(
-    freqdist: FrequencyDistribution, unobs_prob: Optional[float] = None, logprob: bool = True
+    freqdist: FrequencyDistribution, unobs_prob: float | None = None, logprob: bool = True
 ) -> LazyScoringMethod:
     """Create a lazy MLE scorer.
 
@@ -416,7 +415,7 @@ def create_lazy_mle(
     ----------
     freqdist : FrequencyDistribution
         Frequency distribution
-    unobs_prob : Optional[float]
+    unobs_prob : float | None
         Probability mass for unobserved elements
     logprob : bool, default=True
         Whether to use log probabilities
@@ -436,7 +435,7 @@ def create_lazy_mle(
 
 
 def create_lazy_laplace(
-    freqdist: FrequencyDistribution, bins: Optional[int] = None, logprob: bool = True
+    freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
 ) -> LazyScoringMethod:
     """Create a lazy Laplace scorer.
 
@@ -444,7 +443,7 @@ def create_lazy_laplace(
     ----------
     freqdist : FrequencyDistribution
         Frequency distribution
-    bins : Optional[int]
+    bins : int | None
         Total number of possible elements
     logprob : bool, default=True
         Whether to use log probabilities
