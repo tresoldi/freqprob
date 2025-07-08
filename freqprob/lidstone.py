@@ -1,14 +1,13 @@
 """Lidstone family probability scoring methods.
 
 This module implements the Lidstone family of additive smoothing methods,
-including Lidstone smoothing (with arbitrary γ), Laplace smoothing (γ=1),
-and Expected Likelihood Estimation (γ=0.5). These methods add virtual
+including Lidstone smoothing (with arbitrary gamma), Laplace smoothing (gamma=1),
+and Expected Likelihood Estimation (gamma=0.5). These methods add virtual
 counts to observed data to handle the zero probability problem.
 """
 
 import math
 from dataclasses import dataclass
-from typing import Optional
 
 from .base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
@@ -22,7 +21,7 @@ class LidstoneConfig(ScoringMethodConfig):
     ----------
     gamma : float
         Additive smoothing parameter (γ ≥ 0, default: 1.0)
-    bins : Optional[int]
+    bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
     logprob : bool
         Whether to return log-probabilities (default: True)
@@ -30,7 +29,7 @@ class LidstoneConfig(ScoringMethodConfig):
 
     gamma: float = 1.0
 
-    bins: Optional[int] = None
+    bins: int | None = None
     logprob: bool = True
 
 
@@ -41,13 +40,13 @@ class LaplaceConfig(ScoringMethodConfig):
 
     Attributes
     ----------
-    bins : Optional[int]
+    bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
 
-    bins: Optional[int] = None
+    bins: int | None = None
 
     logprob: bool = True
 
@@ -59,13 +58,13 @@ class ELEConfig(ScoringMethodConfig):
 
     Attributes
     ----------
-    bins : Optional[int]
+    bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
 
-    bins: Optional[int] = None
+    bins: int | None = None
 
     logprob: bool = True
 
@@ -98,7 +97,7 @@ class Lidstone(ScoringMethod):
         - γ = 1.0: Laplace smoothing (uniform prior)
         - γ = 0.5: Jeffreys prior (Expected Likelihood Estimation)
         - γ → 0: Approaches MLE
-    bins : Optional[int], default=None
+    bins : int | None, default=None
         Total number of possible elements. If None, uses vocabulary size |V|
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
@@ -159,7 +158,7 @@ class Lidstone(ScoringMethod):
         self,
         freqdist: FrequencyDistribution,
         gamma: float,
-        bins: Optional[int] = None,
+        bins: int | None = None,
         logprob: bool = True,
     ) -> None:
         # Default bins to vocabulary size if not specified
@@ -219,7 +218,7 @@ class Laplace(Lidstone):
     ----------
     freqdist : FrequencyDistribution
         Frequency distribution mapping elements to their observed counts
-    bins : Optional[int], default=None
+    bins : int | None, default=None
         Total number of possible elements. If None, uses vocabulary size |V|
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
@@ -247,7 +246,7 @@ class Laplace(Lidstone):
     __slots__ = ()
 
     def __init__(
-        self, freqdist: FrequencyDistribution, bins: Optional[int] = None, logprob: bool = True
+        self, freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
     ) -> None:
         # Call parent with gamma=1.0 for Laplace smoothing
         super().__init__(freqdist, gamma=1.0, bins=bins, logprob=logprob)
@@ -273,7 +272,7 @@ class ELE(Lidstone):
     ----------
     freqdist : FrequencyDistribution
         Frequency distribution mapping elements to their observed counts
-    bins : Optional[int], default=None
+    bins : int | None, default=None
         Total number of possible elements. If None, uses vocabulary size |V|
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
@@ -301,7 +300,7 @@ class ELE(Lidstone):
     __slots__ = ()
 
     def __init__(
-        self, freqdist: FrequencyDistribution, bins: Optional[int] = None, logprob: bool = True
+        self, freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
     ) -> None:
         # Call parent with gamma=0.5 for ELE
         super().__init__(freqdist, gamma=0.5, bins=bins, logprob=logprob)

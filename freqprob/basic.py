@@ -10,7 +10,6 @@ techniques.
 import math
 import random
 from dataclasses import dataclass
-from typing import Optional
 
 from .base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
 
@@ -51,7 +50,7 @@ class RandomConfig(ScoringMethodConfig):
     unobs_prob: Probability = 0.0
 
     logprob: bool = True
-    seed: Optional[int] = None
+    seed: int | None = None
 
 
 @dataclass
@@ -171,7 +170,7 @@ class Random(ScoringMethod):
     Mathematical Formulation
     ------------------------
     1. Generate random counts: c'ᵢ ~ Uniform(min(cᵢ), max(cᵢ))
-    2. Normalize: P(wᵢ) = (1 - p₀) × c'ᵢ / Σⱼc'ⱼ
+    2. Normalize: P(wᵢ) = (1 - p₀) * c'ᵢ / Σⱼc'ⱼ
     3. Unobserved: P(w) = p₀ for w ∉ V
 
     Parameters
@@ -218,7 +217,7 @@ class Random(ScoringMethod):
         freqdist: FrequencyDistribution,
         unobs_prob: Probability = 0.0,
         logprob: bool = True,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> None:
         config = RandomConfig(unobs_prob=unobs_prob, logprob=logprob, seed=seed)
         super().__init__(config)
@@ -278,7 +277,7 @@ class MLE(ScoringMethod):
     ------------------------
     For elements with counts cᵢ and total count N = Σⱼcⱼ:
 
-    P(wᵢ) = (1 - p₀) × cᵢ / N  for observed elements wᵢ ∈ V
+    P(wᵢ) = (1 - p₀) * cᵢ / N  for observed elements wᵢ ∈ V
     P(w)  = p₀                 for unobserved elements w ∉ V
 
     This is the maximum likelihood estimate under a multinomial model.

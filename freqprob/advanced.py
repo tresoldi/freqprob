@@ -9,7 +9,6 @@ statistical techniques to estimate probability distributions.
 
 import math
 from dataclasses import dataclass
-from typing import Optional
 
 # Import 3rd-party modules
 import numpy as np
@@ -34,7 +33,7 @@ class WittenBellConfig(ScoringMethodConfig):
         Whether to return log-probabilities (default: True)
     """
 
-    bins: Optional[int] = None
+    bins: int | None = None
 
     logprob: bool = True
 
@@ -54,7 +53,7 @@ class CertaintyDegreeConfig(ScoringMethodConfig):
         Whether to return log-probabilities (default: True)
     """
 
-    bins: Optional[int] = None
+    bins: int | None = None
 
     unobs_prob: Probability = 0.0
     logprob: bool = True
@@ -185,7 +184,7 @@ class CertaintyDegree(ScoringMethod):
     def __init__(
         self,
         freqdist: FrequencyDistribution,
-        bins: Optional[int] = None,
+        bins: int | None = None,
         unobs_prob: Probability = 0.0,
         logprob: bool = True,
     ) -> None:

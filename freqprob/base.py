@@ -8,10 +8,10 @@ for all smoothing methods in the freqprob library.
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Optional, TypeVar, Union
+from typing import TypeVar
 
 # Type aliases for clarity
-Element = Union[str, int, float, tuple, frozenset]
+Element = str | int | float | tuple | frozenset
 Count = int
 Probability = float
 LogProbability = float
@@ -31,11 +31,11 @@ class ScoringMethodConfig:
 
     Attributes
     ----------
-    unobs_prob : Optional[Probability]
+    unobs_prob : Probability | None
         Reserved probability mass for unobserved elements (0.0 ≤ p ≤ 1.0)
-    gamma : Optional[float]
-        Smoothing parameter for additive methods (γ ≥ 0)
-    bins : Optional[int]
+    gamma : float | None
+        Smoothing parameter for additive methods (gamma >= 0)
+    bins : int | None
         Total number of possible bins/elements (B ≥ 1)
     logprob : bool
         Whether to return log-probabilities instead of probabilities
@@ -56,10 +56,10 @@ class ScoringMethodConfig:
         If any parameter is outside its valid range
     """
 
-    unobs_prob: Optional[Probability] = None
+    unobs_prob: Probability | None = None
 
-    gamma: Optional[float] = None
-    bins: Optional[int] = None
+    gamma: float | None = None
+    bins: int | None = None
     logprob: bool = True
 
     def __post_init__(self) -> None:
@@ -73,17 +73,14 @@ class ScoringMethodConfig:
             or bins is not positive
         """
 
-        if self.unobs_prob is not None:
-            if not 0.0 <= self.unobs_prob <= 1.0:
-                raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
+        if self.unobs_prob is not None and not 0.0 <= self.unobs_prob <= 1.0:
+            raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
 
-        if self.gamma is not None:
-            if self.gamma < 0:
-                raise ValueError("Gamma must be a non-negative real number.")
+        if self.gamma is not None and self.gamma < 0:
+            raise ValueError("Gamma must be a non-negative real number.")
 
-        if self.bins is not None:
-            if self.bins < 1:
-                raise ValueError("Number of bins must be a positive integer.")
+        if self.bins is not None and self.bins < 1:
+            raise ValueError("Number of bins must be a positive integer.")
 
 
 class ScoringMethod(ABC):
@@ -112,9 +109,9 @@ class ScoringMethod(ABC):
     ----------
     config : ScoringMethodConfig
         Configuration parameters for the method
-    name : Optional[str]
+    name : str | None
         Human-readable name of the method
-    logprob : Optional[bool]
+    logprob : bool | None
         Whether this instance returns log-probabilities
 
     Examples
@@ -146,14 +143,12 @@ class ScoringMethod(ABC):
         """
         self.config: ScoringMethodConfig = config
 
-        self._unobs: Union[
-            Probability, LogProbability
-        ] = 1e-10  # Default value to avoid domain errors
-        self._prob: dict[Element, Union[Probability, LogProbability]] = {}
-        self.logprob: Optional[bool] = config.logprob
-        self.name: Optional[str] = None
+        self._unobs: Probability | LogProbability = 1e-10  # Default value to avoid domain errors
+        self._prob: dict[Element, Probability | LogProbability] = {}
+        self.logprob: bool | None = config.logprob
+        self.name: str | None = None
 
-    def __call__(self, element: Element) -> Union[Probability, LogProbability]:
+    def __call__(self, element: Element) -> Probability | LogProbability:
         """Score a single element.
 
 
@@ -164,7 +159,7 @@ class ScoringMethod(ABC):
 
         Returns
         -------
-        Union[Probability, LogProbability]
+        Probability | LogProbability
             The probability (if logprob=False) or log-probability (if logprob=True)
             of the element. Returns probability for unobserved elements based
             on the method's smoothing strategy.
