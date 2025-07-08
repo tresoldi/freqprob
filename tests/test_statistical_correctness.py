@@ -17,7 +17,7 @@ import freqprob
 class TestStatisticalCorrectness:
     """Test statistical correctness of smoothing methods."""
 
-    def test_mle_matches_theoretical(self):
+    def test_mle_matches_theoretical(self) -> None:
         """Test that MLE matches theoretical maximum likelihood estimates."""
         # Known distribution
         true_counts = {"a": 100, "b": 200, "c": 300, "d": 400}
@@ -34,7 +34,7 @@ class TestStatisticalCorrectness:
         # Unknown words should have zero probability
         assert mle("unknown") == 0.0
 
-    def test_laplace_properties(self):
+    def test_laplace_properties(self) -> None:
         """Test Laplace smoothing statistical properties."""
         counts = {"word1": 10, "word2": 5}
         bins = 100
@@ -61,7 +61,7 @@ class TestStatisticalCorrectness:
         total_mass = total_observed_mass + total_unobserved_mass
         assert abs(total_mass - 1.0) < 1e-14
 
-    def test_lidstone_generalization(self):
+    def test_lidstone_generalization(self) -> None:
         """Test that Lidstone properly generalizes add-k smoothing."""
         counts = {"a": 20, "b": 10, "c": 5}
         bins = 50
@@ -84,7 +84,7 @@ class TestStatisticalCorrectness:
         for word in counts:
             assert abs(lidstone_1(word) - laplace(word)) < 1e-15
 
-    def test_ele_relationship_to_lidstone(self):
+    def test_ele_relationship_to_lidstone(self) -> None:
         """Test that ELE is equivalent to Lidstone with gamma=0.5."""
         counts = {"x": 15, "y": 25, "z": 10}
         bins = 200
@@ -98,7 +98,7 @@ class TestStatisticalCorrectness:
         # Test unknown word
         assert abs(ele("unknown") - lidstone_half("unknown")) < 1e-15
 
-    def test_uniform_distribution_properties(self):
+    def test_uniform_distribution_properties(self) -> None:
         """Test uniform distribution statistical properties."""
         counts = {"a": 100, "b": 200, "c": 50}  # Counts don't matter for uniform
         unobs_prob = 0.1
@@ -117,7 +117,7 @@ class TestStatisticalCorrectness:
         actual_unknown = uniform("unknown")
         assert abs(actual_unknown - unobs_prob) < 1e-15
 
-    def test_bayesian_smoothing_properties(self):
+    def test_bayesian_smoothing_properties(self) -> None:
         """Test Bayesian smoothing with Dirichlet prior."""
         counts = {"term1": 40, "term2": 30, "term3": 20, "term4": 10}
 
@@ -140,7 +140,7 @@ class TestStatisticalCorrectness:
         total_prob = sum(bayesian_1(word) for word in counts)
         assert abs(total_prob - 1.0) < 1e-14
 
-    def test_probability_axioms(self):
+    def test_probability_axioms(self) -> None:
         """Test that all methods satisfy probability axioms."""
         counts = {"apple": 25, "banana": 15, "cherry": 10}
 
@@ -167,7 +167,7 @@ class TestStatisticalCorrectness:
                 assert method(word) <= 1.0
             assert unknown_prob <= 1.0
 
-    def test_consistency_under_scaling(self):
+    def test_consistency_under_scaling(self) -> None:
         """Test that relative probabilities are preserved under count scaling."""
         base_counts = {"word1": 10, "word2": 20, "word3": 30}
 
@@ -184,7 +184,7 @@ class TestStatisticalCorrectness:
                 scaled_prob = scaled_mle(word)
                 assert abs(base_prob - scaled_prob) < 1e-15
 
-    def test_convergence_to_true_distribution(self):
+    def test_convergence_to_true_distribution(self) -> None:
         """Test convergence properties as sample size increases."""
         # True underlying probabilities
         true_probs = {"a": 0.5, "b": 0.3, "c": 0.2}
@@ -201,7 +201,7 @@ class TestStatisticalCorrectness:
                 words.extend([word] * count)
 
             # Create frequency distribution
-            sample_counts = {}
+            sample_counts: dict[str, int] = {}
             for word in words:
                 sample_counts[word] = sample_counts.get(word, 0) + 1
 
@@ -216,7 +216,7 @@ class TestStatisticalCorrectness:
                 max_expected_error = 3.0 / math.sqrt(sample_size)  # Generous bound
                 assert error < max_expected_error
 
-    def test_smoothing_bias_properties(self):
+    def test_smoothing_bias_properties(self) -> None:
         """Test bias properties of different smoothing methods."""
         # Distribution with rare and common words
         counts = {"common": 1000, "rare": 1}
@@ -236,7 +236,7 @@ class TestStatisticalCorrectness:
         assert mle("unknown") == 0.0
         assert laplace("unknown") > 0.0
 
-    def test_entropy_properties(self):
+    def test_entropy_properties(self) -> None:
         """Test entropy-related properties of distributions."""
         # Uniform distribution should have maximum entropy
         uniform_counts = {"a": 1, "b": 1, "c": 1, "d": 1}
@@ -248,7 +248,7 @@ class TestStatisticalCorrectness:
         skewed_mle = freqprob.MLE(skewed_counts, logprob=True)
 
         # Calculate empirical entropy H = -Σ p(x) log p(x)
-        def calculate_entropy(method, words):
+        def calculate_entropy(method, words) -> float:
             entropy = 0.0
             for word in words:
                 log_prob = method(word)
@@ -267,7 +267,7 @@ class TestStatisticalCorrectness:
         max_entropy = math.log(4)
         assert abs(uniform_entropy - max_entropy) < 1e-14
 
-    def test_perplexity_properties(self):
+    def test_perplexity_properties(self) -> None:
         """Test perplexity calculation properties."""
         train_counts = {"the": 100, "cat": 50, "sat": 25, "on": 25}
         test_data = ["the", "cat", "sat", "on", "the", "cat"]
@@ -297,7 +297,7 @@ class TestStatisticalCorrectness:
         assert math.isinf(mle_perplexity_unknown)
         assert not math.isinf(laplace_perplexity_unknown)
 
-    def test_cross_entropy_properties(self):
+    def test_cross_entropy_properties(self) -> None:
         """Test cross-entropy calculation properties."""
         train_counts = {"a": 60, "b": 30, "c": 10}
         test_data = ["a", "b", "c", "a", "b", "a"]
@@ -315,7 +315,7 @@ class TestStatisticalCorrectness:
         # For in-vocabulary data, MLE should have lower cross-entropy
         assert mle_ce < laplace_ce
 
-    def test_kl_divergence_properties(self):
+    def test_kl_divergence_properties(self) -> None:
         """Test KL divergence properties."""
         counts1 = {"a": 50, "b": 30, "c": 20}
         counts2 = {"a": 40, "b": 35, "c": 25}
@@ -339,7 +339,7 @@ class TestStatisticalCorrectness:
         kl_self = freqprob.kl_divergence(model1, model1, test_data)
         assert abs(kl_self) < 1e-14
 
-    def test_model_comparison_consistency(self):
+    def test_model_comparison_consistency(self) -> None:
         """Test model comparison utility consistency."""
         train_counts = {"word1": 100, "word2": 50, "word3": 25}
         test_data = ["word1", "word2", "word3"] * 20
@@ -367,7 +367,7 @@ class TestStatisticalCorrectness:
             assert not math.isinf(metrics["cross_entropy"])
 
     @pytest.mark.slow()
-    def test_large_vocabulary_statistical_properties(self):
+    def test_large_vocabulary_statistical_properties(self) -> None:
         """Test statistical properties with large vocabularies."""
         # Create large Zipfian distribution
         vocab_size = 10000
@@ -375,7 +375,7 @@ class TestStatisticalCorrectness:
 
         # Generate Zipfian frequencies
         frequencies = np.random.zipf(zipf_exponent, vocab_size)
-        large_counts = {f"word_{i}": freq for i, freq in enumerate(frequencies)}
+        large_counts = {f"word_{i}": int(freq) for i, freq in enumerate(frequencies)}
 
         # Test Laplace smoothing
         laplace = freqprob.Laplace(large_counts, bins=vocab_size * 2, logprob=False)
@@ -392,7 +392,7 @@ class TestStatisticalCorrectness:
 
         # Higher frequency words should generally have higher probability
         # (allowing for some noise in the Zipfian generation)
-        sorted_words = sorted(sample_words, key=lambda w: large_counts[w], reverse=True)
+        sorted_words = sorted(sample_words, key=lambda w: int(large_counts[w]), reverse=True)
         sorted_probs = [laplace(word) for word in sorted_words]
 
         # Check that probability generally decreases (allowing some violations)
@@ -406,7 +406,7 @@ class TestStatisticalCorrectness:
 class TestAdvancedStatisticalProperties:
     """Advanced statistical correctness tests."""
 
-    def test_good_turing_frequency_redistribution(self):
+    def test_good_turing_frequency_redistribution(self) -> None:
         """Test Good-Turing frequency redistribution properties."""
         # Create distribution with clear frequency-of-frequencies pattern
         freq_dist = {}
@@ -427,7 +427,7 @@ class TestAdvancedStatisticalProperties:
             assert prob_5 > prob_1
 
             # Total probability mass should be conserved
-            total_mass = 0
+            total_mass = 0.0
             for word in freq_dist:
                 total_mass += sgt(word)
 
@@ -437,7 +437,7 @@ class TestAdvancedStatisticalProperties:
         except (ValueError, RuntimeError):
             pytest.skip("SGT failed on this distribution")
 
-    def test_kneser_ney_continuation_probability(self):
+    def test_kneser_ney_continuation_probability(self) -> None:
         """Test Kneser-Ney continuation probability properties."""
         # Create bigram data with clear continuation patterns
         bigrams = {
@@ -468,7 +468,7 @@ class TestAdvancedStatisticalProperties:
         except (ValueError, RuntimeError):
             pytest.skip("Kneser-Ney failed on this distribution")
 
-    def test_interpolated_smoothing_weights(self):
+    def test_interpolated_smoothing_weights(self) -> None:
         """Test interpolated smoothing weight properties."""
         high_order = {("a", "b", "c"): 10, ("d", "e", "f"): 5}
         low_order = {("b", "c"): 20, ("e", "f"): 15, ("x", "y"): 10}
@@ -484,7 +484,7 @@ class TestAdvancedStatisticalProperties:
             assert not math.isnan(prob)
             assert not math.isinf(prob)
 
-    def test_streaming_convergence_properties(self):
+    def test_streaming_convergence_properties(self) -> None:
         """Test streaming method convergence properties."""
         # True distribution to simulate
         true_dist = {"common": 0.6, "medium": 0.3, "rare": 0.1}
@@ -511,7 +511,7 @@ class TestAdvancedStatisticalProperties:
             error = abs(estimated_prob - true_prob)
             assert error < 0.05  # Should be close after 10k samples
 
-    def test_memory_efficient_accuracy_preservation(self):
+    def test_memory_efficient_accuracy_preservation(self) -> None:
         """Test that memory-efficient representations preserve accuracy."""
         # Create reference distribution
         original_dist = {f"item_{i}": max(1, int(1000 / (i + 1))) for i in range(500)}
@@ -538,7 +538,7 @@ class TestAdvancedStatisticalProperties:
         total_error = abs(total_compressed - total_original) / total_original
         assert total_error < 0.1
 
-    def test_vectorized_consistency_with_individual(self):
+    def test_vectorized_consistency_with_individual(self) -> None:
         """Test vectorized operations consistency with individual calls."""
         dist = {f"token_{i}": i + 1 for i in range(100)}
 
@@ -565,7 +565,7 @@ class TestAdvancedStatisticalProperties:
             for ind_score, batch_score in zip(individual_scores, batch_scores, strict=False):
                 assert abs(ind_score - batch_score) < 1e-15
 
-    def test_lazy_evaluation_correctness(self):
+    def test_lazy_evaluation_correctness(self) -> None:
         """Test lazy evaluation produces correct results."""
         dist = {"word1": 50, "word2": 30, "word3": 20}
 
@@ -590,7 +590,7 @@ class TestAdvancedStatisticalProperties:
             ("Uniform", {"unobs_prob": 0.1}),
         ],
     )
-    def test_method_statistical_consistency(self, method_config):
+    def test_method_statistical_consistency(self, method_config: tuple[str, dict]) -> None:
         """Parametrized test for statistical consistency across methods."""
         method_name, params = method_config
 
