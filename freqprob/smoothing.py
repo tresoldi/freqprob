@@ -1,5 +1,4 @@
-"""
-Advanced smoothing methods for language modeling.
+"""Advanced smoothing methods for language modeling.
 
 This module implements sophisticated smoothing techniques commonly used
 in natural language processing, including Kneser-Ney, Modified Kneser-Ney,
@@ -9,13 +8,10 @@ interpolated methods, and Bayesian approaches.
 import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from typing import DefaultDict, Dict, List, Optional, Set, Tuple
+from typing import DefaultDict
 
 from .base import (
-    Element,
     FrequencyDistribution,
-    LogProbability,
-    Probability,
     ScoringMethod,
     ScoringMethodConfig,
 )
@@ -186,7 +182,7 @@ class KneserNey(ScoringMethod):
         # Separate contexts and words, compute various counts
         contexts: DefaultDict[str, int] = defaultdict(int)
         word_continuation_counts: DefaultDict[str, int] = defaultdict(int)
-        context_types: DefaultDict[str, Set[str]] = defaultdict(set)
+        context_types: DefaultDict[str, set[str]] = defaultdict(set)
         all_bigram_types = 0
 
         # Process the frequency distribution
@@ -351,7 +347,7 @@ class ModifiedKneserNey(ScoringMethod):
         # Separate contexts and words, compute various counts
         contexts: DefaultDict[str, int] = defaultdict(int)
         word_continuation_counts: DefaultDict[str, int] = defaultdict(int)
-        context_types: DefaultDict[str, Set[str]] = defaultdict(set)
+        context_types: DefaultDict[str, set[str]] = defaultdict(set)
 
         for (context, word), count in freqdist.items():
             if not isinstance((context, word), tuple) or len((context, word)) != 2:

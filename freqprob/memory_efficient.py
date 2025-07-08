@@ -5,18 +5,15 @@ for handling large-scale frequency distributions and probability models.
 """
 
 import array
-import bisect
 import gzip
 import math
 import pickle
-import struct
 import sys
 from collections import defaultdict
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from collections.abc import Iterator
+from typing import Optional
 
-import numpy as np
-
-from .base import Count, Element, FrequencyDistribution
+from .base import Element, FrequencyDistribution
 
 
 class CompressedFrequencyDistribution:
@@ -61,8 +58,8 @@ class CompressedFrequencyDistribution:
         self.intern_strings = intern_strings
 
         # Core data structures
-        self._element_to_id: Dict[Element, int] = {}
-        self._id_to_element: Dict[int, Element] = {}
+        self._element_to_id: dict[Element, int] = {}
+        self._id_to_element: dict[int, Element] = {}
         self._next_id = 0
 
         # Compressed count storage
@@ -80,7 +77,7 @@ class CompressedFrequencyDistribution:
 
         # String interning cache
         if intern_strings:
-            self._string_cache: Dict[str, str] = {}
+            self._string_cache: dict[str, str] = {}
 
     def _intern_element(self, element: Element) -> Element:
         """Intern element to save memory if it's a string."""
@@ -204,7 +201,7 @@ class CompressedFrequencyDistribution:
         """Get vocabulary size."""
         return len(self._element_to_id)
 
-    def items(self) -> Iterator[Tuple[Element, int]]:
+    def items(self) -> Iterator[tuple[Element, int]]:
         """Iterate over (element, count) pairs."""
         for element_id, element in self._id_to_element.items():
             if element_id < len(self._counts) and self._counts[element_id] > 0:
@@ -223,11 +220,11 @@ class CompressedFrequencyDistribution:
             if self._counts[element_id] > 0:
                 yield self._dequantize_count(self._counts[element_id])
 
-    def to_dict(self) -> Dict[Element, int]:
+    def to_dict(self) -> dict[Element, int]:
         """Convert to regular dictionary."""
         return dict(self.items())
 
-    def get_memory_usage(self) -> Dict[str, int]:
+    def get_memory_usage(self) -> dict[str, int]:
         """Get detailed memory usage information.
 
         Returns
@@ -355,12 +352,12 @@ class SparseFrequencyDistribution:
         self.use_sorted_storage = use_sorted_storage
 
         # Core sparse storage: only store non-zero (or non-default) counts
-        self._sparse_counts: Dict[Element, int] = {}
+        self._sparse_counts: dict[Element, int] = {}
         self._total_count = 0
 
         # Optional sorted storage for fast frequency-based queries
         if use_sorted_storage:
-            self._sorted_elements: List[Tuple[int, Element]] = []  # (count, element)
+            self._sorted_elements: list[tuple[int, Element]] = []  # (count, element)
             self._needs_resort = False
 
     def update(self, freqdist: FrequencyDistribution) -> None:
@@ -435,7 +432,7 @@ class SparseFrequencyDistribution:
             self._sorted_elements.sort(reverse=True)  # Highest count first
             self._needs_resort = False
 
-    def get_top_k(self, k: int) -> List[Tuple[Element, int]]:
+    def get_top_k(self, k: int) -> list[tuple[Element, int]]:
         """Get top-k most frequent elements.
 
         Parameters
@@ -456,7 +453,7 @@ class SparseFrequencyDistribution:
         self._ensure_sorted()
         return [(element, count) for count, element in self._sorted_elements[:k]]
 
-    def get_elements_with_count_range(self, min_count: int, max_count: int) -> List[Element]:
+    def get_elements_with_count_range(self, min_count: int, max_count: int) -> list[Element]:
         """Get elements with counts in a specific range.
 
         Parameters
@@ -477,7 +474,7 @@ class SparseFrequencyDistribution:
                 result.append(element)
         return result
 
-    def get_count_histogram(self) -> Dict[int, int]:
+    def get_count_histogram(self) -> dict[int, int]:
         """Get histogram of counts (count -> frequency of that count).
 
         Returns
@@ -490,7 +487,7 @@ class SparseFrequencyDistribution:
             histogram[count] += 1
         return dict(histogram)
 
-    def items(self) -> Iterator[Tuple[Element, int]]:
+    def items(self) -> Iterator[tuple[Element, int]]:
         """Iterate over (element, count) pairs for non-default elements."""
         return iter(self._sparse_counts.items())
 
@@ -502,11 +499,11 @@ class SparseFrequencyDistribution:
         """Iterate over non-default counts."""
         return iter(self._sparse_counts.values())
 
-    def to_dict(self) -> Dict[Element, int]:
+    def to_dict(self) -> dict[Element, int]:
         """Convert to regular dictionary."""
         return dict(self._sparse_counts)
 
-    def get_memory_usage(self) -> Dict[str, int]:
+    def get_memory_usage(self) -> dict[str, int]:
         """Get memory usage information.
 
         Returns
@@ -558,7 +555,7 @@ class QuantizedProbabilityTable:
         self.log_space = log_space
 
         # Use 16-bit integers for quantized probabilities
-        self._quantized_probs: Dict[Element, int] = {}
+        self._quantized_probs: dict[Element, int] = {}
 
         # Quantization parameters
         if log_space:
@@ -626,7 +623,7 @@ class QuantizedProbabilityTable:
         else:
             return self._min_prob + normalized * self._prob_range
 
-    def set_probabilities(self, probabilities: Dict[Element, float]) -> None:
+    def set_probabilities(self, probabilities: dict[Element, float]) -> None:
         """Set probabilities for multiple elements.
 
         Parameters
@@ -676,11 +673,11 @@ class QuantizedProbabilityTable:
         """
         self._default_quantized_prob = self._quantize_probability(default_prob)
 
-    def get_elements(self) -> List[Element]:
+    def get_elements(self) -> list[Element]:
         """Get all elements with stored probabilities."""
         return list(self._quantized_probs.keys())
 
-    def get_memory_usage(self) -> Dict[str, int]:
+    def get_memory_usage(self) -> dict[str, int]:
         """Get memory usage information.
 
         Returns
@@ -695,8 +692,8 @@ class QuantizedProbabilityTable:
         return {"quantized_probabilities": quantized_probs_size, "total": quantized_probs_size}
 
     def get_quantization_error_stats(
-        self, original_probs: Dict[Element, float]
-    ) -> Dict[str, float]:
+        self, original_probs: dict[Element, float]
+    ) -> dict[str, float]:
         """Analyze quantization error compared to original probabilities.
 
         Parameters
@@ -742,10 +739,10 @@ class QuantizedProbabilityTable:
 
 
 def memory_usage_comparison(
-    original_dict: Dict[Element, int],
+    original_dict: dict[Element, int],
     compressed_dist: CompressedFrequencyDistribution,
     sparse_dist: SparseFrequencyDistribution,
-) -> Dict[str, Dict[str, int]]:
+) -> dict[str, dict[str, int]]:
     """Compare memory usage between different representations.
 
     Parameters

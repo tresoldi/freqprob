@@ -6,12 +6,13 @@ word frequencies, and comparing probability models.
 
 import math
 from collections import Counter
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from collections.abc import Iterable
+from typing import Union
 
-from .base import Count, Element, FrequencyDistribution, LogProbability, Probability, ScoringMethod
+from .base import Element, ScoringMethod
 
 
-def generate_ngrams(text: Union[str, List[str]], n: int) -> List[Tuple[str, ...]]:
+def generate_ngrams(text: Union[str, list[str]], n: int) -> list[tuple[str, ...]]:
     """Generate n-grams from text.
 
     Parameters
@@ -49,8 +50,8 @@ def generate_ngrams(text: Union[str, List[str]], n: int) -> List[Tuple[str, ...]
 
 
 def word_frequency(
-    text: Union[str, List[str]], normalize: bool = False
-) -> Dict[str, Union[int, float]]:
+    text: Union[str, list[str]], normalize: bool = False
+) -> dict[str, Union[int, float]]:
     """Compute word frequency from text.
 
     Parameters
@@ -88,8 +89,8 @@ def word_frequency(
 
 
 def ngram_frequency(
-    text: Union[str, List[str]], n: int, normalize: bool = False
-) -> Dict[Tuple[str, ...], Union[int, float]]:
+    text: Union[str, list[str]], n: int, normalize: bool = False
+) -> dict[tuple[str, ...], Union[int, float]]:
     """Compute n-gram frequency from text.
 
     Parameters
@@ -236,8 +237,8 @@ def kl_divergence(
 
 
 def model_comparison(
-    models: Dict[str, ScoringMethod], test_data: Iterable[Element]
-) -> Dict[str, Dict[str, float]]:
+    models: dict[str, ScoringMethod], test_data: Iterable[Element]
+) -> dict[str, dict[str, float]]:
     """Compare multiple models using various metrics.
 
     Parameters

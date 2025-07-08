@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-FreqProb Validation Report Generator
+"""FreqProb Validation Report Generator.
 
 This script runs comprehensive validation tests and generates detailed reports
 on numerical stability, statistical correctness, performance, and regression testing.
@@ -73,7 +72,6 @@ class ValidationReportGenerator:
     def log(self, message: str) -> None:
         """Log a message if verbose mode is enabled."""
         if self.verbose:
-
             print(f"[{time.strftime('%H:%M:%S')}] {message}")
 
     def generate_test_distributions(self) -> list[dict[str, int]]:
@@ -361,7 +359,7 @@ class ValidationReportGenerator:
     def generate_html_report(self, results: dict[str, Any]) -> None:
         """Generate HTML validation report."""
         html_content = f"""
-        
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -406,7 +404,6 @@ class ValidationReportGenerator:
         <tr><th>Method</th><th>Total Tests</th><th>Passed</th><th>Failed</th><th>Success Rate</th></tr>
 """
             for method, data in results["numerical_stability"].items():
-
                 success_rate = (
                     data["passed"] / data["total_tests"] if data["total_tests"] > 0 else 0
                 )
@@ -430,7 +427,6 @@ class ValidationReportGenerator:
         <tr><th>Method</th><th>Status</th><th>Error Message</th></tr>
 """
             for method, data in results["statistical_correctness"].items():
-
                 status = "PASSED" if data["passed"] else "FAILED"
                 status_class = "status-passed" if data["passed"] else "status-failed"
                 error_msg = data.get("error_message", "") or "N/A"
@@ -452,7 +448,6 @@ class ValidationReportGenerator:
         <tr><th>Method</th><th>Duration (s)</th><th>Memory Peak (MB)</th><th>Memory Delta (MB)</th></tr>
 """
             if "method_comparison" in results["performance_benchmarks"]:
-
                 for method, data in results["performance_benchmarks"]["method_comparison"].items():
                     html_content += f"""
         <tr>

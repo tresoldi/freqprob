@@ -7,7 +7,7 @@ when only a subset of probabilities are accessed.
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Optional, Set, Union
+from typing import Any, Optional, Union
 
 from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
@@ -39,7 +39,6 @@ class LazyProbabilityComputer(ABC):
         float
             Computed probability
         """
-        pass
 
     @abstractmethod
     def compute_unobserved_probability(
@@ -59,7 +58,6 @@ class LazyProbabilityComputer(ABC):
         float
             Unobserved probability
         """
-        pass
 
 
 class LazyMLEComputer(LazyProbabilityComputer):
@@ -180,7 +178,7 @@ class LazyScoringMethod(ScoringMethod):
         self.lazy_computer = lazy_computer
         self.name = name
         self._freqdist: Optional[FrequencyDistribution] = None
-        self._computed_elements: Set[Element] = set()
+        self._computed_elements: set[Element] = set()
         self._unobs_computed = False
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
@@ -249,7 +247,7 @@ class LazyScoringMethod(ScoringMethod):
 
         return self._unobs
 
-    def precompute_batch(self, elements: Set[Element]) -> None:
+    def precompute_batch(self, elements: set[Element]) -> None:
         """Precompute probabilities for a batch of elements.
 
         This can be useful when you know you'll need several elements
@@ -268,7 +266,7 @@ class LazyScoringMethod(ScoringMethod):
                 # Trigger computation
                 self(element)
 
-    def get_computed_elements(self) -> Set[Element]:
+    def get_computed_elements(self) -> set[Element]:
         """Get the set of elements that have been computed so far.
 
         Returns
@@ -328,7 +326,7 @@ class LazyBatchScorer:
             Lazy scoring method to wrap
         """
         self.lazy_scorer = lazy_scorer
-        self._access_count: Dict[Element, int] = {}
+        self._access_count: dict[Element, int] = {}
 
     def score_batch(self, elements: list) -> list:
         """Score a batch of elements with lazy evaluation.
@@ -383,7 +381,7 @@ class LazyBatchScorer:
 
             yield self.lazy_scorer(element)
 
-    def get_access_statistics(self) -> Dict[str, Any]:
+    def get_access_statistics(self) -> dict[str, Any]:
         """Get statistics about element access patterns.
 
         Returns

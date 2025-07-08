@@ -9,10 +9,11 @@ import math
 import threading
 import time
 import tracemalloc
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
+from typing import Any, Optional
 
 import numpy as np
 
@@ -42,10 +43,10 @@ class PerformanceMetrics:
     memory_delta_mb: float
     cpu_percent: float = 0.0
     iterations: int = 1
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "operation_name": self.operation_name,
@@ -70,9 +71,9 @@ class ValidationResult:
     passed: bool
     error_message: Optional[str] = None
     metrics: Optional[PerformanceMetrics] = None
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         result = {
             "test_name": self.test_name,
@@ -95,7 +96,7 @@ class PerformanceProfiler:
             enable_detailed_tracking: Whether to enable detailed memory/CPU tracking
         """
         self.enable_detailed_tracking = enable_detailed_tracking
-        self.results: List[PerformanceMetrics] = []
+        self.results: list[PerformanceMetrics] = []
         self._lock = threading.Lock()
 
     @contextmanager
@@ -158,7 +159,7 @@ class PerformanceProfiler:
                 self.results.append(metrics)
 
     def profile_method_creation(
-        self, method_class, freq_dist: Dict, iterations: int = 10, **kwargs
+        self, method_class, freq_dist: dict, iterations: int = 10, **kwargs
     ) -> PerformanceMetrics:
         """Profile the creation time of a smoothing method."""
         with self.profile_operation(
@@ -174,7 +175,7 @@ class PerformanceProfiler:
         return self.results[-1]
 
     def profile_query_performance(
-        self, method, test_words: List[str], iterations: int = 1000
+        self, method, test_words: list[str], iterations: int = 1000
     ) -> PerformanceMetrics:
         """Profile query performance for a method."""
         with self.profile_operation(
@@ -189,8 +190,8 @@ class PerformanceProfiler:
         return self.results[-1]
 
     def profile_batch_operations(
-        self, method, test_words: List[str], batch_sizes: List[int]
-    ) -> List[PerformanceMetrics]:
+        self, method, test_words: list[str], batch_sizes: list[int]
+    ) -> list[PerformanceMetrics]:
         """Profile batch operations with different batch sizes."""
         from . import VectorizedScorer
 
@@ -212,8 +213,8 @@ class PerformanceProfiler:
         return results
 
     def profile_memory_scaling(
-        self, method_class, base_dist: Dict[str, int], scale_factors: List[int], **kwargs
-    ) -> List[PerformanceMetrics]:
+        self, method_class, base_dist: dict[str, int], scale_factors: list[int], **kwargs
+    ) -> list[PerformanceMetrics]:
         """Profile memory usage scaling with dataset size."""
         results = []
 
@@ -236,7 +237,7 @@ class PerformanceProfiler:
         return results
 
     def profile_concurrent_access(
-        self, method, test_words: List[str], num_threads: int = 4, queries_per_thread: int = 100
+        self, method, test_words: list[str], num_threads: int = 4, queries_per_thread: int = 100
     ) -> PerformanceMetrics:
         """Profile concurrent access to methods."""
         errors = []
@@ -267,7 +268,7 @@ class PerformanceProfiler:
 
         return self.results[-1]
 
-    def get_summary_statistics(self) -> Dict[str, Any]:
+    def get_summary_statistics(self) -> dict[str, Any]:
         """Get summary statistics for all profiled operations."""
         if not self.results:
             return {}
@@ -382,11 +383,11 @@ class ValidationSuite:
             profiler: Optional performance profiler to use
         """
         self.profiler = profiler or PerformanceProfiler()
-        self.results: List[ValidationResult] = []
+        self.results: list[ValidationResult] = []
 
     def validate_numerical_stability(
-        self, method_class, test_distributions: List[Dict], **kwargs
-    ) -> List[ValidationResult]:
+        self, method_class, test_distributions: list[dict], **kwargs
+    ) -> list[ValidationResult]:
         """Validate numerical stability across different distributions."""
         results = []
 
@@ -431,7 +432,7 @@ class ValidationSuite:
         return results
 
     def validate_statistical_correctness(
-        self, method_class, reference_dist: Dict, tolerance: float = 1e-10, **kwargs
+        self, method_class, reference_dist: dict, tolerance: float = 1e-10, **kwargs
     ) -> ValidationResult:
         """Validate statistical correctness against known theoretical results."""
         test_name = f"{method_class.__name__}_statistical_correctness"
@@ -482,7 +483,7 @@ class ValidationSuite:
     def validate_performance_regression(
         self,
         method_class,
-        reference_dist: Dict,
+        reference_dist: dict,
         max_duration_seconds: float = 10.0,
         max_memory_mb: float = 1000.0,
         **kwargs,
@@ -534,7 +535,7 @@ class ValidationSuite:
         return result
 
     def validate_thread_safety(
-        self, method, test_words: List[str], num_threads: int = 4
+        self, method, test_words: list[str], num_threads: int = 4
     ) -> ValidationResult:
         """Validate thread safety of method implementations."""
         test_name = f"{method.__class__.__name__}_thread_safety"
@@ -567,8 +568,8 @@ class ValidationSuite:
         return result
 
     def run_comprehensive_validation(
-        self, method_classes: List[type], test_distributions: List[Dict], **kwargs
-    ) -> Dict[str, List[ValidationResult]]:
+        self, method_classes: list[type], test_distributions: list[dict], **kwargs
+    ) -> dict[str, list[ValidationResult]]:
         """Run comprehensive validation across all methods and test cases."""
         all_results = {}
 
@@ -665,11 +666,11 @@ class BenchmarkSuite:
     def __init__(self, profiler: Optional[PerformanceProfiler] = None):
         """Initialize benchmark suite."""
         self.profiler = profiler or PerformanceProfiler()
-        self.benchmark_results: Dict[str, List[PerformanceMetrics]] = {}
+        self.benchmark_results: dict[str, list[PerformanceMetrics]] = {}
 
     def benchmark_creation_scaling(
-        self, method_classes: List[type], vocab_sizes: List[int], **kwargs
-    ) -> Dict[str, List[PerformanceMetrics]]:
+        self, method_classes: list[type], vocab_sizes: list[int], **kwargs
+    ) -> dict[str, list[PerformanceMetrics]]:
         """Benchmark creation time scaling with vocabulary size."""
         results = {}
 
@@ -702,8 +703,8 @@ class BenchmarkSuite:
         return results
 
     def benchmark_query_scaling(
-        self, methods: Dict[str, Any], query_counts: List[int]
-    ) -> Dict[str, List[PerformanceMetrics]]:
+        self, methods: dict[str, Any], query_counts: list[int]
+    ) -> dict[str, list[PerformanceMetrics]]:
         """Benchmark query performance scaling."""
         results = {}
 
@@ -737,8 +738,8 @@ class BenchmarkSuite:
         return results
 
     def compare_methods(
-        self, method_configs: List[Tuple[type, Dict]], test_distribution: Dict[str, int]
-    ) -> Dict[str, PerformanceMetrics]:
+        self, method_configs: list[tuple[type, dict]], test_distribution: dict[str, int]
+    ) -> dict[str, PerformanceMetrics]:
         """Compare multiple methods on the same distribution."""
         results = {}
 
@@ -792,7 +793,7 @@ class BenchmarkSuite:
 
 
 # Convenience functions for common validation tasks
-def quick_validate_method(method_class, test_dist: Dict[str, int], **kwargs) -> bool:
+def quick_validate_method(method_class, test_dist: dict[str, int], **kwargs) -> bool:
     """Quick validation check for a method."""
     validator = ValidationSuite()
     result = validator.validate_statistical_correctness(method_class, test_dist, **kwargs)
@@ -800,7 +801,7 @@ def quick_validate_method(method_class, test_dist: Dict[str, int], **kwargs) -> 
 
 
 def profile_method_performance(
-    method_class, test_dist: Dict[str, int], **kwargs
+    method_class, test_dist: dict[str, int], **kwargs
 ) -> PerformanceMetrics:
     """Quick performance profiling for a method."""
     profiler = PerformanceProfiler()
@@ -808,8 +809,8 @@ def profile_method_performance(
 
 
 def compare_method_performance(
-    method_configs: List[Tuple[type, Dict]], test_dist: Dict[str, int]
-) -> Dict[str, float]:
+    method_configs: list[tuple[type, dict]], test_dist: dict[str, int]
+) -> dict[str, float]:
     """Compare creation times of multiple methods."""
     benchmarker = BenchmarkSuite()
     results = benchmarker.compare_methods(method_configs, test_dist)
