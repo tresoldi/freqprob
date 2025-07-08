@@ -21,12 +21,12 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import numpy as np
-
-import freqprob
+import freqprob  # noqa: E402
 
 HAS_PLOTTING = False
 
