@@ -11,13 +11,15 @@ import pytest
 
 import freqprob
 
+# mypy: disable-error-code=arg-type
+
 
 class TestNumericalStability:
     """Test numerical stability across all smoothing methods."""
 
-    def test_empty_distribution(self):
+    def test_empty_distribution(self) -> None:
         """Test behavior with empty frequency distributions."""
-        empty_dist = {}
+        empty_dist: dict[str, int] = {}
 
         # Methods that should handle empty distributions gracefully
         with pytest.raises((ValueError, ZeroDivisionError)):
@@ -26,7 +28,7 @@ class TestNumericalStability:
         with pytest.raises((ValueError, ZeroDivisionError)):
             freqprob.Laplace(empty_dist, bins=100)
 
-    def test_single_element_distribution(self):
+    def test_single_element_distribution(self) -> None:
         """Test with distributions containing only one element."""
         single_dist = {"word": 1}
 
@@ -43,7 +45,7 @@ class TestNumericalStability:
         assert abs(laplace("word") - expected_known) < 1e-15
         assert abs(laplace("unknown") - expected_unknown) < 1e-15
 
-    def test_very_large_counts(self):
+    def test_very_large_counts(self) -> None:
         """Test with extremely large frequency counts."""
         large_dist = {"common": 10**9, "rare": 1, "medium": 10**6}
 
@@ -59,9 +61,9 @@ class TestNumericalStability:
         assert not math.isinf(mle_log("rare"))
         assert not math.isnan(mle_log("rare"))
 
-    def test_very_small_counts(self):
+    def test_very_small_counts(self) -> None:
         """Test with very small but non-zero counts."""
-        small_dist = {"word1": 1e-10, "word2": 1e-9, "word3": 1e-8}
+        small_dist: dict[str, float] = {"word1": 1e-10, "word2": 1e-9, "word3": 1e-8}
 
         # Should not cause numerical issues
         mle = freqprob.MLE(small_dist, logprob=False)
@@ -73,7 +75,7 @@ class TestNumericalStability:
             assert not math.isnan(mle(word))
             assert not math.isinf(mle(word))
 
-    def test_extreme_smoothing_parameters(self):
+    def test_extreme_smoothing_parameters(self) -> None:
         """Test smoothing methods with extreme parameter values."""
         dist = {"a": 5, "b": 3, "c": 2}
 
@@ -93,7 +95,7 @@ class TestNumericalStability:
             assert not math.isinf(prob)
             assert prob > 0
 
-    def test_zero_bins_handling(self):
+    def test_zero_bins_handling(self) -> None:
         """Test behavior when bins parameter is zero or very small."""
         dist = {"word1": 5, "word2": 3}
 
@@ -108,7 +110,7 @@ class TestNumericalStability:
         assert not math.isinf(prob)
         assert prob > 0
 
-    def test_log_probability_underflow(self):
+    def test_log_probability_underflow(self) -> None:
         """Test log probability calculation with potential underflow."""
         # Create distribution with very different frequencies
         skewed_dist = {"very_common": 10**6, "very_rare": 1}
@@ -131,7 +133,7 @@ class TestNumericalStability:
             assert not math.isnan(unknown_logprob)
             # For MLE, unknown words might have -inf log probability, which is acceptable
 
-    def test_probability_sum_conservation(self):
+    def test_probability_sum_conservation(self) -> None:
         """Test that probabilities sum to approximately 1.0 when possible."""
         dist = {"a": 10, "b": 20, "c": 30, "d": 40}
 
@@ -145,7 +147,7 @@ class TestNumericalStability:
         total_prob = sum(uniform(word) for word in dist)
         assert abs(total_prob - 1.0) < 1e-15
 
-    def test_monotonicity_properties(self):
+    def test_monotonicity_properties(self) -> None:
         """Test monotonicity properties of smoothing methods."""
         dist = {"frequent": 100, "medium": 50, "rare": 10, "very_rare": 1}
 
@@ -161,7 +163,7 @@ class TestNumericalStability:
         assert laplace("medium") > laplace("rare")
         assert laplace("rare") > laplace("very_rare")
 
-    def test_extreme_vocabulary_sizes(self):
+    def test_extreme_vocabulary_sizes(self) -> None:
         """Test with extremely large vocabulary sizes."""
         small_dist = {"word": 1}
 
@@ -185,7 +187,7 @@ class TestNumericalStability:
         assert known_prob > 0
         assert unknown_prob > 0
 
-    def test_precision_loss_mitigation(self):
+    def test_precision_loss_mitigation(self) -> None:
         """Test numerical precision in calculations."""
         # Create scenario prone to precision loss
         dist = {f"word_{i}": 1 for i in range(1000)}  # 1000 words with count 1
@@ -200,17 +202,17 @@ class TestNumericalStability:
             relative_error = abs(actual_prob - expected_prob) / expected_prob
             assert relative_error < 1e-14  # Very tight precision requirement
 
-    def test_consistency_across_representations(self):
+    def test_consistency_across_representations(self) -> None:
         """Test consistency between log and linear probability representations."""
         dist = {"apple": 15, "banana": 10, "cherry": 5}
 
         for method_class in [freqprob.MLE, freqprob.Laplace, freqprob.ELE]:
             if method_class == freqprob.Laplace or method_class == freqprob.ELE:
-                linear_method = method_class(dist, bins=100, logprob=False)
-                log_method = method_class(dist, bins=100, logprob=True)
+                linear_method = method_class(dist, bins=100, logprob=False)  # type: ignore
+                log_method = method_class(dist, bins=100, logprob=True)  # type: ignore
             else:
-                linear_method = method_class(dist, logprob=False)
-                log_method = method_class(dist, logprob=True)
+                linear_method = method_class(dist, logprob=False)  # type: ignore
+                log_method = method_class(dist, logprob=True)  # type: ignore
 
             for word in dist:
                 linear_prob = linear_method(word)
@@ -221,7 +223,7 @@ class TestNumericalStability:
                 relative_error = abs(linear_prob - converted_prob) / linear_prob
                 assert relative_error < 1e-12
 
-    def test_boundary_conditions(self):
+    def test_boundary_conditions(self) -> None:
         """Test boundary conditions and edge cases."""
         # Distribution with maximum Python integer
         max_int = 2**63 - 1
@@ -232,14 +234,14 @@ class TestNumericalStability:
 
         # Test with minimum positive float
         min_float = 2.2250738585072014e-308  # Smallest normal float64
-        tiny_dist = {"word": min_float}
+        tiny_dist: dict[str, float] = {"word": min_float}
 
         mle_tiny = freqprob.MLE(tiny_dist, logprob=False)
         assert mle_tiny("word") == 1.0
         assert not math.isnan(mle_tiny("word"))
 
     @pytest.mark.slow()
-    def test_convergence_properties(self):
+    def test_convergence_properties(self) -> None:
         """Test convergence properties with increasing data size."""
         base_dist = {"common": 1000, "rare": 1}
 
@@ -255,7 +257,7 @@ class TestNumericalStability:
             relative_change = abs(mle_probs[i] - mle_probs[i - 1]) / mle_probs[i - 1]
             assert relative_change < 0.1  # Less than 10% change as data grows
 
-    def test_thread_safety_numerical_stability(self):
+    def test_thread_safety_numerical_stability(self) -> None:
         """Test numerical stability under concurrent access."""
         import threading
         import time
@@ -266,7 +268,7 @@ class TestNumericalStability:
         results = []
         errors = []
 
-        def worker():
+        def worker() -> None:
             try:
                 for _ in range(100):
                     prob = mle("word1")
@@ -294,10 +296,10 @@ class TestNumericalStability:
 class TestNumericalStabilityAdvanced:
     """Advanced numerical stability tests for complex scenarios."""
 
-    def test_good_turing_numerical_stability(self):
+    def test_good_turing_numerical_stability(self) -> None:
         """Test Simple Good-Turing under numerical stress."""
         # Create distribution with frequency-of-frequencies that might cause issues
-        freq_dist = {}
+        freq_dist: dict[str, int] = {}
 
         # Add words with counts 1, 2, 3, ..., 100
         for i in range(1, 101):
@@ -323,10 +325,10 @@ class TestNumericalStabilityAdvanced:
             # SGT might fail on some distributions, which is acceptable
             pytest.skip("SGT failed on this distribution (expected behavior)")
 
-    def test_kneser_ney_numerical_stability(self):
+    def test_kneser_ney_numerical_stability(self) -> None:
         """Test Kneser-Ney smoothing numerical stability."""
         # Create bigram distribution for testing
-        bigrams = {}
+        bigrams: dict[tuple[str, str], int] = {}
 
         # Add realistic bigram patterns
         contexts = ["the", "a", "an", "this", "that"]
@@ -353,7 +355,7 @@ class TestNumericalStabilityAdvanced:
                 # Some discount values might not work, which is acceptable
                 continue
 
-    def test_streaming_numerical_stability(self):
+    def test_streaming_numerical_stability(self) -> None:
         """Test streaming methods under numerical stress."""
         streaming_mle = freqprob.StreamingMLE(max_vocabulary_size=1000, logprob=False)
 
@@ -371,7 +373,7 @@ class TestNumericalStabilityAdvanced:
             assert not math.isinf(prob)
             assert prob > 0
 
-    def test_memory_efficient_numerical_stability(self):
+    def test_memory_efficient_numerical_stability(self) -> None:
         """Test memory-efficient representations maintain numerical accuracy."""
         # Create large distribution
         large_dist = {f"word_{i}": max(1, int(1000 / (i + 1))) for i in range(1000)}
@@ -392,14 +394,14 @@ class TestNumericalStabilityAdvanced:
             relative_error = abs(compressed_count - original_count) / original_count
             assert relative_error < 0.1  # Allow 10% error due to quantization
 
-    def test_vectorized_numerical_stability(self):
+    def test_vectorized_numerical_stability(self) -> None:
         """Test vectorized operations maintain numerical precision."""
         dist = {f"word_{i}": i + 1 for i in range(100)}
         mle = freqprob.MLE(dist, logprob=False)
         vectorized = freqprob.VectorizedScorer(mle)
 
         # Test batch scoring
-        words = [f"word_{i}" for i in range(50)]
+        words: list[str] = [f"word_{i}" for i in range(50)]
         batch_scores = vectorized.score_batch(words)
 
         # Compare with individual scoring
@@ -410,7 +412,7 @@ class TestNumericalStabilityAdvanced:
             relative_error = abs(individual_score - batch_score) / individual_score
             assert relative_error < 1e-14
 
-    def test_cache_numerical_consistency(self):
+    def test_cache_numerical_consistency(self) -> None:
         """Test that caching doesn't introduce numerical inconsistencies."""
         # Create distribution that might stress caching
         dist = {f"word_{i}": i + 1 for i in range(1000)}
@@ -440,7 +442,7 @@ class TestNumericalStabilityAdvanced:
             ("BayesianSmoothing", {"alpha": 0.5}),
         ],
     )
-    def test_method_numerical_stability(self, method_name, params):
+    def test_method_numerical_stability(self, method_name: str, params: dict) -> None:
         """Parametrized test for numerical stability across methods."""
         # Create challenging distribution
         dist = {
