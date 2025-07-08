@@ -14,7 +14,7 @@ from collections import defaultdict
 from collections.abc import Iterator
 from typing import Any
 
-from .base import Element, ScoringMethod, ScoringMethodConfig
+from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
 
 class StreamingFrequencyDistribution:
@@ -298,6 +298,10 @@ class StreamingFrequencyDistribution:
         with self._lock:
             return element in self._counts
 
+    def __iter__(self) -> Iterator[Element]:
+        """Iterate over elements."""
+        return self.keys()
+
     def __getitem__(self, element: Element) -> float:
         """Get count for element (dict-like interface)."""
         return self.get_count(element)
@@ -427,7 +431,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
 
         self._recompute_probabilities()
 
-    def _compute_probabilities(self, freqdist) -> None:
+    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """This method is not used in streaming mode."""
         # Overridden by _recompute_probabilities
 
@@ -762,14 +766,16 @@ class StreamingDataProcessor:
 
         Returns
         -------
-        Union[float, float]
+        float
             Score for the element
         """
 
         if method_name not in self.scoring_methods:
             raise ValueError(f"Unknown scoring method: {method_name}")
 
-        return self.scoring_methods[method_name](element)
+        method = self.scoring_methods[method_name]
+        # IncrementalScoringMethod implementations inherit __call__ from ScoringMethod
+        return float(method(element))  # type: ignore[operator]
 
     def get_statistics(self) -> dict[str, Any]:
         """Get statistics for all scoring methods.
@@ -792,7 +798,7 @@ class StreamingDataProcessor:
             if hasattr(method, "get_streaming_statistics"):
                 method_stats.update(method.get_streaming_statistics())
 
-            stats["methods"][name] = method_stats
+            stats["methods"][name] = method_stats  # type: ignore[index]
 
         return stats
 
