@@ -10,11 +10,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import DefaultDict
 
-from .base import (
-    FrequencyDistribution,
-    ScoringMethod,
-    ScoringMethodConfig,
-)
+from .base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 from .cache import cached_computation
 
 

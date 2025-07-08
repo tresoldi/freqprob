@@ -381,10 +381,7 @@ class DistributionMemoryAnalyzer:
         Dict[str, Any]
             Comparison results
         """
-        from .memory_efficient import (
-            create_compressed_distribution,
-            create_sparse_distribution,
-        )
+        from .memory_efficient import create_compressed_distribution, create_sparse_distribution
 
         results = {}
 

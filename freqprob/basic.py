@@ -12,12 +12,7 @@ import random
 from dataclasses import dataclass
 from typing import Optional
 
-from .base import (
-    FrequencyDistribution,
-    Probability,
-    ScoringMethod,
-    ScoringMethodConfig,
-)
+from .base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
 
 
 @dataclass
