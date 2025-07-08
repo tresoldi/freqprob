@@ -127,13 +127,13 @@ class TestStatisticalCorrectness:
             total_count = sum(counts.values())
             vocab_size = len(counts)
 
-            # Test Bayesian formula: P(w) = (c(w) + α) / (N + α*V)
+            # Test Bayesian formula: P(w) = (c(w) + alpha) / (N + alpha*V)
             for word, count in counts.items():
                 expected = (count + alpha) / (total_count + alpha * vocab_size)
                 actual = bayesian(word)
                 assert abs(actual - expected) < 1e-15
 
-        # Test that α=1 gives uniform prior (similar to Laplace)
+        # Test that alpha=1 gives uniform prior (similar to Laplace)
         bayesian_1 = freqprob.BayesianSmoothing(counts, alpha=1.0, logprob=False)
 
         # Should sum to 1 for observed vocabulary
@@ -220,7 +220,6 @@ class TestStatisticalCorrectness:
         """Test bias properties of different smoothing methods."""
         # Distribution with rare and common words
         counts = {"common": 1000, "rare": 1}
-        total = sum(counts.values())
 
         mle = freqprob.MLE(counts, logprob=False)
         laplace = freqprob.Laplace(counts, bins=10000, logprob=False)
@@ -289,7 +288,7 @@ class TestStatisticalCorrectness:
         assert mle_perplexity < laplace_perplexity
 
         # Test with unknown words
-        test_with_unknown = test_data + ["unknown_word"]
+        test_with_unknown = [*test_data, "unknown_word"]
 
         # MLE perplexity should be infinite due to zero probability
         mle_perplexity_unknown = freqprob.perplexity(mle, test_with_unknown)
@@ -356,7 +355,7 @@ class TestStatisticalCorrectness:
         # Check that all models have results
         assert len(results) == len(models)
 
-        for model_name, metrics in results.items():
+        for metrics in results.values():
             # Each model should have perplexity and cross-entropy
             assert "perplexity" in metrics
             assert "cross_entropy" in metrics
@@ -494,7 +493,7 @@ class TestAdvancedStatisticalProperties:
 
         # Simulate streaming updates
         np.random.seed(42)
-        for batch in range(10):  # 10 batches
+        for _ in range(10):  # 10 batches
             batch_size = 1000
 
             # Generate words according to true distribution
@@ -575,7 +574,7 @@ class TestAdvancedStatisticalProperties:
         lazy_mle = freqprob.create_lazy_mle(dist, logprob=False)
 
         # Test that results are identical
-        for word in list(dist.keys()) + ["unknown"]:
+        for word in [*list(dist.keys()), "unknown"]:
             regular_prob = regular_mle(word)
             lazy_prob = lazy_mle(word)
             assert abs(regular_prob - lazy_prob) < 1e-15
