@@ -21,22 +21,14 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import numpy as np
-
 import freqprob
 
-# Try to import optional dependencies
-try:
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
-    HAS_PLOTTING = True
-except ImportError:
-    HAS_PLOTTING = False
-    print("Warning: matplotlib/seaborn not available. Plots will be skipped.")
+HAS_PLOTTING = False
 
 try:
     import psutil
@@ -175,7 +167,7 @@ class PerformanceBenchmark:
         def try_sgt(freq):
             try:
                 return freqprob.SimpleGoodTuring(freq, logprob=True)
-            except:
+            except Exception:
                 return None
 
         self.smoothing_methods["SimpleGoodTuring"] = try_sgt
@@ -491,8 +483,8 @@ class PerformanceBenchmark:
         analysis["summary"] = {
             "total_results": len(self.results),
             "metrics_tested": list(by_metric.keys()),
-            "methods_tested": list(set(r.method for r in self.results)),
-            "datasets_tested": list(set(r.dataset for r in self.results)),
+            "methods_tested": list({r.method for r in self.results}),
+            "datasets_tested": list({r.dataset for r in self.results}),
         }
 
         # Best performers for each metric

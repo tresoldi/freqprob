@@ -156,7 +156,7 @@ class StreamingFrequencyDistribution:
         if self._decay_factor is None:
             return
 
-        decay_amount = 1.0 - self._decay_factor
+        _ = 1.0 - self._decay_factor  # decay_amount calculated but not used
         total_decay = 0.0
 
         for element in list(self._counts.keys()):
@@ -458,10 +458,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
                 self._prob[element] = prob
 
         # Set unobserved probability
-        if unobs_prob is not None:
-            unobs_val = unobs_prob
-        else:
-            unobs_val = 0.0
+        unobs_val = unobs_prob if unobs_prob is not None else 0.0
 
         if self.logprob:
             self._unobs = math.log(unobs_val) if unobs_val > 0 else math.log(1e-10)

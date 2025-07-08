@@ -277,7 +277,7 @@ class MemoryProfiler:
         }
 
 
-def profile_memory_usage(operation_name: str = None):
+def profile_memory_usage(operation_name: str | None = None):
     """Decorator for profiling memory usage of functions.
 
 
@@ -657,7 +657,7 @@ def get_object_memory_usage(obj: Any) -> dict[str, int]:
             "num_items": len(obj),
             "avg_item_size": (total_size - basic_size) / len(obj) if obj else 0,
         }
-    if isinstance(obj, (list, tuple)):
+    if isinstance(obj, list | tuple):
         total_size = basic_size
         for item in obj:
             total_size += sys.getsizeof(item)
@@ -680,7 +680,6 @@ def force_garbage_collection() -> dict[str, int]:
         Garbage collection statistics
     """
     # Get stats before collection
-    stats_before = gc.get_stats()
     objects_before = len(gc.get_objects())
 
     # Force collection

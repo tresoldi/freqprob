@@ -607,7 +607,7 @@ class BayesianSmoothing(ScoringMethod):
     - alpha < 1: Sparse prior (prefers concentrated distributions)
     - alpha > 1: Dense prior (prefers uniform distributions)
 
-    This method is equivalent to Lidstone smoothing with γ = alpha, but the
+    This method is equivalent to Lidstone smoothing with gamma = alpha, but the
     Bayesian interpretation provides additional theoretical insights.
     """
 
