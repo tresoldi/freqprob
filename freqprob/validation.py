@@ -49,9 +49,9 @@ class PerformanceMetrics:
             "memory_delta_mb": self.memory_delta_mb,
             "cpu_percent": self.cpu_percent,
             "iterations": self.iterations,
-            "throughput_per_sec": self.iterations / self.duration_seconds
-            if self.duration_seconds > 0
-            else 0,
+            "throughput_per_sec": (
+                self.iterations / self.duration_seconds if self.duration_seconds > 0 else 0
+            ),
             "metadata": self.metadata,
             "timestamp": self.timestamp,
         }
@@ -355,9 +355,11 @@ class PerformanceProfiler:
                             result.memory_delta_mb,
                             result.cpu_percent,
                             result.iterations,
-                            result.iterations / result.duration_seconds
-                            if result.duration_seconds > 0
-                            else 0,
+                            (
+                                result.iterations / result.duration_seconds
+                                if result.duration_seconds > 0
+                                else 0
+                            ),
                         ]
                     )
 

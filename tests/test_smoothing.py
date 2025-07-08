@@ -2,7 +2,6 @@
 Test the advanced smoothing methods.
 """
 
-
 # Import Python standard libraries
 import pytest
 
