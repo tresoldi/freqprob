@@ -5,6 +5,8 @@ Test memory management features: streaming, compression, and profiling.
 import os
 import tempfile
 
+# mypy: disable-error-code=arg-type
+
 from freqprob import (
     CompressedFrequencyDistribution,
     DistributionMemoryAnalyzer,
@@ -25,7 +27,7 @@ from freqprob.profiling import get_object_memory_usage, profile_memory_usage
 class TestStreamingFrequencyDistribution:
     """Test streaming frequency distribution functionality."""
 
-    def test_basic_operations(self):
+    def test_basic_operations(self) -> None:
         """Test basic streaming operations."""
         stream_dist = StreamingFrequencyDistribution()
 
@@ -44,7 +46,7 @@ class TestStreamingFrequencyDistribution:
         assert stream_dist.get_count("word1") == 6
         assert stream_dist.get_total_count() == 6
 
-    def test_batch_updates(self):
+    def test_batch_updates(self) -> None:
         """Test batch update functionality."""
         stream_dist = StreamingFrequencyDistribution()
 
@@ -65,7 +67,7 @@ class TestStreamingFrequencyDistribution:
         assert stream_dist.get_count("word5") == 20
         assert stream_dist.get_total_count() == 34
 
-    def test_vocabulary_size_limit(self):
+    def test_vocabulary_size_limit(self) -> None:
         """Test vocabulary size limiting."""
         stream_dist = StreamingFrequencyDistribution(max_vocabulary_size=3)
 
@@ -81,7 +83,7 @@ class TestStreamingFrequencyDistribution:
         assert stream_dist.get_count("word_8") > 0
         assert stream_dist.get_count("word_7") > 0
 
-    def test_min_count_threshold(self):
+    def test_min_count_threshold(self) -> None:
         """Test minimum count threshold."""
         stream_dist = StreamingFrequencyDistribution(
             min_count_threshold=3,
@@ -101,7 +103,7 @@ class TestStreamingFrequencyDistribution:
         assert stream_dist.get_count("medium_freq") == 5
         assert stream_dist.get_count("low_freq") == 0  # Removed due to threshold
 
-    def test_decay_factor(self):
+    def test_decay_factor(self) -> None:
         """Test exponential decay functionality."""
         stream_dist = StreamingFrequencyDistribution(decay_factor=0.9, compression_threshold=1)
 
@@ -117,7 +119,7 @@ class TestStreamingFrequencyDistribution:
         assert decayed_count < initial_count
         assert decayed_count == initial_count * 0.9
 
-    def test_statistics(self):
+    def test_statistics(self) -> None:
         """Test statistics gathering."""
         stream_dist = StreamingFrequencyDistribution(max_vocabulary_size=100)
 
@@ -133,7 +135,7 @@ class TestStreamingFrequencyDistribution:
         assert stats["most_frequent"][1] == 3
         assert stats["average_count"] == 2.0
 
-    def test_dict_interface(self):
+    def test_dict_interface(self) -> None:
         """Test dictionary-like interface."""
         stream_dist = StreamingFrequencyDistribution()
 
@@ -161,7 +163,7 @@ class TestStreamingFrequencyDistribution:
 class TestStreamingScoringMethods:
     """Test streaming scoring methods."""
 
-    def test_streaming_mle_basic(self):
+    def test_streaming_mle_basic(self) -> None:
         """Test basic StreamingMLE functionality."""
         initial_data = {"word1": 3, "word2": 2, "word3": 1}
         streaming_mle = StreamingMLE(initial_data, logprob=False)
@@ -179,7 +181,7 @@ class TestStreamingScoringMethods:
         streaming_mle.update_batch(["word4", "word4"], [2, 3])  # word4: 5, total: 14
         assert abs(streaming_mle("word4") - 0.35714) < 0.01  # 5/14
 
-    def test_streaming_mle_with_unobs_prob(self):
+    def test_streaming_mle_with_unobs_prob(self) -> None:
         """Test StreamingMLE with unobserved probability."""
         initial_data = {"word1": 4, "word2": 1}
         streaming_mle = StreamingMLE(initial_data, unobs_prob=0.1, logprob=False)
@@ -192,7 +194,7 @@ class TestStreamingScoringMethods:
         # Unobserved elements should have unobs_prob
         assert streaming_mle("unknown") == 0.1
 
-    def test_streaming_laplace(self):
+    def test_streaming_laplace(self) -> None:
         """Test StreamingLaplace functionality."""
         initial_data = {"word1": 2, "word2": 1}
         streaming_laplace = StreamingLaplace(initial_data, logprob=False)
@@ -215,7 +217,7 @@ class TestStreamingScoringMethods:
         assert word3_prob > 0.5  # Should be the highest probability
         assert word3_prob < 1.0  # Should be less than 1
 
-    def test_streaming_statistics(self):
+    def test_streaming_statistics(self) -> None:
         """Test streaming method statistics."""
         initial_data = {"a": 1, "b": 2}
         streaming_mle = StreamingMLE(initial_data, max_vocabulary_size=10)
@@ -237,7 +239,7 @@ class TestStreamingScoringMethods:
         assert "total_count" in stats
         assert "update_count" in stats
 
-    def test_save_load_state(self):
+    def test_save_load_state(self) -> None:
         """Test saving and loading streaming scorer state."""
         initial_data = {"word1": 5, "word2": 3}
         streaming_mle = StreamingMLE(initial_data, logprob=False)
@@ -268,7 +270,7 @@ class TestStreamingScoringMethods:
 class TestStreamingDataProcessor:
     """Test streaming data processor."""
 
-    def test_basic_processing(self):
+    def test_basic_processing(self) -> None:
         """Test basic data processing functionality."""
         methods = {
             "mle": StreamingMLE(max_vocabulary_size=100, logprob=False),
@@ -290,7 +292,7 @@ class TestStreamingDataProcessor:
         # word3 should now have count 2
         assert processor.get_score("mle", "word3") > 0
 
-    def test_text_stream_processing(self):
+    def test_text_stream_processing(self) -> None:
         """Test text stream processing."""
         methods = {"mle": StreamingMLE(logprob=False)}
         processor = StreamingDataProcessor(methods, batch_size=2)
@@ -304,7 +306,7 @@ class TestStreamingDataProcessor:
         prob_cat = processor.get_score("mle", "cat")
         assert prob_the > prob_cat
 
-    def test_processor_statistics(self):
+    def test_processor_statistics(self) -> None:
         """Test processor statistics gathering."""
         methods = {"mle": StreamingMLE(), "laplace": StreamingLaplace()}
         processor = StreamingDataProcessor(methods)
@@ -323,7 +325,7 @@ class TestStreamingDataProcessor:
 class TestMemoryEfficientRepresentations:
     """Test memory-efficient distribution representations."""
 
-    def test_compressed_frequency_distribution(self):
+    def test_compressed_frequency_distribution(self) -> None:
         """Test compressed frequency distribution."""
         original_data = {"word1": 1000, "word2": 500, "word3": 100, "word4": 1}
 
@@ -343,7 +345,7 @@ class TestMemoryEfficientRepresentations:
         result_dict = compressed.to_dict()
         assert result_dict == original_data
 
-    def test_compressed_with_quantization(self):
+    def test_compressed_with_quantization(self) -> None:
         """Test compressed distribution with quantization."""
         original_data = {"word1": 1000, "word2": 500, "word3": 100}
 
@@ -364,7 +366,7 @@ class TestMemoryEfficientRepresentations:
         assert "total" in memory_usage
         assert "counts_array" in memory_usage
 
-    def test_compression_serialization(self):
+    def test_compression_serialization(self) -> None:
         """Test compression and serialization."""
         original_data = {"a": 100, "b": 50, "c": 25}
 
@@ -386,7 +388,7 @@ class TestMemoryEfficientRepresentations:
         assert restored.get_count("b") == 50
         assert restored.get_count("c") == 25
 
-    def test_sparse_frequency_distribution(self):
+    def test_sparse_frequency_distribution(self) -> None:
         """Test sparse frequency distribution."""
         # Create data with many zero counts (simulated by not including them)
         sparse_data = {"rare1": 1, "rare2": 2, "common": 1000}
@@ -409,7 +411,7 @@ class TestMemoryEfficientRepresentations:
         assert top_2[0][0] == "common"  # Highest count
         assert top_2[0][1] == 1000
 
-    def test_sparse_count_histogram(self):
+    def test_sparse_count_histogram(self) -> None:
         """Test sparse distribution count histogram."""
         sparse = SparseFrequencyDistribution()
         sparse.update({"a": 1, "b": 1, "c": 2, "d": 2, "e": 5})
@@ -419,7 +421,7 @@ class TestMemoryEfficientRepresentations:
         assert histogram[2] == 2  # Two elements with count 2
         assert histogram[5] == 1  # One element with count 5
 
-    def test_sparse_count_range_query(self):
+    def test_sparse_count_range_query(self) -> None:
         """Test sparse distribution count range queries."""
         sparse = SparseFrequencyDistribution()
         sparse.update({"a": 1, "b": 5, "c": 10, "d": 15, "e": 20})
@@ -428,7 +430,7 @@ class TestMemoryEfficientRepresentations:
         elements = sparse.get_elements_with_count_range(5, 15)
         assert set(elements) == {"b", "c", "d"}
 
-    def test_quantized_probability_table(self):
+    def test_quantized_probability_table(self) -> None:
         """Test quantized probability table."""
         prob_table = QuantizedProbabilityTable(num_quantization_levels=256)
 
@@ -451,7 +453,7 @@ class TestMemoryEfficientRepresentations:
         assert "max_absolute_error" in error_stats
         assert error_stats["num_elements"] == 3
 
-    def test_factory_functions(self):
+    def test_factory_functions(self) -> None:
         """Test factory functions for creating efficient representations."""
         original_data = {"a": 100, "b": 50, "c": 1}
 
@@ -471,7 +473,7 @@ class TestMemoryEfficientRepresentations:
 class TestMemoryProfiling:
     """Test memory profiling utilities."""
 
-    def test_memory_profiler_basic(self):
+    def test_memory_profiler_basic(self) -> None:
         """Test basic memory profiler functionality."""
         profiler = MemoryProfiler()
 
@@ -497,11 +499,11 @@ class TestMemoryProfiling:
         assert "total_snapshots" in summary
         assert summary["total_snapshots"] >= 2
 
-    def test_memory_profiler_decorator(self):
+    def test_memory_profiler_decorator(self) -> None:
         """Test memory profiling decorator."""
 
         @profile_memory_usage("decorated_function")
-        def test_function():
+        def test_function() -> list[int]:
             return list(range(1000))
 
         # Call function
@@ -515,7 +517,7 @@ class TestMemoryProfiling:
         metrics = profiler.get_latest_metrics()
         assert metrics.operation_name == "decorated_function"
 
-    def test_distribution_memory_analyzer(self):
+    def test_distribution_memory_analyzer(self) -> None:
         """Test distribution memory analyzer."""
         analyzer = DistributionMemoryAnalyzer()
 
@@ -540,7 +542,7 @@ class TestMemoryProfiling:
         assert "compressed" in savings
         assert "percentage_savings" in savings["compressed"]
 
-    def test_memory_monitor(self):
+    def test_memory_monitor(self) -> None:
         """Test memory monitor functionality."""
         # Use a low threshold for testing
         monitor = MemoryMonitor(memory_threshold_mb=1.0, monitoring_interval=0.1)
@@ -559,7 +561,7 @@ class TestMemoryProfiling:
         assert "memory_statistics" in report
         assert "memory_trend" in report
 
-    def test_object_memory_usage(self):
+    def test_object_memory_usage(self) -> None:
         """Test object memory usage analysis."""
         # Test dictionary
         test_dict = {"a": 1, "b": 2, "c": 3}
@@ -583,7 +585,7 @@ class TestMemoryProfiling:
 class TestMemoryManagementIntegration:
     """Test integration between memory management features."""
 
-    def test_streaming_with_compression(self):
+    def test_streaming_with_compression(self) -> None:
         """Test using streaming with compression."""
         # Create streaming scorer
         streaming_mle = StreamingMLE(max_vocabulary_size=100, logprob=False)
@@ -599,7 +601,7 @@ class TestMemoryManagementIntegration:
         # High-frequency words should be preserved
         assert streaming_mle("word_199") > 0  # Highest frequency
 
-    def test_memory_efficient_scoring_comparison(self):
+    def test_memory_efficient_scoring_comparison(self) -> None:
         """Test comparing memory efficiency of different scoring approaches."""
         # Create test data
         large_vocab = {f"word_{i}": max(1, 1000 - i) for i in range(1000)}
@@ -624,7 +626,7 @@ class TestMemoryManagementIntegration:
             assert regular_score > 0
             assert streaming_score > 0
 
-    def test_profiling_memory_efficient_operations(self):
+    def test_profiling_memory_efficient_operations(self) -> None:
         """Test profiling memory-efficient operations."""
         profiler = MemoryProfiler()
 
@@ -647,7 +649,7 @@ class TestMemoryManagementIntegration:
         assert "create_compressed" in operation_names
         assert "create_sparse" in operation_names
 
-    def test_end_to_end_memory_efficiency(self):
+    def test_end_to_end_memory_efficiency(self) -> None:
         """Test end-to-end memory efficiency workflow."""
         # Start with large vocabulary
         large_freqdist = {f"term_{i}": max(1, 10000 - i * 10) for i in range(2000)}
