@@ -9,14 +9,15 @@ import gc
 import sys
 import time
 import tracemalloc
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional
 
 import psutil
 
-from .base import FrequencyDistribution, ScoringMethod
+from .base import FrequencyDistribution
 
 
 @dataclass
@@ -108,14 +109,13 @@ class MemoryProfiler:
     """
 
     def __init__(self, enable_tracemalloc: bool = True, snapshot_interval: float = 1.0):
-
         """Initialize memory profiler."""
         self.enable_tracemalloc = enable_tracemalloc
 
         self.snapshot_interval = snapshot_interval
         self._process = psutil.Process()
-        self._snapshots: List[MemorySnapshot] = []
-        self._metrics: List[PerformanceMetrics] = []
+        self._snapshots: list[MemorySnapshot] = []
+        self._metrics: list[PerformanceMetrics] = []
 
         if enable_tracemalloc and not tracemalloc.is_tracing():
             tracemalloc.start()
@@ -211,7 +211,7 @@ class MemoryProfiler:
         """
         return self._metrics[-1] if self._metrics else None
 
-    def get_all_metrics(self) -> List[PerformanceMetrics]:
+    def get_all_metrics(self) -> list[PerformanceMetrics]:
         """Get all performance metrics.
 
 
@@ -222,7 +222,7 @@ class MemoryProfiler:
         """
         return self._metrics.copy()
 
-    def get_snapshots(self) -> List[MemorySnapshot]:
+    def get_snapshots(self) -> list[MemorySnapshot]:
         """Get all memory snapshots.
 
 
@@ -239,7 +239,7 @@ class MemoryProfiler:
 
         self._snapshots.clear()
 
-    def get_memory_summary(self) -> Dict[str, Any]:
+    def get_memory_summary(self) -> dict[str, Any]:
         """Get a summary of memory usage patterns.
 
 
@@ -250,7 +250,6 @@ class MemoryProfiler:
         """
 
         if not self._snapshots:
-
             return {"error": "No snapshots available"}
 
         rss_values = [s.rss_mb for s in self._snapshots]
@@ -337,11 +336,10 @@ class DistributionMemoryAnalyzer:
     """
 
     def __init__(self):
-
         """Initialize distribution memory analyzer."""
         self.profiler = MemoryProfiler()
 
-    def measure_distribution_memory(self, freqdist: FrequencyDistribution) -> Dict[str, float]:
+    def measure_distribution_memory(self, freqdist: FrequencyDistribution) -> dict[str, float]:
         """Measure memory usage of a frequency distribution.
 
 
@@ -369,7 +367,7 @@ class DistributionMemoryAnalyzer:
             "bytes_per_element": dict_size / len(freqdist) if freqdist else 0,
         }
 
-    def compare_representations(self, freqdist: FrequencyDistribution) -> Dict[str, Any]:
+    def compare_representations(self, freqdist: FrequencyDistribution) -> dict[str, Any]:
         """Compare memory usage of different distribution representations.
 
 
@@ -386,7 +384,6 @@ class DistributionMemoryAnalyzer:
         from .memory_efficient import (
             create_compressed_distribution,
             create_sparse_distribution,
-            memory_usage_comparison,
         )
 
         results = {}
@@ -438,9 +435,9 @@ class DistributionMemoryAnalyzer:
     def benchmark_scoring_methods(
         self,
         freqdist: FrequencyDistribution,
-        test_elements: List[str],
-        methods_to_test: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        test_elements: list[str],
+        methods_to_test: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
         """Benchmark memory usage and performance of different scoring methods.
 
 
@@ -460,7 +457,6 @@ class DistributionMemoryAnalyzer:
         """
 
         if methods_to_test is None:
-
             methods_to_test = ["MLE", "Laplace", "StreamingMLE"]
 
         results = {}
@@ -535,15 +531,14 @@ class MemoryMonitor:
     """
 
     def __init__(self, memory_threshold_mb: float = 1000.0, monitoring_interval: float = 5.0):
-
         """Initialize memory monitor."""
         self.memory_threshold_mb = memory_threshold_mb
 
         self.monitoring_interval = monitoring_interval
         self._process = psutil.Process()
         self._monitoring = False
-        self._snapshots: List[MemorySnapshot] = []
-        self._alerts: List[Dict[str, Any]] = []
+        self._snapshots: list[MemorySnapshot] = []
+        self._alerts: list[dict[str, Any]] = []
         self._profiler = MemoryProfiler()
 
     def start_monitoring(self) -> None:
@@ -558,7 +553,7 @@ class MemoryMonitor:
 
         print("Stopped memory monitoring")
 
-    def check_memory(self) -> Optional[Dict[str, Any]]:
+    def check_memory(self) -> Optional[dict[str, Any]]:
         """Check current memory usage and trigger alerts if needed.
 
 
@@ -586,7 +581,7 @@ class MemoryMonitor:
 
         return None
 
-    def get_monitoring_report(self) -> Dict[str, Any]:
+    def get_monitoring_report(self) -> dict[str, Any]:
         """Get a comprehensive monitoring report.
 
 
@@ -597,7 +592,6 @@ class MemoryMonitor:
         """
 
         if not self._snapshots:
-
             return {"error": "No monitoring data available"}
 
         memory_values = [s.rss_mb for s in self._snapshots]
@@ -620,7 +614,6 @@ class MemoryMonitor:
         """Calculate overall memory trend."""
 
         if len(self._snapshots) < 2:
-
             return "insufficient_data"
 
         first_half = self._snapshots[: len(self._snapshots) // 2]
@@ -640,7 +633,7 @@ class MemoryMonitor:
 # Utility functions
 
 
-def get_object_memory_usage(obj: Any) -> Dict[str, int]:
+def get_object_memory_usage(obj: Any) -> dict[str, int]:
     """Get detailed memory usage information for an object.
 
 
@@ -682,7 +675,7 @@ def get_object_memory_usage(obj: Any) -> Dict[str, int]:
         return {"basic_size": basic_size, "total_size": basic_size, "type": type(obj).__name__}
 
 
-def force_garbage_collection() -> Dict[str, int]:
+def force_garbage_collection() -> dict[str, int]:
     """Force garbage collection and return statistics.
 
 

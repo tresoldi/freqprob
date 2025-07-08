@@ -5,10 +5,10 @@ This module provides the abstract base class and common functionality
 for all smoothing methods in the freqprob library.
 """
 
-import math
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, Mapping, Optional, TypeVar, Union
+from typing import Optional, TypeVar, Union
 
 # Type aliases for clarity
 Element = Union[str, int, float, tuple, frozenset]
@@ -74,7 +74,6 @@ class ScoringMethodConfig:
         """
 
         if self.unobs_prob is not None:
-
             if not 0.0 <= self.unobs_prob <= 1.0:
                 raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
 
@@ -150,7 +149,7 @@ class ScoringMethod(ABC):
         self._unobs: Union[
             Probability, LogProbability
         ] = 1e-10  # Default value to avoid domain errors
-        self._prob: Dict[Element, Union[Probability, LogProbability]] = {}
+        self._prob: dict[Element, Union[Probability, LogProbability]] = {}
         self.logprob: Optional[bool] = config.logprob
         self.name: Optional[str] = None
 
@@ -201,7 +200,6 @@ class ScoringMethod(ABC):
         """
 
         if self.name is None:
-
             raise ValueError("The smoothing method has not been (properly) initialized.")
 
         buffer = []
@@ -231,8 +229,6 @@ class ScoringMethod(ABC):
         ----
         Implementations should populate self._prob and self._unobs.
         """
-
-        pass
 
     def fit(self, freqdist: FrequencyDistribution) -> "ScoringMethod":
         """Fit the scoring method to a frequency distribution.

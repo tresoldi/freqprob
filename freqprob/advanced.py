@@ -2,7 +2,7 @@
 Advanced probability scoring methods.
 
 This module implements sophisticated smoothing methods including
-Witten-Bell discounting, Certainty Degree estimation, and 
+Witten-Bell discounting, Certainty Degree estimation, and
 Simple Good-Turing smoothing. These methods use more complex
 statistical techniques to estimate probability distributions.
 """
@@ -339,7 +339,7 @@ class SimpleGoodTuring(ScoringMethod):
         # than `j`, and `k` the smallest observed count greater than `j`.
         i = [0] + freqs_keys[:-1]
         k = freqs_keys[1:] + [2 * freqs_keys[-1] - i[-1]]
-        z = {j: 2 * freqs_of_freqs[j] / (k - i) for i, j, k in zip(i, freqs_keys, k)}
+        z = {j: 2 * freqs_of_freqs[j] / (k - i) for i, j, k in zip(i, freqs_keys, k, strict=False)}
 
         # Compute a loglinear regression of Z[r] over r. We cast keys and values to
         # a list for the computation with `linalg.lstsq`.

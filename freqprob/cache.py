@@ -7,8 +7,9 @@ methods like Simple Good-Turing.
 
 import hashlib
 import pickle
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Optional
 
 from .base import FrequencyDistribution
 
@@ -35,7 +36,7 @@ class ComputationCache:
         max_size : Optional[int], default=1000
             Maximum number of cache entries. If None, cache has no size limit.
         """
-        self._cache: Dict[str, Any] = {}
+        self._cache: dict[str, Any] = {}
         self.max_size = max_size
 
     def _generate_key(self, freqdist: FrequencyDistribution, **kwargs) -> str:
@@ -210,7 +211,7 @@ def clear_all_caches() -> None:
     _general_cache.clear()
 
 
-def get_cache_stats() -> Dict[str, int]:
+def get_cache_stats() -> dict[str, int]:
     """Get statistics about cache usage.
 
     Returns

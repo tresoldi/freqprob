@@ -10,12 +10,10 @@ techniques.
 import math
 import random
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Optional
 
 from .base import (
-    Element,
     FrequencyDistribution,
-    LogProbability,
     Probability,
     ScoringMethod,
     ScoringMethodConfig,

@@ -1,4 +1,4 @@
-"""freqprob __init__.py"""
+"""FreqProb: frequency-based probability estimation library."""
 
 # Version of the freqprob package
 __version__ = "0.2.0"
@@ -103,15 +103,13 @@ __all__ = [
 
 # Add validation tools to __all__ if available
 if HAS_VALIDATION:
-    __all__.extend(
-        [
-            "PerformanceProfiler",
-            "ValidationSuite",
-            "BenchmarkSuite",
-            "PerformanceMetrics",
-            "ValidationResult",
-            "quick_validate_method",
-            "profile_method_performance",
-            "compare_method_performance",
-        ]
-    )
+    __all__ += [
+        "PerformanceProfiler",
+        "ValidationSuite",
+        "BenchmarkSuite",
+        "PerformanceMetrics",
+        "ValidationResult",
+        "quick_validate_method",
+        "profile_method_performance",
+        "compare_method_performance",
+    ]

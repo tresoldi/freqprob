@@ -4,7 +4,8 @@ This module provides numpy-based implementations for batch scoring operations,
 allowing efficient processing of large datasets without Python loops.
 """
 
-from typing import Any, Dict, Iterable, List, Tuple, Union
+from collections.abc import Iterable
+from typing import Any, Union
 
 import numpy as np
 
@@ -42,7 +43,7 @@ class VectorizedScorer:
             Scoring method to wrap with vectorized operations
         """
         self.scorer = scorer
-        self._element_cache: Dict[Any, int] = {}
+        self._element_cache: dict[Any, int] = {}
         self._prob_array: np.ndarray = np.array([])
         self._default_prob: float = 0.0
         self._build_lookup_arrays()
@@ -65,7 +66,7 @@ class VectorizedScorer:
             self._prob_array = np.array([])
             self._default_prob = 0.0
 
-    def score_batch(self, elements: Union[List[Element], np.ndarray]) -> np.ndarray:
+    def score_batch(self, elements: Union[list[Element], np.ndarray]) -> np.ndarray:
         """Score a batch of elements efficiently using vectorized operations.
 
         Parameters
@@ -102,7 +103,7 @@ class VectorizedScorer:
 
         return result
 
-    def score_parallel(self, element_batches: List[List[Element]]) -> List[np.ndarray]:
+    def score_parallel(self, element_batches: list[list[Element]]) -> list[np.ndarray]:
         """Score multiple batches in parallel (when available).
 
         Parameters
@@ -119,7 +120,7 @@ class VectorizedScorer:
         # In the future, could use multiprocessing or threading
         return [self.score_batch(batch) for batch in element_batches]
 
-    def score_matrix(self, elements_2d: List[List[Element]]) -> np.ndarray:
+    def score_matrix(self, elements_2d: list[list[Element]]) -> np.ndarray:
         """Score a 2D array of elements, returning a matrix of scores.
 
         Parameters
@@ -148,7 +149,7 @@ class VectorizedScorer:
 
         return result
 
-    def top_k_elements(self, k: int) -> Tuple[List[Element], np.ndarray]:
+    def top_k_elements(self, k: int) -> tuple[list[Element], np.ndarray]:
         """Get the top-k highest scoring elements.
 
         Parameters
@@ -175,7 +176,7 @@ class VectorizedScorer:
 
         return top_elements, top_scores
 
-    def percentile_scores(self, elements: List[Element], percentiles: List[float]) -> np.ndarray:
+    def percentile_scores(self, elements: list[Element], percentiles: list[float]) -> np.ndarray:
         """Compute percentile ranks for element scores.
 
         Parameters
@@ -206,7 +207,7 @@ class VectorizedScorer:
         return percentile_ranks
 
 
-def create_vectorized_batch_scorer(scorers: Dict[str, ScoringMethod]) -> "BatchScorer":
+def create_vectorized_batch_scorer(scorers: dict[str, ScoringMethod]) -> "BatchScorer":
     """Create a batch scorer that can handle multiple scoring methods efficiently.
 
     Parameters
@@ -248,7 +249,7 @@ class BatchScorer:
     array([0.5, 0.375, 0.125])
     """
 
-    def __init__(self, scorers: Dict[str, ScoringMethod]):
+    def __init__(self, scorers: dict[str, ScoringMethod]):
         """Initialize batch scorer with multiple scoring methods.
 
         Parameters
@@ -261,7 +262,7 @@ class BatchScorer:
             name: VectorizedScorer(scorer) for name, scorer in scorers.items()
         }
 
-    def score_batch(self, elements: List[Element]) -> Dict[str, np.ndarray]:
+    def score_batch(self, elements: list[Element]) -> dict[str, np.ndarray]:
         """Score elements using all configured scoring methods.
 
         Parameters
@@ -279,7 +280,7 @@ class BatchScorer:
             for name, vectorized in self.vectorized_scorers.items()
         }
 
-    def score_and_compare(self, elements: List[Element]) -> Dict[str, Any]:
+    def score_and_compare(self, elements: list[Element]) -> dict[str, Any]:
         """Score elements and provide comparison statistics.
 
         Parameters
@@ -313,8 +314,8 @@ class BatchScorer:
         return result
 
     def benchmark_methods(
-        self, elements: List[Element], num_iterations: int = 100
-    ) -> Dict[str, float]:
+        self, elements: list[Element], num_iterations: int = 100
+    ) -> dict[str, float]:
         """Benchmark the performance of different scoring methods.
 
         Parameters

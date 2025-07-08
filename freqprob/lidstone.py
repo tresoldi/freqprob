@@ -1,5 +1,4 @@
-"""
-Lidstone family probability scoring methods.
+"""Lidstone family probability scoring methods.
 
 This module implements the Lidstone family of additive smoothing methods,
 including Lidstone smoothing (with arbitrary γ), Laplace smoothing (γ=1),
@@ -11,7 +10,7 @@ import math
 from dataclasses import dataclass
 from typing import Optional
 
-from .base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
+from .base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
 
 @dataclass
