@@ -6,6 +6,8 @@ import time
 
 import numpy as np
 
+# mypy: disable-error-code=arg-type
+
 from freqprob import (
     MLE,
     BatchScorer,
@@ -27,7 +29,7 @@ from freqprob.vectorized import elements_to_numpy, normalize_scores, scores_to_p
 class TestCaching:
     """Test caching and memoization functionality."""
 
-    def test_computation_cache_basic(self):
+    def test_computation_cache_basic(self) -> None:
         """Test basic cache operations."""
         cache = ComputationCache(max_size=3)
 
@@ -45,7 +47,7 @@ class TestCaching:
         assert cache.get({"b": 2}) == "result2"
         assert cache.get({"a": 1}) == "result1"
 
-    def test_cache_size_limit(self):
+    def test_cache_size_limit(self) -> None:
         """Test cache size limiting and eviction."""
         cache = ComputationCache(max_size=2)
 
@@ -60,7 +62,7 @@ class TestCaching:
         assert cache.get({"b": 2}) == "result2"
         assert cache.get({"c": 3}) == "result3"
 
-    def test_cache_key_generation(self):
+    def test_cache_key_generation(self) -> None:
         """Test that cache keys are generated correctly."""
         cache = ComputationCache()
 
@@ -71,7 +73,7 @@ class TestCaching:
         assert cache.get({"a": 1, "b": 2}) == "result2"
         assert cache.size() == 1
 
-    def test_sgt_caching(self):
+    def test_sgt_caching(self) -> None:
         """Test that Simple Good-Turing uses caching."""
         # Create a frequency distribution that SGT can handle
         freqdist = {f"word_{i}": i for i in range(1, 50)}
@@ -101,7 +103,7 @@ class TestCaching:
         stats_after_second = get_cache_stats()
         assert stats_after_second["sgt_cache_size"] == stats_after_first["sgt_cache_size"]
 
-    def test_general_method_caching(self):
+    def test_general_method_caching(self) -> None:
         """Test caching for other methods like Witten-Bell."""
         freqdist = {"a": 5, "b": 3, "c": 2}
 
@@ -117,15 +119,15 @@ class TestCaching:
         wb2 = WittenBell(freqdist)
         assert wb1("a") == wb2("a")
 
-    def test_memoized_property(self):
+    def test_memoized_property(self) -> None:
         """Test memoized property decorator."""
 
         class TestClass:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.computation_count = 0
 
             @MemoizedProperty
-            def expensive_property(self):
+            def expensive_property(self) -> int:
                 self.computation_count += 1
                 return self.computation_count * 10
 
@@ -145,7 +147,7 @@ class TestCaching:
 class TestVectorization:
     """Test vectorized operations functionality."""
 
-    def test_vectorized_scorer_basic(self):
+    def test_vectorized_scorer_basic(self) -> None:
         """Test basic vectorized scoring."""
         scorer = MLE({"a": 3, "b": 2, "c": 1}, logprob=False)
         vectorized = VectorizedScorer(scorer)
@@ -158,7 +160,7 @@ class TestVectorization:
         assert scores[0] == scorer("a")  # Known element
         assert scores[3] == scorer("d")  # Unknown element
 
-    def test_vectorized_scorer_numpy_input(self):
+    def test_vectorized_scorer_numpy_input(self) -> None:
         """Test vectorized scorer with numpy array input."""
         scorer = MLE({"a": 3, "b": 2}, logprob=False)
         vectorized = VectorizedScorer(scorer)
@@ -169,7 +171,7 @@ class TestVectorization:
         assert isinstance(scores, np.ndarray)
         assert len(scores) == 3
 
-    def test_vectorized_scorer_matrix(self):
+    def test_vectorized_scorer_matrix(self) -> None:
         """Test vectorized matrix scoring."""
         scorer = MLE({"a": 3, "b": 2}, logprob=False)
         vectorized = VectorizedScorer(scorer)
@@ -181,7 +183,7 @@ class TestVectorization:
         assert score_matrix[0, 0] == scorer("a")
         assert score_matrix[0, 1] == scorer("b")
 
-    def test_vectorized_scorer_top_k(self):
+    def test_vectorized_scorer_top_k(self) -> None:
         """Test top-k element retrieval."""
         scorer = MLE({"a": 5, "b": 3, "c": 2, "d": 1}, logprob=False)
         vectorized = VectorizedScorer(scorer)
@@ -193,7 +195,7 @@ class TestVectorization:
         assert top_elements[0] == "a"  # Highest scoring
         assert top_scores[0] == scorer("a")
 
-    def test_batch_scorer(self):
+    def test_batch_scorer(self) -> None:
         """Test batch scorer with multiple methods."""
         scorers = {
             "mle": MLE({"a": 3, "b": 2}, logprob=False),
@@ -209,7 +211,7 @@ class TestVectorization:
         assert isinstance(results["mle"], np.ndarray)
         assert len(results["mle"]) == 3
 
-    def test_batch_scorer_comparison(self):
+    def test_batch_scorer_comparison(self) -> None:
         """Test batch scorer comparison functionality."""
         scorers = {
             "mle": MLE({"a": 3, "b": 2}, logprob=False),
@@ -226,7 +228,7 @@ class TestVectorization:
         assert "mle_ranking" in comparison
         assert "laplace_ranking" in comparison
 
-    def test_elements_to_numpy(self):
+    def test_elements_to_numpy(self) -> None:
         """Test element conversion to numpy arrays."""
         # String elements
         str_elements = ["a", "b", "c"]
@@ -243,7 +245,7 @@ class TestVectorization:
         float_array = elements_to_numpy(float_elements)
         assert float_array.dtype == np.float64
 
-    def test_scores_to_probabilities(self):
+    def test_scores_to_probabilities(self) -> None:
         """Test log score to probability conversion."""
         log_scores = np.array([-1.0, -2.0, -3.0])
         probs = scores_to_probabilities(log_scores)
@@ -251,7 +253,7 @@ class TestVectorization:
         assert np.allclose(np.sum(probs), 1.0)  # Should sum to 1
         assert probs[0] > probs[1] > probs[2]  # Should be decreasing
 
-    def test_normalize_scores(self):
+    def test_normalize_scores(self) -> None:
         """Test score normalization methods."""
         scores = np.array([1.0, 2.0, 3.0])
 
@@ -272,7 +274,7 @@ class TestVectorization:
 class TestLazyEvaluation:
     """Test lazy evaluation functionality."""
 
-    def test_lazy_mle_computer(self):
+    def test_lazy_mle_computer(self) -> None:
         """Test lazy MLE computation."""
         freqdist = {"a": 3, "b": 2, "c": 1}
         computer = LazyMLEComputer()
@@ -290,7 +292,7 @@ class TestLazyEvaluation:
         unobs_prob = computer.compute_unobserved_probability(freqdist, config)
         assert unobs_prob == 0.0  # MLE gives 0 for unobserved
 
-    def test_lazy_laplace_computer(self):
+    def test_lazy_laplace_computer(self) -> None:
         """Test lazy Laplace computation."""
         freqdist = {"a": 3, "b": 2}
         computer = LazyLaplaceComputer()
@@ -309,7 +311,7 @@ class TestLazyEvaluation:
         expected_unobs = 1 / (5 + 2)
         assert unobs_prob == expected_unobs
 
-    def test_lazy_scoring_method(self):
+    def test_lazy_scoring_method(self) -> None:
         """Test lazy scoring method."""
         freqdist = {"a": 3, "b": 2, "c": 1}
         lazy_scorer = create_lazy_mle(freqdist, logprob=False)
@@ -331,7 +333,7 @@ class TestLazyEvaluation:
         score_unknown = lazy_scorer("unknown")
         assert score_unknown == 0.0  # MLE gives 0 for unobserved
 
-    def test_lazy_precompute_batch(self):
+    def test_lazy_precompute_batch(self) -> None:
         """Test lazy batch precomputation."""
         freqdist = {"a": 3, "b": 2, "c": 1, "d": 1}
         lazy_scorer = create_lazy_mle(freqdist, logprob=False)
@@ -346,7 +348,7 @@ class TestLazyEvaluation:
         assert "c" in computed
         assert "d" not in computed  # Not in the batch
 
-    def test_lazy_force_full_computation(self):
+    def test_lazy_force_full_computation(self) -> None:
         """Test forcing full computation in lazy scorer."""
         freqdist = {"a": 3, "b": 2, "c": 1}
         lazy_scorer = create_lazy_mle(freqdist, logprob=False)
@@ -358,7 +360,7 @@ class TestLazyEvaluation:
         assert len(computed) == 3
         assert all(elem in computed for elem in freqdist)
 
-    def test_lazy_batch_scorer(self):
+    def test_lazy_batch_scorer(self) -> None:
         """Test lazy batch scorer."""
         freqdist = {"a": 3, "b": 2, "c": 1, "d": 1, "e": 1}
         lazy_scorer = create_lazy_mle(freqdist, logprob=False)
@@ -377,7 +379,7 @@ class TestLazyEvaluation:
         assert stats["total_accesses"] == 3
         assert stats["unique_elements"] == 3
 
-    def test_lazy_streaming(self):
+    def test_lazy_streaming(self) -> None:
         """Test lazy streaming scorer."""
         freqdist = {"a": 3, "b": 2, "c": 1}
         lazy_scorer = create_lazy_mle(freqdist, logprob=False)
@@ -390,7 +392,7 @@ class TestLazyEvaluation:
         assert len(scores) == 6
         assert scores[0] == scores[2] == scores[5]  # All 'a' scores should be equal
 
-    def test_create_lazy_laplace(self):
+    def test_create_lazy_laplace(self) -> None:
         """Test lazy Laplace scorer creation."""
         freqdist = {"a": 3, "b": 2}
         lazy_scorer = create_lazy_laplace(freqdist, logprob=False)
@@ -408,7 +410,7 @@ class TestLazyEvaluation:
 class TestEfficiencyIntegration:
     """Test integration of efficiency features."""
 
-    def test_vectorized_vs_regular_scoring(self):
+    def test_vectorized_vs_regular_scoring(self) -> None:
         """Test that vectorized scoring gives same results as regular scoring."""
         freqdist = {"a": 5, "b": 3, "c": 2, "d": 1}
         scorer = MLE(freqdist, logprob=False)
@@ -425,7 +427,7 @@ class TestEfficiencyIntegration:
         # Should be identical
         np.testing.assert_array_almost_equal(regular_scores, vectorized_scores)
 
-    def test_lazy_vs_regular_scoring(self):
+    def test_lazy_vs_regular_scoring(self) -> None:
         """Test that lazy scoring gives same results as regular scoring."""
         freqdist = {"a": 5, "b": 3, "c": 2}
 
@@ -442,7 +444,7 @@ class TestEfficiencyIntegration:
             lazy_score = lazy_scorer(elem)
             assert abs(regular_score - lazy_score) < 1e-10
 
-    def test_performance_improvement_demo(self):
+    def test_performance_improvement_demo(self) -> None:
         """Demonstrate performance improvements (not a strict test)."""
         # Create a large frequency distribution
         freqdist = {f"word_{i}": max(1, 100 - i) for i in range(100)}
@@ -479,7 +481,7 @@ class TestEfficiencyIntegration:
         print(f"Elements computed lazily: {len(computed_elements)}/{len(freqdist)}")
 
 
-def test_clear_caches():
+def test_clear_caches() -> None:
     """Test cache clearing functionality."""
     # Create some cached computations
     freqdist = {"a": 3, "b": 2}
