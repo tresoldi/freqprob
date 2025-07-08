@@ -20,7 +20,7 @@ class LidstoneConfig(ScoringMethodConfig):
     Attributes
     ----------
     gamma : float
-        Additive smoothing parameter (γ ≥ 0, default: 1.0)
+        Additive smoothing parameter (gamma ≥ 0, default: 1.0)
     bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
     logprob : bool
@@ -35,7 +35,7 @@ class LidstoneConfig(ScoringMethodConfig):
 
 @dataclass
 class LaplaceConfig(ScoringMethodConfig):
-    """Configuration for Laplace smoothing (Lidstone with γ=1).
+    """Configuration for Laplace smoothing (Lidstone with gamma=1).
 
 
     Attributes
@@ -53,7 +53,7 @@ class LaplaceConfig(ScoringMethodConfig):
 
 @dataclass
 class ELEConfig(ScoringMethodConfig):
-    """Configuration for Expected Likelihood Estimation (Lidstone with γ=0.5).
+    """Configuration for Expected Likelihood Estimation (Lidstone with gamma=0.5).
 
 
     Attributes
@@ -74,18 +74,18 @@ class Lidstone(ScoringMethod):
 
 
     Also known as "additive smoothing," this method addresses the zero
-    probability problem by adding a virtual count γ (gamma) to each possible
+    probability problem by adding a virtual count gamma (gamma) to each possible
     element. This is equivalent to assuming a symmetric Dirichlet prior
-    with concentration parameter γ.
+    with concentration parameter gamma.
 
     Mathematical Formulation
     ------------------------
     For elements with counts cᵢ, total count N = Σⱼcⱼ, and B bins:
 
-    P(wᵢ) = (cᵢ + γ) / (N + B×γ)  for observed elements wᵢ ∈ V
-    P(w)  = γ / (N + B×γ)         for unobserved elements w ∉ V
+    P(wᵢ) = (cᵢ + gamma) / (N + B*gamma)  for observed elements wᵢ ∈ V
+    P(w)  = gamma / (N + B*gamma)         for unobserved elements w ∉ V
 
-    The method effectively adds γ "virtual counts" to every possible element,
+    The method effectively adds gamma "virtual counts" to every possible element,
     creating a uniform pseudocount baseline that prevents zero probabilities.
 
     Parameters
@@ -93,10 +93,10 @@ class Lidstone(ScoringMethod):
     freqdist : FrequencyDistribution
         Frequency distribution mapping elements to their observed counts
     gamma : float
-        Additive smoothing parameter (γ ≥ 0). Common values:
-        - γ = 1.0: Laplace smoothing (uniform prior)
-        - γ = 0.5: Jeffreys prior (Expected Likelihood Estimation)
-        - γ → 0: Approaches MLE
+        Additive smoothing parameter (gamma ≥ 0). Common values:
+        - gamma = 1.0: Laplace smoothing (uniform prior)
+        - gamma = 0.5: Jeffreys prior (Expected Likelihood Estimation)
+        - gamma → 0: Approaches MLE
     bins : int | None, default=None
         Total number of possible elements. If None, uses vocabulary size |V|
     logprob : bool, default=True
@@ -107,46 +107,46 @@ class Lidstone(ScoringMethod):
     Basic Lidstone smoothing:
     >>> freqdist = {'apple': 3, 'banana': 1}
     >>> lidstone = Lidstone(freqdist, gamma=1.0, logprob=False)
-    >>> lidstone('apple')    # (3+1)/(4+2×1) = 4/6
+    >>> lidstone('apple')    # (3+1)/(4+2*1) = 4/6
     0.6666666666666666
-    >>> lidstone('banana')   # (1+1)/(4+2×1) = 2/6
+    >>> lidstone('banana')   # (1+1)/(4+2*1) = 2/6
     0.3333333333333333
-    >>> lidstone('cherry')   # 1/(4+2×1) = 1/6
+    >>> lidstone('cherry')   # 1/(4+2*1) = 1/6
     0.16666666666666666
 
     Effect of different gamma values:
     >>> # Higher gamma = more smoothing
     >>> smooth = Lidstone(freqdist, gamma=2.0, logprob=False)
-    >>> smooth('apple')      # (3+2)/(4+2×2) = 5/8
+    >>> smooth('apple')      # (3+2)/(4+2*2) = 5/8
     0.625
-    >>> smooth('cherry')     # 2/(4+2×2) = 2/8
+    >>> smooth('cherry')     # 2/(4+2*2) = 2/8
     0.25
 
     >>> # Lower gamma = less smoothing
     >>> minimal = Lidstone(freqdist, gamma=0.1, logprob=False)
-    >>> minimal('apple')     # (3+0.1)/(4+2×0.1) ≈ 3.1/4.2
+    >>> minimal('apple')     # (3+0.1)/(4+2*0.1) ≈ 3.1/4.2
     0.7380952380952381
 
     Specifying larger vocabulary:
     >>> lidstone_big = Lidstone(freqdist, gamma=1.0, bins=1000, logprob=False)
-    >>> lidstone_big('apple')    # (3+1)/(4+1000×1) = 4/1004
+    >>> lidstone_big('apple')    # (3+1)/(4+1000*1) = 4/1004
     0.003984063745019921
-    >>> lidstone_big('unseen')   # 1/(4+1000×1) = 1/1004
+    >>> lidstone_big('unseen')   # 1/(4+1000*1) = 1/1004
     0.0009960159203980099
 
     Properties
     ----------
     - Guarantees non-zero probabilities for all elements
-    - Reduces to MLE as γ → 0 and N → ∞
-    - Uniform pseudocount distribution when γ = constant
+    - Reduces to MLE as gamma → 0 and N → ∞
+    - Uniform pseudocount distribution when gamma = constant
     - Bayesian interpretation as Dirichlet prior
     - Simple and computationally efficient
 
     Notes
     -----
-    The choice of γ represents a bias-variance tradeoff:
-    - Small γ: Low bias but high variance (closer to MLE)
-    - Large γ: Higher bias but lower variance (more uniform)
+    The choice of gamma represents a bias-variance tradeoff:
+    - Small gamma: Low bias but high variance (closer to MLE)
+    - Large gamma: Higher bias but lower variance (more uniform)
 
     When bins > vocabulary size, the method reserves more probability
     mass for potential unseen elements.
@@ -203,7 +203,7 @@ class Laplace(Lidstone):
     """Laplace smoothing probability distribution.
 
 
-    A special case of Lidstone smoothing with γ = 1.0, also known as
+    A special case of Lidstone smoothing with gamma = 1.0, also known as
     "add-one smoothing." This is the most commonly used additive smoothing
     method, corresponding to a uniform Dirichlet prior.
 
@@ -257,14 +257,14 @@ class ELE(Lidstone):
     """Expected Likelihood Estimation probability distribution.
 
 
-    A special case of Lidstone smoothing with γ = 0.5, corresponding to
+    A special case of Lidstone smoothing with gamma = 0.5, corresponding to
     the Jeffreys prior for multinomial distributions. This provides a
     compromise between MLE and uniform smoothing.
 
     Mathematical Formulation
     ------------------------
-    P(wᵢ) = (cᵢ + 0.5) / (N + 0.5×B)  for observed elements wᵢ ∈ V
-    P(w)  = 0.5 / (N + 0.5×B)         for unobserved elements w ∉ V
+    P(wᵢ) = (cᵢ + 0.5) / (N + 0.5*B)  for observed elements wᵢ ∈ V
+    P(w)  = 0.5 / (N + 0.5*B)         for unobserved elements w ∉ V
 
     This corresponds to adding half a virtual observation to each element.
 
@@ -281,18 +281,18 @@ class ELE(Lidstone):
     --------
     >>> freqdist = {'cat': 4, 'dog': 2}
     >>> ele = ELE(freqdist, logprob=False)
-    >>> ele('cat')     # (4+0.5)/(6+0.5×2) = 4.5/7 ≈ 0.643
+    >>> ele('cat')     # (4+0.5)/(6+0.5*2) = 4.5/7 ≈ 0.643
     0.6428571428571429
-    >>> ele('dog')     # (2+0.5)/(6+0.5×2) = 2.5/7 ≈ 0.357
+    >>> ele('dog')     # (2+0.5)/(6+0.5*2) = 2.5/7 ≈ 0.357
     0.35714285714285715
-    >>> ele('bird')    # 0.5/(6+0.5×2) = 0.5/7 ≈ 0.071
+    >>> ele('bird')    # 0.5/(6+0.5*2) = 0.5/7 ≈ 0.071
     0.07142857142857142
 
     Notes
     -----
     ELE is particularly useful because:
     - Jeffreys prior is non-informative in the Bayesian sense
-    - Provides less smoothing than Laplace (γ=1)
+    - Provides less smoothing than Laplace (gamma=1)
     - Often performs well empirically
     - Reduces overfitting while maintaining sensitivity to data
     """

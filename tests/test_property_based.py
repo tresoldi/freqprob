@@ -13,7 +13,7 @@ import pytest
 import freqprob
 
 try:
-    from hypothesis import Verbosity, assume, given, settings
+    from hypothesis import assume, given, settings
     from hypothesis import strategies as st
     from hypothesis.stateful import RuleBasedStateMachine, invariant, rule
 
@@ -106,8 +106,8 @@ class TestPropertyBasedSmoothing:
         for i in range(len(sorted_words) - 1):
             word1, word2 = sorted_words[i], sorted_words[i + 1]
             if freq_dist[word1] > freq_dist[word2]:
-                assert laplace(word1) >= laplace(
-                    word2
+                assert (
+                    laplace(word1) >= laplace(word2)
                 ), f"Monotonicity violation: {word1}({freq_dist[word1]}) < {word2}({freq_dist[word2]})"
 
         # Property 4: Formula correctness
@@ -297,7 +297,7 @@ class TestPropertyBasedSmoothing:
             # All models should have results
             assert len(results) == len(models)
 
-            for model_name, metrics in results.items():
+            for _, metrics in results.items():
                 # Should have standard metrics
                 assert "perplexity" in metrics
                 assert "cross_entropy" in metrics
