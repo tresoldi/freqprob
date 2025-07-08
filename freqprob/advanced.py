@@ -27,7 +27,7 @@ class WittenBellConfig(ScoringMethodConfig):
 
     Attributes
     ----------
-    bins : Optional[int]
+    bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
     logprob : bool
         Whether to return log-probabilities (default: True)
@@ -45,7 +45,7 @@ class CertaintyDegreeConfig(ScoringMethodConfig):
 
     Attributes
     ----------
-    bins : Optional[int]
+    bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
     unobs_prob : Probability
         Reserved probability mass for unobserved elements (default: 0.0)
@@ -68,7 +68,7 @@ class SimpleGoodTuringConfig(ScoringMethodConfig):
     ----------
     p_value : float
         Confidence level for smoothing threshold (default: 0.05)
-    default_p0 : Optional[float]
+    default_p0 : float | None
         Fallback probability for unobserved elements (default: None)
     logprob : bool
         Whether to return log-probabilities (default: True)
@@ -78,7 +78,7 @@ class SimpleGoodTuringConfig(ScoringMethodConfig):
 
     p_value: float = 0.05
 
-    default_p0: Optional[float] = None
+    default_p0: float | None = None
     logprob: bool = True
     allow_fail: bool = True
 
@@ -117,7 +117,7 @@ class WittenBell(ScoringMethod):
     __slots__ = ()
 
     def __init__(
-        self, freqdist: FrequencyDistribution, bins: Optional[int] = None, logprob: bool = True
+        self, freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
     ) -> None:
         config = WittenBellConfig(bins=bins, logprob=logprob)
         super().__init__(config)
@@ -285,7 +285,7 @@ class SimpleGoodTuring(ScoringMethod):
         self,
         freqdist: FrequencyDistribution,
         p_value: float = 0.05,
-        default_p0: Optional[float] = None,
+        default_p0: float | None = None,
         logprob: bool = True,
         allow_fail: bool = True,
     ) -> None:
