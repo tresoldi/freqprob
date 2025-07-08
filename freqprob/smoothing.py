@@ -8,7 +8,6 @@ interpolated methods, and Bayesian approaches.
 import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from typing import DefaultDict
 
 from .base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 from .cache import cached_computation
@@ -72,7 +71,7 @@ class BayesianConfig(ScoringMethodConfig):
     Attributes
     ----------
     alpha : float
-        Dirichlet concentration parameter (α > 0, default: 1.0)
+        Dirichlet concentration parameter (alpha > 0, default: 1.0)
     logprob : bool
         Whether to return log-probabilities (default: True)
     """
@@ -94,11 +93,11 @@ class KneserNey(ScoringMethod):
     ------------------------
     For bigram model P(wᵢ|wᵢ₋₁):
 
-    P_KN(wᵢ|wᵢ₋₁) = max(c(wᵢ₋₁,wᵢ) - d, 0) / c(wᵢ₋₁) + λ(wᵢ₋₁) × P_cont(wᵢ)
+    P_KN(wᵢ|wᵢ₋₁) = max(c(wᵢ₋₁,wᵢ) - d, 0) / c(wᵢ₋₁) + λ(wᵢ₋₁) * P_cont(wᵢ)
 
     Where:
     - d is the discount parameter (0 < d < 1)
-    - λ(wᵢ₋₁) = d × |{w : c(wᵢ₋₁,w) > 0}| / c(wᵢ₋₁) is the backoff weight
+    - λ(wᵢ₋₁) = d * |{w : c(wᵢ₋₁,w) > 0}| / c(wᵢ₋₁) is the backoff weight
     - P_cont(wᵢ) = |{w : c(w,wᵢ) > 0}| / |{(w,w') : c(w,w') > 0}| is the continuation probability
 
     The key insight is that P_cont models how likely a word is to appear in
@@ -176,9 +175,9 @@ class KneserNey(ScoringMethod):
         discount = self.config.discount  # type: ignore
 
         # Separate contexts and words, compute various counts
-        contexts: DefaultDict[str, int] = defaultdict(int)
-        word_continuation_counts: DefaultDict[str, int] = defaultdict(int)
-        context_types: DefaultDict[str, set[str]] = defaultdict(set)
+        contexts: defaultdict[str, int] = defaultdict(int)
+        word_continuation_counts: defaultdict[str, int] = defaultdict(int)
+        context_types: defaultdict[str, set[str]] = defaultdict(set)
         all_bigram_types = 0
 
         # Process the frequency distribution
@@ -245,7 +244,7 @@ class ModifiedKneserNey(ScoringMethod):
 
     Mathematical Formulation
     ------------------------
-    P_MKN(wᵢ|wᵢ₋₁) = max(c(wᵢ₋₁,wᵢ) - D(c(wᵢ₋₁,wᵢ)), 0) / c(wᵢ₋₁) + λ(wᵢ₋₁) × P_cont(wᵢ)
+    P_MKN(wᵢ|wᵢ₋₁) = max(c(wᵢ₋₁,wᵢ) - D(c(wᵢ₋₁,wᵢ)), 0) / c(wᵢ₋₁) + λ(wᵢ₋₁) * P_cont(wᵢ)
 
     Where D(c) is a count-dependent discount:
     - D(1) = d₁ for singleton counts
@@ -253,9 +252,9 @@ class ModifiedKneserNey(ScoringMethod):
     - D(c) = d₃ for c ≥ 3
 
     The discounts are estimated from the data using:
-    - d₁ = 1 - 2 × (n₂/n₁) × (n₁/(n₁+2×n₂))
-    - d₂ = 2 - 3 × (n₃/n₂) × (n₂/(n₂+3×n₃))
-    - d₃ = 3 - 4 × (n₄/n₃) × (n₃/(n₃+4×n₄))
+    - d₁ = 1 - 2 * (n₂/n₁) * (n₁/(n₁+2*n₂))
+    - d₂ = 2 - 3 * (n₃/n₂) * (n₂/(n₂+3*n₃))
+    - d₃ = 3 - 4 * (n₄/n₃) * (n₃/(n₃+4*n₄))
 
     Parameters
     ----------
@@ -341,9 +340,9 @@ class ModifiedKneserNey(ScoringMethod):
         d3 = max(0.01, min(2.99, d3))
 
         # Separate contexts and words, compute various counts
-        contexts: DefaultDict[str, int] = defaultdict(int)
-        word_continuation_counts: DefaultDict[str, int] = defaultdict(int)
-        context_types: DefaultDict[str, set[str]] = defaultdict(set)
+        contexts: defaultdict[str, int] = defaultdict(int)
+        word_continuation_counts: defaultdict[str, int] = defaultdict(int)
+        context_types: defaultdict[str, set[str]] = defaultdict(set)
 
         for (context, word), count in freqdist.items():
             if not isinstance((context, word), tuple) or len((context, word)) != 2:
@@ -426,7 +425,7 @@ class InterpolatedSmoothing(ScoringMethod):
 
     Mathematical Formulation
     ------------------------
-    P_interp(w|context) = λ × P_high(w|context) + (1-λ) × P_low(w|context)
+    P_interp(w|context) = λ * P_high(w|context) + (1-λ) * P_low(w|context)
 
     Where:
     - P_high is the higher-order model (more specific context)
@@ -545,15 +544,15 @@ class BayesianSmoothing(ScoringMethod):
 
     Mathematical Formulation
     ------------------------
-    P_Bayes(wᵢ) = (cᵢ + α) / (N + V×α)
+    P_Bayes(wᵢ) = (cᵢ + alpha) / (N + V*alpha)
 
     Where:
     - cᵢ is the observed count for word wᵢ
-    - α is the Dirichlet concentration parameter (pseudocount)
+    - alpha is the Dirichlet concentration parameter (pseudocount)
     - N is the total observed count
     - V is the vocabulary size
 
-    This is equivalent to adding α pseudocounts to each possible outcome
+    This is equivalent to adding alpha pseudocounts to each possible outcome
     and corresponds to the posterior mean under a symmetric Dirichlet prior.
 
     Parameters
@@ -561,10 +560,10 @@ class BayesianSmoothing(ScoringMethod):
     freqdist : FrequencyDistribution
         Frequency distribution mapping elements to their observed counts
     alpha : float, default=1.0
-        Dirichlet concentration parameter (α > 0). Controls smoothing strength:
-        - α → 0: Approaches MLE (minimal smoothing)
-        - α = 1: Uniform prior (Laplace smoothing)
-        - α > 1: Stronger preference for uniformity
+        Dirichlet concentration parameter (alpha > 0). Controls smoothing strength:
+        - alpha → 0: Approaches MLE (minimal smoothing)
+        - alpha = 1: Uniform prior (Laplace smoothing)
+        - alpha > 1: Stronger preference for uniformity
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
@@ -573,24 +572,24 @@ class BayesianSmoothing(ScoringMethod):
     Basic Bayesian smoothing with uniform prior:
     >>> freqdist = {'apple': 8, 'banana': 4, 'cherry': 1}
     >>> bayes = BayesianSmoothing(freqdist, alpha=1.0, logprob=False)
-    >>> bayes('apple')     # (8+1)/(13+3×1) = 9/16
+    >>> bayes('apple')     # (8+1)/(13+3*1) = 9/16
     0.5625
-    >>> bayes('banana')    # (4+1)/(13+3×1) = 5/16
+    >>> bayes('banana')    # (4+1)/(13+3*1) = 5/16
     0.3125
-    >>> bayes('unseen')    # 1/(13+3×1) = 1/16
+    >>> bayes('unseen')    # 1/(13+3*1) = 1/16
     0.0625
 
     Effect of different alpha values:
-    >>> # Stronger smoothing (α = 2)
+    >>> # Stronger smoothing (alpha = 2)
     >>> bayes_smooth = BayesianSmoothing(freqdist, alpha=2.0, logprob=False)
-    >>> bayes_smooth('apple')    # (8+2)/(13+3×2) = 10/19
+    >>> bayes_smooth('apple')    # (8+2)/(13+3*2) = 10/19
     0.5263157894736842
-    >>> bayes_smooth('unseen')   # 2/(13+3×2) = 2/19
+    >>> bayes_smooth('unseen')   # 2/(13+3*2) = 2/19
     0.10526315789473684
 
-    >>> # Minimal smoothing (α = 0.1)
+    >>> # Minimal smoothing (alpha = 0.1)
     >>> bayes_minimal = BayesianSmoothing(freqdist, alpha=0.1, logprob=False)
-    >>> bayes_minimal('apple')   # (8+0.1)/(13+3×0.1) ≈ 8.1/13.3
+    >>> bayes_minimal('apple')   # (8+0.1)/(13+3*0.1) ≈ 8.1/13.3
     0.6090226699248121
 
     Properties
@@ -603,12 +602,12 @@ class BayesianSmoothing(ScoringMethod):
 
     Notes
     -----
-    The choice of α reflects prior beliefs about outcome probabilities:
-    - α = 1: Uniform prior (no preference for any outcome)
-    - α < 1: Sparse prior (prefers concentrated distributions)
-    - α > 1: Dense prior (prefers uniform distributions)
+    The choice of alpha reflects prior beliefs about outcome probabilities:
+    - alpha = 1: Uniform prior (no preference for any outcome)
+    - alpha < 1: Sparse prior (prefers concentrated distributions)
+    - alpha > 1: Dense prior (prefers uniform distributions)
 
-    This method is equivalent to Lidstone smoothing with γ = α, but the
+    This method is equivalent to Lidstone smoothing with γ = alpha, but the
     Bayesian interpretation provides additional theoretical insights.
     """
 
