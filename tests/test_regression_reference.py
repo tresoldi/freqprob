@@ -45,11 +45,11 @@ class TestNLTKRegression:
     """Regression tests against NLTK implementations."""
 
     @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
-    def test_mle_against_nltk(self):
+    def test_mle_against_nltk(self) -> None:
         """Test MLE implementation against NLTK MLEProbDist."""
         # Sample data
         words = ["the", "cat", "sat", "on", "the", "mat", "the", "cat"]
-        freq_counts = {}
+        freq_counts: dict[str, int] = {}
         for word in words:
             freq_counts[word] = freq_counts.get(word, 0) + 1
 
@@ -74,10 +74,10 @@ class TestNLTKRegression:
         assert freqprob_unknown == nltk_unknown == 0.0
 
     @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
-    def test_laplace_against_nltk(self):
+    def test_laplace_against_nltk(self) -> None:
         """Test Laplace smoothing against NLTK LaplaceeProbDist."""
         words = ["apple", "banana", "cherry", "apple", "banana", "apple"]
-        freq_counts = {}
+        freq_counts: dict[str, int] = {}
         for word in words:
             freq_counts[word] = freq_counts.get(word, 0) + 1
 
@@ -107,10 +107,10 @@ class TestNLTKRegression:
         assert relative_error < 1e-10
 
     @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
-    def test_lidstone_against_nltk(self):
+    def test_lidstone_against_nltk(self) -> None:
         """Test Lidstone smoothing against NLTK LidstoneProbDist."""
         words = ["dog", "cat", "mouse", "dog", "cat", "dog"]
-        freq_counts = {}
+        freq_counts: dict[str, int] = {}
         for word in words:
             freq_counts[word] = freq_counts.get(word, 0) + 1
 
@@ -144,7 +144,7 @@ class TestNLTKRegression:
                 assert relative_error < 1e-10
 
     @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
-    def test_frequency_distribution_compatibility(self):
+    def test_frequency_distribution_compatibility(self) -> None:
         """Test frequency distribution compatibility with NLTK."""
         # Create sample text
         text = [
@@ -175,7 +175,7 @@ class TestNLTKRegression:
         ]
 
         # FreqProb frequency counting
-        freqprob_counts = {}
+        freqprob_counts: dict[str, int] = {}
         for word in text:
             freqprob_counts[word] = freqprob_counts.get(word, 0) + 1
 
@@ -190,7 +190,7 @@ class TestNLTKRegression:
         assert sum(freqprob_counts.values()) == nltk_freqdist.N()
 
     @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
-    def test_ngram_generation_compatibility(self):
+    def test_ngram_generation_compatibility(self) -> None:
         """Test n-gram generation compatibility with NLTK."""
         from nltk.util import ngrams as nltk_ngrams
 
@@ -218,7 +218,7 @@ class TestScipyRegression:
     """Regression tests against scipy implementations."""
 
     @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")
-    def test_entropy_calculation(self):
+    def test_entropy_calculation(self) -> None:
         """Test entropy calculation against scipy."""
         # Create probability distribution
         counts = {"a": 40, "b": 30, "c": 20, "d": 10}
@@ -240,7 +240,7 @@ class TestScipyRegression:
         assert abs(freqprob_entropy - scipy_entropy) < 1e-12
 
     @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")
-    def test_kl_divergence_calculation(self):
+    def test_kl_divergence_calculation(self) -> None:
         """Test KL divergence calculation against scipy."""
         # Two distributions
         counts1 = {"x": 60, "y": 30, "z": 10}
@@ -269,7 +269,7 @@ class TestScipyRegression:
         assert relative_error < 0.01  # 1% tolerance
 
     @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")
-    def test_multinomial_properties(self):
+    def test_multinomial_properties(self) -> None:
         """Test multinomial distribution properties against scipy."""
         # Parameters for multinomial distribution
         n_trials = 1000
@@ -294,7 +294,7 @@ class TestScipyRegression:
             assert error < 0.05  # Allow 5% error
 
     @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")
-    def test_dirichlet_prior_properties(self):
+    def test_dirichlet_prior_properties(self) -> None:
         """Test Dirichlet prior properties against scipy."""
         # Dirichlet parameters (concentration parameters)
         alpha = [2.0, 1.0, 0.5]
@@ -324,7 +324,7 @@ class TestSklearnRegression:
     """Regression tests against scikit-learn implementations."""
 
     @pytest.mark.skipif(not HAS_SKLEARN, reason="sklearn not available")
-    def test_count_vectorizer_compatibility(self):
+    def test_count_vectorizer_compatibility(self) -> None:
         """Test compatibility with sklearn CountVectorizer."""
         # Sample documents
         documents = ["the cat sat on the mat", "the dog ran in the park", "cats and dogs are pets"]
@@ -354,7 +354,7 @@ class TestSklearnRegression:
 class TestReferenceDataRegression:
     """Regression tests against known reference datasets and results."""
 
-    def test_brown_corpus_sample_regression(self):
+    def test_brown_corpus_sample_regression(self) -> None:
         """Test against a small sample that mimics Brown corpus statistics."""
         # Simulated Brown corpus word frequencies (top 20 words)
         brown_sample = {
@@ -397,7 +397,7 @@ class TestReferenceDataRegression:
         assert laplace("the") > laplace("of")
         assert laplace("of") > laplace("and")
 
-    def test_zipfian_distribution_regression(self):
+    def test_zipfian_distribution_regression(self) -> None:
         """Test against theoretical Zipfian distribution."""
         # Generate Zipfian distribution
         vocab_size = 1000
@@ -426,7 +426,7 @@ class TestReferenceDataRegression:
             # Higher rank should have higher probability
             assert prob_rank > prob_next
 
-    def test_known_perplexity_results(self):
+    def test_known_perplexity_results(self) -> None:
         """Test perplexity calculation against known results."""
         # Simple test case with known perplexity
         train_counts = {"a": 2, "b": 1}  # P(a)=2/3, P(b)=1/3
@@ -445,7 +445,7 @@ class TestReferenceDataRegression:
 
         assert abs(perplexity - expected_perplexity) < 1e-12
 
-    def test_cross_entropy_known_results(self):
+    def test_cross_entropy_known_results(self) -> None:
         """Test cross-entropy against known analytical results."""
         # Simple uniform distribution
         uniform_counts = {"x": 1, "y": 1, "z": 1}  # Each has probability 1/3
@@ -466,7 +466,7 @@ class TestReferenceDataRegression:
             ("Lidstone", {"gamma": 0.5, "bins": 100}),
         ],
     )
-    def test_smoothing_monotonicity_regression(self, smoothing_method, params):
+    def test_smoothing_monotonicity_regression(self, smoothing_method: str, params: dict) -> None:
         """Test monotonicity properties across smoothing methods."""
         # Create distribution with clear frequency ordering
         ordered_counts = {
@@ -491,7 +491,7 @@ class TestReferenceDataRegression:
                 probabilities[i] >= probabilities[i + 1]
             ), f"{smoothing_method} violates monotonicity: {words[i]} vs {words[i+1]}"
 
-    def test_mathematical_identities_regression(self):
+    def test_mathematical_identities_regression(self) -> None:
         """Test mathematical identities that should hold."""
         counts = {"alpha": 25, "beta": 15, "gamma": 10}
 
@@ -525,7 +525,7 @@ class TestReferenceDataRegression:
 class TestLiteratureRegression:
     """Regression tests against results from academic literature."""
 
-    def test_chen_goodman_1996_results(self):
+    def test_chen_goodman_1996_results(self) -> None:
         """Test against results similar to Chen & Goodman (1996) smoothing comparison."""
         # Simulate a scenario similar to their experimental setup
         # (simplified version for testing)
@@ -576,7 +576,7 @@ class TestLiteratureRegression:
         assert perplexities["laplace"] > 1.0  # Sanity check
         assert perplexities["ele"] > 1.0  # Sanity check
 
-    def test_good_turing_turing_1953_properties(self):
+    def test_good_turing_turing_1953_properties(self) -> None:
         """Test Good-Turing properties based on original Turing (1953) work."""
         # Create distribution with clear frequency-of-frequencies structure
         # This mimics the type of data Turing analyzed
