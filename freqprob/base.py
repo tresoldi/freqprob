@@ -8,10 +8,10 @@ for all smoothing methods in the freqprob library.
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import Any, TypeVar
 
 # Type aliases for clarity
-Element = str | int | float | tuple | frozenset
+Element = str | int | float | tuple[Any, ...] | frozenset[Any]
 Count = int
 Probability = float
 LogProbability = float
