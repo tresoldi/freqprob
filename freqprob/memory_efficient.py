@@ -297,10 +297,7 @@ class CompressedFrequencyDistribution:
         CompressedFrequencyDistribution
             Decompressed distribution
         """
-        if use_compression:
-            serialized = gzip.decompress(compressed_data)
-        else:
-            serialized = compressed_data
+        serialized = gzip.decompress(compressed_data) if use_compression else compressed_data
 
         data = pickle.loads(serialized)
 

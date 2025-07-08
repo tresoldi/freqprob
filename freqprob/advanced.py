@@ -366,13 +366,12 @@ class SimpleGoodTuring(ScoringMethod):
             # with count equal to `r+1` (following comments and variable names in
             # both Sampson's C implementation and in NLTK, we check at which
             # point we should `switch`)
-            if r + 1 not in freqs_of_freqs:
-                if not use_y:
-                    # An unobserved count was reached before we were able to cross
-                    # the smoothing threshold; this means that assumptions were
-                    # not met and the results will likely be off.
-                    if allow_fail:
-                        raise RuntimeWarning("In SGT, unobserved count before smoothing threshold.")
+            if r + 1 not in freqs_of_freqs and not use_y:
+                # An unobserved count was reached before we were able to cross
+                # the smoothing threshold; this means that assumptions were
+                # not met and the results will likely be off.
+                if not allow_fail:
+                    raise RuntimeWarning("In SGT, unobserved count before smoothing threshold.")
 
                 use_y = True
 
