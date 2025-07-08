@@ -82,7 +82,7 @@ class TestCaching:
         # First computation should populate cache
         start_time = time.time()
         sgt1 = SimpleGoodTuring(freqdist, allow_fail=False)
-        first_time = time.time() - start_time
+        _ = time.time() - start_time  # first_time not used
 
         stats_after_first = get_cache_stats()
         assert stats_after_first["sgt_cache_size"] > initial_stats["sgt_cache_size"]
@@ -90,7 +90,7 @@ class TestCaching:
         # Second computation with same parameters should be faster (cached)
         start_time = time.time()
         sgt2 = SimpleGoodTuring(freqdist, allow_fail=False)
-        second_time = time.time() - start_time
+        _ = time.time() - start_time  # second_time not used
 
         # Results should be identical
         assert sgt1("word_1") == sgt2("word_1")
