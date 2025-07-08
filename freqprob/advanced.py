@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 # Import 3rd-party modules
 import numpy as np
-import scipy  # type: ignore
+import scipy
 import scipy.linalg
 import scipy.stats
 
@@ -216,13 +216,18 @@ class CertaintyDegree(ScoringMethod):
         # between 1.0 discounted the calculated mass and 1.0 discounted the
         # minimum mass probability reserved.
         if self.logprob:
-            unobs_prob = max(unobs_prob, self._unobs)
+            # Ensure unobs_prob is not None and handle self._unobs initialization
+            unobs_prob = unobs_prob or 0.0
+            current_unobs = getattr(self, '_unobs', 0.0) or 0.0
+            unobs_prob = max(unobs_prob, current_unobs)
             prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
             self._prob = {
                 sample: math.log((count / n) * prob_space) for sample, count in freqdist.items()
             }
             self._unobs = math.log(-(prob_space - 1.0))
         else:
+            # Ensure unobs_prob is not None
+            unobs_prob = unobs_prob or 0.0
             prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
             self._prob = {sample: (count / n) * prob_space for sample, count in freqdist.items()}
             self._unobs = -(prob_space - 1.0)
