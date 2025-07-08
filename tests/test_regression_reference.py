@@ -15,10 +15,8 @@ import freqprob
 
 # Optional imports for reference implementations
 try:
-    import nltk
     from nltk.probability import (
         FreqDist,
-        KneserNeyProbDist,
         LaplaceeProbDist,
         LidstoneProbDist,
         MLEProbDist,
@@ -36,7 +34,6 @@ except ImportError:
     HAS_SCIPY = False
 
 try:
-    import sklearn
     from sklearn.feature_extraction.text import CountVectorizer
 
     HAS_SKLEARN = True
@@ -204,7 +201,7 @@ class TestNLTKRegression:
         freqprob_trigrams = freqprob.generate_ngrams(tokens, 3)
 
         # NLTK n-grams (need to add sentence boundaries manually for comparison)
-        nltk_tokens = ["<s>"] + tokens + ["</s>"]
+        nltk_tokens = ["<s>", *tokens, "</s>"]
         nltk_bigrams = list(nltk_ngrams(nltk_tokens, 2))
         nltk_trigrams = list(nltk_ngrams(nltk_tokens, 3))
 
@@ -462,7 +459,7 @@ class TestReferenceDataRegression:
         assert abs(ce - expected_ce) < 1e-14
 
     @pytest.mark.parametrize(
-        "smoothing_method,params",
+        ("smoothing_method", "params"),
         [
             ("Laplace", {"bins": 100}),
             ("ELE", {"bins": 100}),
@@ -563,7 +560,7 @@ class TestLiteratureRegression:
             try:
                 pp = freqprob.perplexity(method, test_words)
                 perplexities[name] = pp
-            except:
+            except Exception:
                 perplexities[name] = float("inf")
 
         # Expected ordering based on literature (for this type of data):
@@ -607,11 +604,9 @@ class TestLiteratureRegression:
 
             # Good-Turing should redistribute probability mass
             # Words with count 1 should get less probability than their MLE estimate
-            mle = freqprob.MLE(freq_dist, logprob=False)
 
             hapax_word = "hapax_0"
             sgt_prob = sgt(hapax_word)
-            mle_prob = mle(hapax_word)
 
             # SGT typically reduces probability of low-frequency words
             # (though this can vary depending on the frequency distribution)
