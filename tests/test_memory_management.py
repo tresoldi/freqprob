@@ -502,7 +502,7 @@ class TestMemoryProfiling:
 
         @profile_memory_usage("decorated_function")
         def test_function():
-            return [i for i in range(1000)]
+            return list(range(1000))
 
         # Call function
         result = test_function()
@@ -548,7 +548,7 @@ class TestMemoryProfiling:
         monitor.start_monitoring()
 
         # Check memory (might trigger alert depending on current usage)
-        alert = monitor.check_memory()
+        monitor.check_memory()
         # Can't assert on alert presence as it depends on actual memory usage
 
         monitor.stop_monitoring()
@@ -633,11 +633,11 @@ class TestMemoryManagementIntegration:
 
         # Profile compressed distribution creation
         with profiler.profile_operation("create_compressed"):
-            compressed = create_compressed_distribution(test_data, quantization_levels=256)
+            create_compressed_distribution(test_data, quantization_levels=256)
 
         # Profile sparse distribution creation
         with profiler.profile_operation("create_sparse"):
-            sparse = create_sparse_distribution(test_data)
+            create_sparse_distribution(test_data)
 
         # Check both operations were profiled
         all_metrics = profiler.get_all_metrics()
