@@ -39,7 +39,7 @@ for i, context in enumerate(contexts):
         LARGE_BIGRAM_DATA[(context, word)] = count
 
 
-def test_kneser_ney_basic():
+def test_kneser_ney_basic() -> None:
     """Test basic Kneser-Ney functionality."""
     kn = KneserNey(BIGRAM_DATA, discount=0.75, logprob=False)
 
@@ -59,7 +59,7 @@ def test_kneser_ney_basic():
     assert 0 < prob_unseen < prob_the_cat
 
 
-def test_kneser_ney_logprob():
+def test_kneser_ney_logprob() -> None:
     """Test Kneser-Ney with log-probabilities."""
     kn = KneserNey(BIGRAM_DATA, discount=0.75, logprob=True)
 
@@ -73,7 +73,7 @@ def test_kneser_ney_logprob():
     assert log_prob_unseen < log_prob  # Should be less likely
 
 
-def test_kneser_ney_discount_validation():
+def test_kneser_ney_discount_validation() -> None:
     """Test that Kneser-Ney validates discount parameter."""
     with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
         KneserNey(BIGRAM_DATA, discount=0.0)  # Invalid: discount must be > 0
@@ -85,7 +85,7 @@ def test_kneser_ney_discount_validation():
         KneserNey(BIGRAM_DATA, discount=1.5)  # Invalid: discount must be < 1
 
 
-def test_modified_kneser_ney_basic():
+def test_modified_kneser_ney_basic() -> None:
     """Test basic Modified Kneser-Ney functionality."""
     mkn = ModifiedKneserNey(LARGE_BIGRAM_DATA, logprob=False)
 
@@ -105,7 +105,7 @@ def test_modified_kneser_ney_basic():
     assert prob_unseen > 0
 
 
-def test_modified_kneser_ney_logprob():
+def test_modified_kneser_ney_logprob() -> None:
     """Test Modified Kneser-Ney with log-probabilities."""
     mkn = ModifiedKneserNey(LARGE_BIGRAM_DATA, logprob=True)
 
@@ -116,7 +116,7 @@ def test_modified_kneser_ney_logprob():
     assert log_prob_unseen < 0
 
 
-def test_interpolated_smoothing_basic():
+def test_interpolated_smoothing_basic() -> None:
     """Test basic interpolated smoothing functionality."""
     # Create high-order and low-order distributions
     high_order = {"trigram_1": 3, "trigram_2": 2, "trigram_3": 1}
@@ -141,7 +141,7 @@ def test_interpolated_smoothing_basic():
     assert prob_unseen > 0
 
 
-def test_interpolated_smoothing_weights():
+def test_interpolated_smoothing_weights() -> None:
     """Test interpolated smoothing with different weights."""
     high_order = {"common": 1}
     low_order = {"common": 1}
@@ -159,7 +159,7 @@ def test_interpolated_smoothing_weights():
     assert prob_high == prob_low  # Same input data, so interpolation doesn't matter
 
 
-def test_interpolated_smoothing_validation():
+def test_interpolated_smoothing_validation() -> None:
     """Test that interpolated smoothing validates lambda parameter."""
     high_order = {"a": 1}
     low_order = {"b": 1}
@@ -171,7 +171,7 @@ def test_interpolated_smoothing_validation():
         InterpolatedSmoothing(high_order, low_order, lambda_weight=1.1)
 
 
-def test_bayesian_smoothing_basic():
+def test_bayesian_smoothing_basic() -> None:
     """Test basic Bayesian smoothing functionality."""
     bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)
 
@@ -186,7 +186,7 @@ def test_bayesian_smoothing_basic():
     assert abs(prob_unseen - 1 / 13) < 1e-10
 
 
-def test_bayesian_smoothing_alpha_effects():
+def test_bayesian_smoothing_alpha_effects() -> None:
     """Test that different alpha values affect smoothing strength."""
     # Minimal smoothing
     bayes_min = BayesianSmoothing(SIMPLE_DATA, alpha=0.1, logprob=False)
@@ -206,7 +206,7 @@ def test_bayesian_smoothing_alpha_effects():
     assert gap_strong < gap_min
 
 
-def test_bayesian_smoothing_logprob():
+def test_bayesian_smoothing_logprob() -> None:
     """Test Bayesian smoothing with log-probabilities."""
     bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=True)
 
@@ -218,7 +218,7 @@ def test_bayesian_smoothing_logprob():
     assert log_prob_unseen < log_prob
 
 
-def test_bayesian_smoothing_validation():
+def test_bayesian_smoothing_validation() -> None:
     """Test that Bayesian smoothing validates alpha parameter."""
     with pytest.raises(ValueError, match="Alpha.*positive"):
         BayesianSmoothing(SIMPLE_DATA, alpha=0.0)
@@ -227,7 +227,7 @@ def test_bayesian_smoothing_validation():
         BayesianSmoothing(SIMPLE_DATA, alpha=-1.0)
 
 
-def test_all_methods_string_representation():
+def test_all_methods_string_representation() -> None:
     """Test that all methods have proper string representation."""
     kn = KneserNey(BIGRAM_DATA)
     mkn = ModifiedKneserNey(BIGRAM_DATA)
@@ -246,10 +246,10 @@ def test_all_methods_string_representation():
     assert "log-scorer" in str(bayes)
 
 
-def test_edge_case_empty_data():
+def test_edge_case_empty_data() -> None:
     """Test behavior with empty or minimal data."""
     # Test with empty data
-    empty_data = {}
+    empty_data: dict[tuple[str, str], int] = {}
 
     # These should not crash but may produce degenerate results
     try:
@@ -267,7 +267,7 @@ def test_edge_case_empty_data():
     assert prob > 0
 
 
-def test_consistency_with_traditional_methods():
+def test_consistency_with_traditional_methods() -> None:
     """Test that Bayesian smoothing with alpha=1 matches Laplace smoothing."""
     from freqprob import Laplace
 
@@ -287,7 +287,7 @@ def test_consistency_with_traditional_methods():
     assert abs(bayes_unseen - laplace_unseen) < 1e-10
 
 
-def test_probability_normalization():
+def test_probability_normalization() -> None:
     """Test that probabilities are reasonable (don't test exact normalization)."""
     bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)
 
@@ -305,7 +305,7 @@ def test_probability_normalization():
     assert 0.5 < total_observed < 1.5  # Should be roughly around 1 but allow flexibility
 
 
-def test_kneser_ney_context_sensitivity():
+def test_kneser_ney_context_sensitivity() -> None:
     """Test that Kneser-Ney handles context diversity appropriately."""
     # Create data where words have different context diversity
     bigram_data = {
