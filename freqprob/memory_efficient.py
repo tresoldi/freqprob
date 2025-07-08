@@ -730,9 +730,9 @@ class QuantizedProbabilityTable:
         return {
             "mean_absolute_error": sum(errors) / len(errors),
             "max_absolute_error": max(errors),
-            "mean_relative_error": sum(relative_errors) / len(relative_errors)
-            if relative_errors
-            else 0.0,
+            "mean_relative_error": (
+                sum(relative_errors) / len(relative_errors) if relative_errors else 0.0
+            ),
             "max_relative_error": max(relative_errors) if relative_errors else 0.0,
             "num_elements": len(errors),
         }

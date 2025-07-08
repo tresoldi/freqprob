@@ -331,9 +331,9 @@ class StreamingFrequencyDistribution:
                 "max_vocab_size": self._max_vocab_size,
                 "min_count_threshold": self._min_count_threshold,
                 "decay_factor": self._decay_factor,
-                "most_frequent": max(self._counts.items(), key=lambda x: x[1])
-                if self._counts
-                else None,
+                "most_frequent": (
+                    max(self._counts.items(), key=lambda x: x[1]) if self._counts else None
+                ),
                 "average_count": self._total_count / len(self._counts) if self._counts else 0,
             }
 
