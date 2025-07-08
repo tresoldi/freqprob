@@ -39,7 +39,7 @@ class ComputationCache:
         self._cache: dict[str, Any] = {}
         self.max_size = max_size
 
-    def _generate_key(self, freqdist: FrequencyDistribution, **kwargs) -> str:
+    def _generate_key(self, freqdist: FrequencyDistribution, **kwargs: Any) -> str:
         """Generate a unique cache key for the given parameters.
 
         Parameters
@@ -62,7 +62,7 @@ class ComputationCache:
         hash_input = pickle.dumps((sorted_items, sorted_kwargs), protocol=pickle.HIGHEST_PROTOCOL)
         return hashlib.sha256(hash_input).hexdigest()
 
-    def get(self, freqdist: FrequencyDistribution, **kwargs) -> Any | None:
+    def get(self, freqdist: FrequencyDistribution, **kwargs: Any) -> Any | None:
         """Retrieve cached result for the given parameters.
 
         Parameters
@@ -80,7 +80,7 @@ class ComputationCache:
         key = self._generate_key(freqdist, **kwargs)
         return self._cache.get(key)
 
-    def set(self, freqdist: FrequencyDistribution, result: Any, **kwargs) -> None:
+    def set(self, freqdist: FrequencyDistribution, result: Any, **kwargs: Any) -> None:
         """Store result in cache for the given parameters.
 
         Parameters
@@ -131,7 +131,7 @@ def cached_sgt_computation(func: Callable) -> Callable:
     """
 
     @wraps(func)
-    def wrapper(self, freqdist: FrequencyDistribution) -> None:
+    def wrapper(self: Any, freqdist: FrequencyDistribution) -> None:
         # Create cache key using configuration parameters
         config_params = {
             "p_value": getattr(self.config, "p_value", None),
@@ -157,7 +157,7 @@ def cached_sgt_computation(func: Callable) -> Callable:
     return wrapper
 
 
-def cached_computation(cache_instance: ComputationCache = None) -> Callable:
+def cached_computation(cache_instance: ComputationCache | None = None) -> Callable:
     """Generic decorator to cache expensive computations.
 
     Parameters
@@ -175,7 +175,7 @@ def cached_computation(cache_instance: ComputationCache = None) -> Callable:
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(self, freqdist: FrequencyDistribution) -> None:
+        def wrapper(self: Any, freqdist: FrequencyDistribution) -> None:
             # Create cache key using all configuration parameters
             config_params = {}
             if hasattr(self, "config"):
@@ -241,7 +241,7 @@ class MemoizedProperty:
         self.attrname = None
         self.__doc__ = func.__doc__
 
-    def __set_name__(self, owner, name):
+    def __set_name__(self, owner: Any, name: str) -> None:
         if self.attrname is None:
             self.attrname = name
         elif name != self.attrname:
@@ -250,7 +250,7 @@ class MemoizedProperty:
                 f"({self.attrname!r} and {name!r})."
             )
 
-    def __get__(self, instance, owner=None):
+    def __get__(self, instance: Any, owner: Any = None) -> Any:
         if instance is None:
             return self
         if self.attrname is None:
@@ -276,7 +276,7 @@ class MemoizedProperty:
         return val
 
 
-def _get_cache_lock(instance):
+def _get_cache_lock(instance: Any) -> Any:
     """Get a lock for thread-safe caching (simplified implementation)."""
     # For simplicity, we'll use a basic approach
     # In production, you might want a more sophisticated locking mechanism
