@@ -45,9 +45,7 @@ def generate_ngrams(text: str | list[str], n: int) -> list[tuple[str, ...]]:
     return [tuple(tokens[i : i + n]) for i in range(len(tokens) - n + 1)]
 
 
-def word_frequency(
-    text: str | list[str], normalize: bool = False
-) -> dict[str, int | float]:
+def word_frequency(text: str | list[str], normalize: bool = False) -> dict[str, int | float]:
     """Compute word frequency from text.
 
     Parameters
