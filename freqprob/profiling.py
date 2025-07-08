@@ -476,7 +476,7 @@ class DistributionMemoryAnalyzer:
                     elif method_name == "StreamingMLE":
                         from .streaming import StreamingMLE
 
-                        scorer = StreamingMLE(freqdist)
+                        scorer = StreamingMLE(freqdist)  # type: ignore[arg-type]
                     else:
                         continue
 
