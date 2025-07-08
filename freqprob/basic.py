@@ -141,7 +141,7 @@ class Uniform(ScoringMethod):
         freqdist : FrequencyDistribution
             Frequency distribution (counts are ignored, only vocabulary size used)
         """
-        unobs_prob = self.config.unobs_prob
+        unobs_prob = self.config.unobs_prob or 0.0
 
         vocab_size = len(freqdist)
 
@@ -233,7 +233,7 @@ class Random(ScoringMethod):
         freqdist : FrequencyDistribution
             Original frequency distribution used to determine count range
         """
-        unobs_prob = self.config.unobs_prob
+        unobs_prob = self.config.unobs_prob or 0.0
 
         # Generate random counts within the observed range
         if not freqdist:
@@ -353,7 +353,7 @@ class MLE(ScoringMethod):
         freqdist : FrequencyDistribution
             Frequency distribution with element counts
         """
-        unobs_prob = self.config.unobs_prob
+        unobs_prob = self.config.unobs_prob or 0.0
 
         # Calculate total count for normalization
         total_count = sum(freqdist.values())
