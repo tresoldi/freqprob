@@ -75,13 +75,13 @@ def test_kneser_ney_logprob():
 
 def test_kneser_ney_discount_validation():
     """Test that Kneser-Ney validates discount parameter."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
         KneserNey(BIGRAM_DATA, discount=0.0)  # Invalid: discount must be > 0
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
         KneserNey(BIGRAM_DATA, discount=1.0)  # Invalid: discount must be < 1
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
         KneserNey(BIGRAM_DATA, discount=1.5)  # Invalid: discount must be < 1
 
 
@@ -164,10 +164,10 @@ def test_interpolated_smoothing_validation():
     high_order = {"a": 1}
     low_order = {"b": 1}
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Lambda.*between.*0.*1"):
         InterpolatedSmoothing(high_order, low_order, lambda_weight=-0.1)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Lambda.*between.*0.*1"):
         InterpolatedSmoothing(high_order, low_order, lambda_weight=1.1)
 
 
@@ -176,9 +176,9 @@ def test_bayesian_smoothing_basic():
     bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)
 
     # Test observed elements
-    prob_apple = bayes("apple")  # (6+1)/(10+3×1) = 7/13
-    prob_cherry = bayes("cherry")  # (1+1)/(10+3×1) = 2/13
-    prob_unseen = bayes("unseen")  # 1/(10+3×1) = 1/13
+    prob_apple = bayes("apple")  # (6+1)/(10+3*1) = 7/13
+    prob_cherry = bayes("cherry")  # (1+1)/(10+3*1) = 2/13
+    prob_unseen = bayes("unseen")  # 1/(10+3*1) = 1/13
 
     assert prob_apple > prob_cherry > prob_unseen
     assert abs(prob_apple - 7 / 13) < 1e-10
@@ -220,10 +220,10 @@ def test_bayesian_smoothing_logprob():
 
 def test_bayesian_smoothing_validation():
     """Test that Bayesian smoothing validates alpha parameter."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Alpha.*positive"):
         BayesianSmoothing(SIMPLE_DATA, alpha=0.0)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Alpha.*positive"):
         BayesianSmoothing(SIMPLE_DATA, alpha=-1.0)
 
 
