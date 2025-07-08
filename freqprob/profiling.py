@@ -13,7 +13,7 @@ from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Optional
+from typing import Any
 
 import psutil
 
@@ -44,7 +44,7 @@ class MemorySnapshot:
     rss_mb: float
     vms_mb: float
     python_objects_mb: float
-    peak_mb: Optional[float] = None
+    peak_mb: float | None = None
 
 
 @dataclass
@@ -71,7 +71,7 @@ class PerformanceMetrics:
     execution_time: float
     memory_before: MemorySnapshot
     memory_after: MemorySnapshot
-    memory_peak: Optional[float] = None
+    memory_peak: float | None = None
 
     @property
     def memory_delta_mb(self) -> float:
@@ -200,7 +200,7 @@ class MemoryProfiler:
 
             self._metrics.append(metrics)
 
-    def get_latest_metrics(self) -> Optional[PerformanceMetrics]:
+    def get_latest_metrics(self) -> PerformanceMetrics | None:
         """Get the latest performance metrics.
 
 
@@ -433,7 +433,7 @@ class DistributionMemoryAnalyzer:
         self,
         freqdist: FrequencyDistribution,
         test_elements: list[str],
-        methods_to_test: Optional[list[str]] = None,
+        methods_to_test: list[str] | None = None,
     ) -> dict[str, Any]:
         """Benchmark memory usage and performance of different scoring methods.
 
@@ -550,7 +550,7 @@ class MemoryMonitor:
 
         print("Stopped memory monitoring")
 
-    def check_memory(self) -> Optional[dict[str, Any]]:
+    def check_memory(self) -> dict[str, Any] | None:
         """Check current memory usage and trigger alerts if needed.
 
 
@@ -621,10 +621,9 @@ class MemoryMonitor:
 
         if second_avg > first_avg * 1.1:
             return "increasing"
-        elif second_avg < first_avg * 0.9:
+        if second_avg < first_avg * 0.9:
             return "decreasing"
-        else:
-            return "stable"
+        return "stable"
 
 
 # Utility functions
@@ -658,7 +657,7 @@ def get_object_memory_usage(obj: Any) -> dict[str, int]:
             "num_items": len(obj),
             "avg_item_size": (total_size - basic_size) / len(obj) if obj else 0,
         }
-    elif isinstance(obj, (list, tuple)):
+    if isinstance(obj, (list, tuple)):
         total_size = basic_size
         for item in obj:
             total_size += sys.getsizeof(item)
@@ -668,8 +667,7 @@ def get_object_memory_usage(obj: Any) -> dict[str, int]:
             "num_items": len(obj),
             "avg_item_size": (total_size - basic_size) / len(obj) if obj else 0,
         }
-    else:
-        return {"basic_size": basic_size, "total_size": basic_size, "type": type(obj).__name__}
+    return {"basic_size": basic_size, "total_size": basic_size, "type": type(obj).__name__}
 
 
 def force_garbage_collection() -> dict[str, int]:

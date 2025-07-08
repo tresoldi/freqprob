@@ -150,11 +150,11 @@ class Uniform(ScoringMethod):
             unobs_prob = max(unobs_prob, self._unobs)
             uniform_prob = (1.0 - unobs_prob) / vocab_size
             log_uniform_prob = math.log(uniform_prob)
-            self._prob = {elem: log_uniform_prob for elem in freqdist}
+            self._prob = dict.fromkeys(freqdist, log_uniform_prob)
             self._unobs = math.log(unobs_prob)
         else:
             uniform_prob = (1.0 - unobs_prob) / vocab_size
-            self._prob = {elem: uniform_prob for elem in freqdist}
+            self._prob = dict.fromkeys(freqdist, uniform_prob)
             self._unobs = unobs_prob
 
 

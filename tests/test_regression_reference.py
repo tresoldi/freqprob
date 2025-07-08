@@ -150,11 +150,7 @@ class TestNLTKRegression:
     def test_frequency_distribution_compatibility(self):
         """Test frequency distribution compatibility with NLTK."""
         # Create sample text
-        text = """
-        The quick brown fox jumps over the lazy dog.
-        The dog was very lazy and slept all day.
-        The fox was quick and brown.
-        """.split()
+        text = ["The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog.", "The", "dog", "was", "very", "lazy", "and", "slept", "all", "day.", "The", "fox", "was", "quick", "and", "brown."]
 
         # FreqProb frequency counting
         freqprob_counts = {}
