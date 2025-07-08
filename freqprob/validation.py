@@ -13,7 +13,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 
@@ -24,13 +24,7 @@ try:
 except ImportError:
     HAS_PSUTIL = False
 
-try:
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
-    HAS_PLOTTING = True
-except ImportError:
-    HAS_PLOTTING = False
+HAS_PLOTTING = False
 
 
 @dataclass
@@ -69,8 +63,8 @@ class ValidationResult:
 
     test_name: str
     passed: bool
-    error_message: Optional[str] = None
-    metrics: Optional[PerformanceMetrics] = None
+    error_message: str | None = None
+    metrics: PerformanceMetrics | None = None
     details: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -170,7 +164,7 @@ class PerformanceProfiler:
             **kwargs,
         ):
             for _ in range(iterations):
-                method = method_class(freq_dist, **kwargs)
+                _ = method_class(freq_dist, **kwargs)
 
         return self.results[-1]
 
@@ -206,7 +200,7 @@ class PerformanceProfiler:
                 iterations=len(test_batch),
                 batch_size=batch_size,
             ):
-                scores = vectorized.score_batch(test_batch)
+                _ = vectorized.score_batch(test_batch)
 
             results.append(self.results[-1])
 
@@ -230,7 +224,7 @@ class PerformanceProfiler:
             ):
                 method = method_class(scaled_dist, **kwargs)
                 # Force some computation to ensure memory is allocated
-                _ = method(list(scaled_dist.keys())[0])
+                _ = method(next(iter(scaled_dist.keys())))
 
             results.append(self.results[-1])
 
@@ -376,7 +370,7 @@ class PerformanceProfiler:
 class ValidationSuite:
     """Comprehensive validation suite for FreqProb methods."""
 
-    def __init__(self, profiler: Optional[PerformanceProfiler] = None):
+    def __init__(self, profiler: PerformanceProfiler | None = None):
         """Initialize validation suite.
 
         Args:
@@ -601,7 +595,7 @@ class ValidationSuite:
                     test_words = list(test_distributions[0].keys())[:10]
                     thread_safety_result = self.validate_thread_safety(method_instance, test_words)
                     method_results.append(thread_safety_result)
-                except:
+                except Exception:
                     # Some methods might not support the parameters
                     pass
 
@@ -663,7 +657,7 @@ class ValidationSuite:
 class BenchmarkSuite:
     """Comprehensive benchmarking suite with comparison capabilities."""
 
-    def __init__(self, profiler: Optional[PerformanceProfiler] = None):
+    def __init__(self, profiler: PerformanceProfiler | None = None):
         """Initialize benchmark suite."""
         self.profiler = profiler or PerformanceProfiler()
         self.benchmark_results: dict[str, list[PerformanceMetrics]] = {}
