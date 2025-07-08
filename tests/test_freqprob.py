@@ -126,10 +126,10 @@ def test_uniform_raises():
     Test the Uniform distribution raises the correct errors.
     """
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="reserved.*probability.*between"):
         Uniform(TEST_OBS1, -1.0, logprob=False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="reserved.*probability.*between"):
         Uniform(TEST_OBS1, 100.0, logprob=False)
 
 
@@ -202,10 +202,10 @@ def test_random_raises():
     Test the Random distribution raises the correct errors.
     """
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="reserved.*probability.*between"):
         Random(TEST_OBS1, -1.0, logprob=False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="reserved.*probability.*between"):
         Random(TEST_OBS1, 100.0, logprob=False)
 
 
@@ -278,10 +278,10 @@ def test_mle_raises():
     Test the MLE distribution raises the correct errors.
     """
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="reserved.*probability.*between"):
         MLE(TEST_OBS1, -1.0, logprob=False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="reserved.*probability.*between"):
         MLE(TEST_OBS1, 100.0, logprob=False)
 
 
@@ -366,10 +366,10 @@ def test_lidstone_raises():
     Test the Lidstone distribution raises the correct errors.
     """
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="bins.*positive"):
         Lidstone(TEST_OBS1, gamma=1.0, bins=0)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Gamma.*non-negative"):
         Lidstone(TEST_OBS1, gamma=-1.0)
 
 
@@ -442,7 +442,7 @@ def test_laplace_raises():
     Test the Laplace distribution raises the correct errors.
     """
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="bins.*positive"):
         Laplace(TEST_OBS1, bins=-1)
 
 
@@ -515,7 +515,7 @@ def test_ele_raises():
     Test the ELE distribution raises the correct errors.
     """
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="bins.*positive"):
         ELE(TEST_OBS1, bins=-1)
 
 
