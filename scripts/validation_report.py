@@ -127,7 +127,7 @@ class ValidationReportGenerator:
             self.log(f"  Testing {method_name}...")
 
             method_results = self.validator.validate_numerical_stability(
-                method_class, test_distributions, **kwargs
+                method_class, test_distributions, **kwargs  # type: ignore[arg-type]
             )
 
             stability_results[method_name] = {
@@ -159,7 +159,7 @@ class ValidationReportGenerator:
             self.log(f"  Testing {method_name}...")
 
             result = self.validator.validate_statistical_correctness(
-                method_class, test_dist, **kwargs
+                method_class, test_dist, **kwargs  # type: ignore[arg-type]
             )
 
             correctness_results[method_name] = result.to_dict()
@@ -202,13 +202,13 @@ class ValidationReportGenerator:
         self.log("Running performance benchmarks...")
 
         test_dist = {f"word_{i}": max(1, int(1000 / (i + 1))) for i in range(100)}
-        performance_results = {}
+        performance_results: dict[str, Any] = {}
 
         # Benchmark creation scaling
         self.log("  Benchmarking creation scaling...")
         vocab_sizes = [10, 50, 100, 500] if HAS_NUMPY else [10, 50]
 
-        methods_to_benchmark = [freqprob.MLE, freqprob.Laplace, freqprob.ELE]
+        methods_to_benchmark: list[type] = [freqprob.MLE, freqprob.Laplace, freqprob.ELE]
 
         scaling_results = self.benchmarker.benchmark_creation_scaling(
             methods_to_benchmark, vocab_sizes, bins=1000
@@ -221,8 +221,8 @@ class ValidationReportGenerator:
         # Benchmark query performance
         self.log("  Benchmarking query performance...")
         test_methods = {
-            "MLE": freqprob.MLE(test_dist, logprob=False),
-            "Laplace": freqprob.Laplace(test_dist, bins=200, logprob=False),
+            "MLE": freqprob.MLE(test_dist, logprob=False),  # type: ignore[arg-type]
+            "Laplace": freqprob.Laplace(test_dist, bins=200, logprob=False),  # type: ignore[arg-type]
         }
 
         query_counts = [10, 50, 100] if HAS_NUMPY else [10, 25]
@@ -234,7 +234,7 @@ class ValidationReportGenerator:
 
         # Benchmark method comparison
         self.log("  Benchmarking method comparison...")
-        method_configs = [
+        method_configs: list[tuple[type, dict[str, Any]]] = [
             (freqprob.MLE, {}),
             (freqprob.Laplace, {"bins": 100}),
             (freqprob.ELE, {"bins": 100}),
@@ -296,7 +296,7 @@ class ValidationReportGenerator:
                 stability_total += method_results["total_tests"]
                 stability_passed += method_results["passed"]
 
-            summary["validation_overview"]["numerical_stability"] = {
+            summary["validation_overview"]["numerical_stability"] = {  # type: ignore[index]
                 "total_tests": stability_total,
                 "passed_tests": stability_passed,
                 "success_rate": stability_passed / stability_total if stability_total > 0 else 0,
@@ -308,7 +308,7 @@ class ValidationReportGenerator:
             )
             correctness_total = len(results["statistical_correctness"])
 
-            summary["validation_overview"]["statistical_correctness"] = {
+            summary["validation_overview"]["statistical_correctness"] = {  # type: ignore[index]
                 "total_tests": correctness_total,
                 "passed_tests": correctness_passed,
                 "success_rate": (
@@ -325,7 +325,7 @@ class ValidationReportGenerator:
                     perf_data["method_comparison"].items(), key=lambda x: x[1]["duration_seconds"]
                 )
 
-                summary["performance_overview"]["fastest_method"] = {
+                summary["performance_overview"]["fastest_method"] = {  # type: ignore[index]
                     "name": fastest_method[0],
                     "duration": fastest_method[1]["duration_seconds"],
                 }
@@ -536,7 +536,7 @@ class ValidationReportGenerator:
             return self.report_data
 
 
-def main():
+def main() -> None:
     """Main entry point for validation report generation."""
     parser = argparse.ArgumentParser(description="Generate FreqProb validation report")
 
