@@ -380,12 +380,9 @@ class TestNumericalStabilityAdvanced:
         compressed = freqprob.create_compressed_distribution(large_dist, quantization_levels=256)
 
         # Test that compression doesn't cause numerical issues
-        original_mle = freqprob.MLE(large_dist, logprob=False)
-
         # Compare some probabilities (allowing for quantization error)
         for i in range(0, 100, 10):  # Test every 10th word
             word = f"word_{i}"
-            original_prob = original_mle(word)
 
             # Note: compressed distribution doesn't directly support MLE
             # but we can test that counts are reasonable
@@ -434,7 +431,7 @@ class TestNumericalStabilityAdvanced:
             pytest.skip("SGT failed on this distribution")
 
     @pytest.mark.parametrize(
-        "method_name,params",
+        ("method_name", "params"),
         [
             ("MLE", {}),
             ("Laplace", {"bins": 1000}),
