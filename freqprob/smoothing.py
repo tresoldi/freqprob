@@ -181,9 +181,10 @@ class KneserNey(ScoringMethod):
         all_bigram_types = 0
 
         # Process the frequency distribution
-        for (context, word), count in freqdist.items():
-            if not isinstance((context, word), tuple) or len((context, word)) != 2:
+        for element, count in freqdist.items():
+            if not isinstance(element, tuple) or len(element) != 2:
                 continue  # Skip non-bigram entries
+            context, word = element
 
             contexts[context] += count
             word_continuation_counts[word] += 1  # Count distinct contexts for this word
@@ -204,9 +205,10 @@ class KneserNey(ScoringMethod):
             backoff_weights[context] = discount * num_types / contexts[context]
 
         # Compute probabilities for observed bigrams
-        for (context, word), count in freqdist.items():
-            if not isinstance((context, word), tuple) or len((context, word)) != 2:
+        for element, count in freqdist.items():
+            if not isinstance(element, tuple) or len(element) != 2:
                 continue
+            context, word = element
 
             # Discounted probability
             discounted_count = max(count - discount, 0)
@@ -344,9 +346,10 @@ class ModifiedKneserNey(ScoringMethod):
         word_continuation_counts: defaultdict[str, int] = defaultdict(int)
         context_types: defaultdict[str, set[str]] = defaultdict(set)
 
-        for (context, word), count in freqdist.items():
-            if not isinstance((context, word), tuple) or len((context, word)) != 2:
+        for element, count in freqdist.items():
+            if not isinstance(element, tuple) or len(element) != 2:
                 continue
+            context, word = element
 
             contexts[context] += count
             word_continuation_counts[word] += 1
@@ -378,9 +381,10 @@ class ModifiedKneserNey(ScoringMethod):
             backoff_weights[context] = backoff_mass
 
         # Compute probabilities for observed bigrams
-        for (context, word), count in freqdist.items():
-            if not isinstance((context, word), tuple) or len((context, word)) != 2:
+        for element, count in freqdist.items():
+            if not isinstance(element, tuple) or len(element) != 2:
                 continue
+            context, word = element
 
             # Choose discount based on count
             if count == 1:

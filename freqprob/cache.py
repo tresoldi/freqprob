@@ -238,7 +238,7 @@ class MemoizedProperty:
             Function to memoize
         """
         self.func = func
-        self.attrname = None
+        self.attrname: str | None = None
         self.__doc__ = func.__doc__
 
     def __set_name__(self, owner: Any, name: str) -> None:
