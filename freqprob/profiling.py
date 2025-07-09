@@ -13,11 +13,23 @@ from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Iterator
+from typing import Any, Iterator, Protocol
 
 import psutil
 
 from .base import FrequencyDistribution, ScoringMethod
+
+
+class ProfiledFunction(Protocol):
+    """Protocol for functions decorated with profile_memory_usage."""
+
+    _profiler: Any
+    
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        ...
+    
+    def get_profiler(self) -> Any:
+        ...
 
 
 @dataclass
@@ -279,7 +291,7 @@ class MemoryProfiler:
 
 def profile_memory_usage(
     operation_name: str | None = None,
-) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+) -> Callable[[Callable[..., Any]], ProfiledFunction]:
     """Decorator for profiling memory usage of functions.
 
 
@@ -301,7 +313,7 @@ def profile_memory_usage(
     >>> result = my_function()
     """
 
-    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+    def decorator(func: Callable[..., Any]) -> ProfiledFunction:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             profiler = getattr(wrapper, "_profiler", None)
@@ -317,7 +329,7 @@ def profile_memory_usage(
             return getattr(wrapper, "_profiler", None)
 
         setattr(wrapper, "get_profiler", get_profiler)
-        return wrapper
+        return wrapper  # type: ignore[return-value]
 
     return decorator
 
