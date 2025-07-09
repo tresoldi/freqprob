@@ -55,7 +55,8 @@ repos:
           numpy,
           scipy,
         ]
-        args: [--strict, --ignore-missing-imports]
+        args: [--strict]
+        files: ^(freqprob/|tests/|scripts/)
 
   # Security linting
   - repo: https://github.com/PyCQA/bandit
