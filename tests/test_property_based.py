@@ -5,6 +5,7 @@ This module uses property-based testing to verify mathematical properties
 and invariants that should hold for all smoothing methods across a wide
 range of generated inputs.
 """
+# mypy: disable-error-code=misc
 
 import math
 from typing import Any
@@ -14,9 +15,9 @@ import pytest
 import freqprob
 
 try:
-    from hypothesis import assume, given, settings  # type: ignore[import-not-found]
+    from hypothesis import assume, given, settings
     from hypothesis import strategies as st
-    from hypothesis.stateful import RuleBasedStateMachine, invariant, rule  # type: ignore[import-not-found]
+    from hypothesis.stateful import RuleBasedStateMachine, invariant, rule
 
     HAS_HYPOTHESIS = True
 except ImportError:
@@ -274,7 +275,7 @@ class TestPropertyBasedSmoothing:
         ]
 
         for method_factory in smoothing_methods:
-            method = method_factory(freq_dist)
+            method = method_factory(freq_dist)  # type: ignore[no-untyped-call]
             unknown_prob = method("definitely_unknown_word_xyz")
             assert (
                 unknown_prob > 0
