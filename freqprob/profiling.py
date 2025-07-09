@@ -13,7 +13,7 @@ from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Iterator, Protocol
+from typing import Any, Iterator, Protocol, cast
 
 import psutil
 
@@ -329,7 +329,8 @@ def profile_memory_usage(
             return getattr(wrapper, "_profiler", None)
 
         setattr(wrapper, "get_profiler", get_profiler)
-        return wrapper  # type: ignore[return-value]
+        # Explicitly cast to ProfiledFunction so mypy knows about the dynamic attributes
+        return cast(ProfiledFunction, wrapper)
 
     return decorator
 
