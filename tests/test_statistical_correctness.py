@@ -7,6 +7,7 @@ and mathematical expectations.
 """
 
 import math
+from typing import Any
 
 import numpy as np
 import pytest
@@ -23,7 +24,7 @@ class TestStatisticalCorrectness:
         true_counts = {"a": 100, "b": 200, "c": 300, "d": 400}
         total = sum(true_counts.values())
 
-        mle = freqprob.MLE(true_counts, logprob=False)
+        mle = freqprob.MLE(true_counts, logprob=False)  # type: ignore[arg-type]
 
         # MLE should exactly match relative frequencies
         for word, count in true_counts.items():
@@ -39,7 +40,7 @@ class TestStatisticalCorrectness:
         counts = {"word1": 10, "word2": 5}
         bins = 100
 
-        laplace = freqprob.Laplace(counts, bins=bins, logprob=False)
+        laplace = freqprob.Laplace(counts, bins=bins, logprob=False)  # type: ignore[arg-type]
 
         # Test Laplace formula: P(w) = (c(w) + 1) / (N + V)
         total_count = sum(counts.values())
@@ -68,7 +69,7 @@ class TestStatisticalCorrectness:
 
         # Test different gamma values
         for gamma in [0.1, 0.5, 1.0, 2.0]:
-            lidstone = freqprob.Lidstone(counts, gamma=gamma, bins=bins, logprob=False)
+            lidstone = freqprob.Lidstone(counts, gamma=gamma, bins=bins, logprob=False)  # type: ignore[arg-type]
 
             total_count = sum(counts.values())
 
@@ -78,8 +79,8 @@ class TestStatisticalCorrectness:
                 assert abs(actual - expected) < 1e-15
 
         # Test that gamma=1 equals Laplace
-        lidstone_1 = freqprob.Lidstone(counts, gamma=1.0, bins=bins, logprob=False)
-        laplace = freqprob.Laplace(counts, bins=bins, logprob=False)
+        lidstone_1 = freqprob.Lidstone(counts, gamma=1.0, bins=bins, logprob=False)  # type: ignore[arg-type]
+        laplace = freqprob.Laplace(counts, bins=bins, logprob=False)  # type: ignore[arg-type]
 
         for word in counts:
             assert abs(lidstone_1(word) - laplace(word)) < 1e-15
@@ -89,8 +90,8 @@ class TestStatisticalCorrectness:
         counts = {"x": 15, "y": 25, "z": 10}
         bins = 200
 
-        ele = freqprob.ELE(counts, bins=bins, logprob=False)
-        lidstone_half = freqprob.Lidstone(counts, gamma=0.5, bins=bins, logprob=False)
+        ele = freqprob.ELE(counts, bins=bins, logprob=False)  # type: ignore[arg-type]
+        lidstone_half = freqprob.Lidstone(counts, gamma=0.5, bins=bins, logprob=False)  # type: ignore[arg-type]
 
         for word in counts:
             assert abs(ele(word) - lidstone_half(word)) < 1e-15
@@ -103,7 +104,7 @@ class TestStatisticalCorrectness:
         counts = {"a": 100, "b": 200, "c": 50}  # Counts don't matter for uniform
         unobs_prob = 0.1
 
-        uniform = freqprob.Uniform(counts, unobs_prob=unobs_prob, logprob=False)
+        uniform = freqprob.Uniform(counts, unobs_prob=unobs_prob, logprob=False)  # type: ignore[arg-type]
 
         # All observed words should have equal probability
         vocab_size = len(counts)
@@ -122,7 +123,7 @@ class TestStatisticalCorrectness:
         counts = {"term1": 40, "term2": 30, "term3": 20, "term4": 10}
 
         for alpha in [0.1, 0.5, 1.0, 2.0]:
-            bayesian = freqprob.BayesianSmoothing(counts, alpha=alpha, logprob=False)
+            bayesian = freqprob.BayesianSmoothing(counts, alpha=alpha, logprob=False)  # type: ignore[arg-type]
 
             total_count = sum(counts.values())
             vocab_size = len(counts)
@@ -134,7 +135,7 @@ class TestStatisticalCorrectness:
                 assert abs(actual - expected) < 1e-15
 
         # Test that alpha=1 gives uniform prior (similar to Laplace)
-        bayesian_1 = freqprob.BayesianSmoothing(counts, alpha=1.0, logprob=False)
+        bayesian_1 = freqprob.BayesianSmoothing(counts, alpha=1.0, logprob=False)  # type: ignore[arg-type]
 
         # Should sum to 1 for observed vocabulary
         total_prob = sum(bayesian_1(word) for word in counts)
@@ -145,12 +146,12 @@ class TestStatisticalCorrectness:
         counts = {"apple": 25, "banana": 15, "cherry": 10}
 
         methods = [
-            freqprob.MLE(counts, logprob=False),
-            freqprob.Laplace(counts, bins=100, logprob=False),
-            freqprob.ELE(counts, bins=100, logprob=False),
-            freqprob.Lidstone(counts, gamma=0.5, bins=100, logprob=False),
-            freqprob.BayesianSmoothing(counts, alpha=0.5, logprob=False),
-            freqprob.Uniform(counts, unobs_prob=0.1, logprob=False),
+            freqprob.MLE(counts, logprob=False),  # type: ignore[arg-type]
+            freqprob.Laplace(counts, bins=100, logprob=False),  # type: ignore[arg-type]
+            freqprob.ELE(counts, bins=100, logprob=False),  # type: ignore[arg-type]
+            freqprob.Lidstone(counts, gamma=0.5, bins=100, logprob=False),  # type: ignore[arg-type]
+            freqprob.BayesianSmoothing(counts, alpha=0.5, logprob=False),  # type: ignore[arg-type]
+            freqprob.Uniform(counts, unobs_prob=0.1, logprob=False),  # type: ignore[arg-type]
         ]
 
         for method in methods:
@@ -175,8 +176,8 @@ class TestStatisticalCorrectness:
         for scale in [2, 5, 10, 100]:
             scaled_counts = {word: count * scale for word, count in base_counts.items()}
 
-            base_mle = freqprob.MLE(base_counts, logprob=False)
-            scaled_mle = freqprob.MLE(scaled_counts, logprob=False)
+            base_mle = freqprob.MLE(base_counts, logprob=False)  # type: ignore[arg-type]
+            scaled_mle = freqprob.MLE(scaled_counts, logprob=False)  # type: ignore[arg-type]
 
             # MLE probabilities should be identical
             for word in base_counts:
@@ -206,7 +207,7 @@ class TestStatisticalCorrectness:
                 sample_counts[word] = sample_counts.get(word, 0) + 1
 
             # Test MLE convergence
-            mle = freqprob.MLE(sample_counts, logprob=False)
+            mle = freqprob.MLE(sample_counts, logprob=False)  # type: ignore[arg-type]
 
             for word, true_prob in true_probs.items():
                 estimated_prob = mle(word)
@@ -221,8 +222,8 @@ class TestStatisticalCorrectness:
         # Distribution with rare and common words
         counts = {"common": 1000, "rare": 1}
 
-        mle = freqprob.MLE(counts, logprob=False)
-        laplace = freqprob.Laplace(counts, bins=10000, logprob=False)
+        mle = freqprob.MLE(counts, logprob=False)  # type: ignore[arg-type]
+        laplace = freqprob.Laplace(counts, bins=10000, logprob=False)  # type: ignore[arg-type]
 
         # MLE should give exact relative frequencies
         assert abs(mle("common") - (1000 / 1001)) < 1e-15
@@ -244,11 +245,11 @@ class TestStatisticalCorrectness:
         # Skewed distribution should have lower entropy
         skewed_counts = {"a": 100, "b": 1, "c": 1, "d": 1}
 
-        uniform_mle = freqprob.MLE(uniform_counts, logprob=True)
-        skewed_mle = freqprob.MLE(skewed_counts, logprob=True)
+        uniform_mle = freqprob.MLE(uniform_counts, logprob=True)  # type: ignore[arg-type]
+        skewed_mle = freqprob.MLE(skewed_counts, logprob=True)  # type: ignore[arg-type]
 
         # Calculate empirical entropy H = -Σ p(x) log p(x)
-        def calculate_entropy(method, words) -> float:
+        def calculate_entropy(method: Any, words: list[str]) -> float:
             entropy = 0.0
             for word in words:
                 log_prob = method(word)
@@ -257,8 +258,8 @@ class TestStatisticalCorrectness:
                     entropy -= prob * log_prob
             return entropy
 
-        uniform_entropy = calculate_entropy(uniform_mle, uniform_counts.keys())
-        skewed_entropy = calculate_entropy(skewed_mle, skewed_counts.keys())
+        uniform_entropy = calculate_entropy(uniform_mle, list(uniform_counts.keys()))
+        skewed_entropy = calculate_entropy(skewed_mle, list(skewed_counts.keys()))
 
         # Uniform distribution should have higher entropy
         assert uniform_entropy > skewed_entropy
@@ -273,8 +274,8 @@ class TestStatisticalCorrectness:
         test_data = ["the", "cat", "sat", "on", "the", "cat"]
 
         # Test different smoothing methods
-        mle = freqprob.MLE(train_counts, logprob=True)
-        laplace = freqprob.Laplace(train_counts, bins=1000, logprob=True)
+        mle = freqprob.MLE(train_counts, logprob=True)  # type: ignore[arg-type]
+        laplace = freqprob.Laplace(train_counts, bins=1000, logprob=True)  # type: ignore[arg-type]
 
         # Calculate perplexities
         mle_perplexity = freqprob.perplexity(mle, test_data)
@@ -302,8 +303,8 @@ class TestStatisticalCorrectness:
         train_counts = {"a": 60, "b": 30, "c": 10}
         test_data = ["a", "b", "c", "a", "b", "a"]
 
-        mle = freqprob.MLE(train_counts, logprob=True)
-        laplace = freqprob.Laplace(train_counts, bins=100, logprob=True)
+        mle = freqprob.MLE(train_counts, logprob=True)  # type: ignore[arg-type]
+        laplace = freqprob.Laplace(train_counts, bins=100, logprob=True)  # type: ignore[arg-type]
 
         mle_ce = freqprob.cross_entropy(mle, test_data)
         laplace_ce = freqprob.cross_entropy(laplace, test_data)
@@ -320,8 +321,8 @@ class TestStatisticalCorrectness:
         counts1 = {"a": 50, "b": 30, "c": 20}
         counts2 = {"a": 40, "b": 35, "c": 25}
 
-        model1 = freqprob.MLE(counts1, logprob=True)
-        model2 = freqprob.MLE(counts2, logprob=True)
+        model1 = freqprob.MLE(counts1, logprob=True)  # type: ignore[arg-type]
+        model2 = freqprob.MLE(counts2, logprob=True)  # type: ignore[arg-type]
 
         test_data = ["a", "b", "c"] * 10
 
@@ -345,9 +346,9 @@ class TestStatisticalCorrectness:
         test_data = ["word1", "word2", "word3"] * 20
 
         models = {
-            "mle": freqprob.MLE(train_counts, logprob=True),
-            "laplace": freqprob.Laplace(train_counts, bins=100, logprob=True),
-            "ele": freqprob.ELE(train_counts, bins=100, logprob=True),
+            "mle": freqprob.MLE(train_counts, logprob=True),  # type: ignore[arg-type]
+            "laplace": freqprob.Laplace(train_counts, bins=100, logprob=True),  # type: ignore[arg-type]
+            "ele": freqprob.ELE(train_counts, bins=100, logprob=True),  # type: ignore[arg-type]
         }
 
         results = freqprob.model_comparison(models, test_data)
@@ -378,7 +379,7 @@ class TestStatisticalCorrectness:
         large_counts = {f"word_{i}": int(freq) for i, freq in enumerate(frequencies)}
 
         # Test Laplace smoothing
-        laplace = freqprob.Laplace(large_counts, bins=vocab_size * 2, logprob=False)
+        laplace = freqprob.Laplace(large_counts, bins=vocab_size * 2, logprob=False)  # type: ignore[arg-type]
 
         # Sample some probabilities
         sample_words = [f"word_{i}" for i in range(0, vocab_size, 100)]
@@ -417,7 +418,7 @@ class TestAdvancedStatisticalProperties:
                 freq_dist[f"word_{freq}_{i}"] = freq
 
         try:
-            sgt = freqprob.SimpleGoodTuring(freq_dist, logprob=False)
+            sgt = freqprob.SimpleGoodTuring(freq_dist, logprob=False)  # type: ignore[arg-type]
 
             # Words with higher frequencies should generally get higher probabilities
             # (SGT redistributes some mass to unseen words)
@@ -451,7 +452,7 @@ class TestAdvancedStatisticalProperties:
         }
 
         try:
-            kn = freqprob.KneserNey(bigrams, discount=0.75, logprob=False)
+            kn = freqprob.KneserNey(bigrams, discount=0.75, logprob=False)  # type: ignore[arg-type]
 
             # Test some probabilities
             prob_the_cat = kn(("the", "cat"))
@@ -475,7 +476,7 @@ class TestAdvancedStatisticalProperties:
 
         for lambda_weight in [0.1, 0.3, 0.5, 0.7, 0.9]:
             interpolated = freqprob.InterpolatedSmoothing(
-                high_order, low_order, lambda_weight=lambda_weight, logprob=False
+                high_order, low_order, lambda_weight=lambda_weight, logprob=False  # type: ignore[arg-type]
             )
 
             # Test that probabilities are valid
@@ -518,7 +519,7 @@ class TestAdvancedStatisticalProperties:
 
         # Create compressed version
         compressed_dist = freqprob.create_compressed_distribution(
-            original_dist, quantization_levels=64
+            original_dist, quantization_levels=64  # type: ignore[arg-type]
         )
 
         # Test accuracy preservation
@@ -544,9 +545,9 @@ class TestAdvancedStatisticalProperties:
 
         # Test multiple methods
         methods = [
-            freqprob.MLE(dist, logprob=False),
-            freqprob.Laplace(dist, bins=200, logprob=False),
-            freqprob.ELE(dist, bins=200, logprob=False),
+            freqprob.MLE(dist, logprob=False),  # type: ignore[arg-type]
+            freqprob.Laplace(dist, bins=200, logprob=False),  # type: ignore[arg-type]
+            freqprob.ELE(dist, bins=200, logprob=False),  # type: ignore[arg-type]
         ]
 
         for method in methods:
@@ -559,7 +560,7 @@ class TestAdvancedStatisticalProperties:
             individual_scores = [method(word) for word in test_words]
 
             # Batch scores
-            batch_scores = vectorized.score_batch(test_words)
+            batch_scores = vectorized.score_batch(test_words)  # type: ignore[arg-type]
 
             # Should be identical
             for ind_score, batch_score in zip(individual_scores, batch_scores, strict=False):
@@ -570,8 +571,8 @@ class TestAdvancedStatisticalProperties:
         dist = {"word1": 50, "word2": 30, "word3": 20}
 
         # Create lazy and regular versions
-        regular_mle = freqprob.MLE(dist, logprob=False)
-        lazy_mle = freqprob.create_lazy_mle(dist, logprob=False)
+        regular_mle = freqprob.MLE(dist, logprob=False)  # type: ignore[arg-type]
+        lazy_mle = freqprob.create_lazy_mle(dist, logprob=False)  # type: ignore[arg-type]
 
         # Test that results are identical
         for word in [*list(dist.keys()), "unknown"]:
