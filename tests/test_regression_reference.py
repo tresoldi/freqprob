@@ -7,13 +7,15 @@ compatibility and correctness.
 """
 
 import math
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 import pytest
 
 import freqprob
-from freqprob.base import FrequencyDistribution
+
+if TYPE_CHECKING:
+    from freqprob.base import FrequencyDistribution
 
 # Optional imports for reference implementations
 try:
@@ -500,9 +502,9 @@ class TestReferenceDataRegression:
 
         # Should be in descending order
         for i in range(len(probabilities) - 1):
-            assert (
-                probabilities[i] >= probabilities[i + 1]
-            ), f"{smoothing_method} violates monotonicity: {words[i]} vs {words[i + 1]}"
+            assert probabilities[i] >= probabilities[i + 1], (
+                f"{smoothing_method} violates monotonicity: {words[i]} vs {words[i + 1]}"
+            )
 
     def test_mathematical_identities_regression(self) -> None:
         """Test mathematical identities that should hold."""

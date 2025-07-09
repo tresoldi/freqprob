@@ -341,8 +341,8 @@ class SimpleGoodTuring(ScoringMethod):
         # Compute Sampson's Z: for each count `j`, we set Z[j] to the linear
         # interpolation of {i, j, k}, where `i` is the greatest observed count less
         # than `j`, and `k` the smallest observed count greater than `j`.
-        i = [0] + freqs_keys[:-1]
-        k = freqs_keys[1:] + [2 * freqs_keys[-1] - i[-1]]
+        i = [0, *freqs_keys[:-1]]
+        k = [*freqs_keys[1:], 2 * freqs_keys[-1] - i[-1]]
         z = {j: 2 * freqs_of_freqs[j] / (k - i) for i, j, k in zip(i, freqs_keys, k, strict=False)}
 
         # Compute a loglinear regression of Z[r] over r. We cast keys and values to
