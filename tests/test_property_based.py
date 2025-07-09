@@ -5,6 +5,7 @@ This module uses property-based testing to verify mathematical properties
 and invariants that should hold for all smoothing methods across a wide
 range of generated inputs.
 """
+
 # mypy: disable-error-code=misc
 
 import math
