@@ -3,6 +3,7 @@ VIRTUAL_ENV := venv
 VIRTUAL_BIN := $(VIRTUAL_ENV)/bin
 PROJECT_NAME := freqprob
 TEST_DIR := tests
+SCRIPTS_DIR := scripts
 
 ## help - Display help about make targets for this Makefile
 help:
@@ -57,7 +58,7 @@ lint:
 
 ## mypy - Run mypy type checking on the project
 mypy:
-	$(VIRTUAL_BIN)/mypy --strict $(PROJECT_NAME)/ $(TEST_DIR)/
+	$(VIRTUAL_BIN)/mypy --strict $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
 
 ## test - Test the project
 test:
