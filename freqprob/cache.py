@@ -117,7 +117,7 @@ _general_cache = ComputationCache(max_size=1000)
 
 
 def cached_sgt_computation(
-    func: Callable[[Any, FrequencyDistribution], None]
+    func: Callable[[Any, FrequencyDistribution], None],
 ) -> Callable[[Any, FrequencyDistribution], None]:
     """Decorator to cache Simple Good-Turing computations.
 
@@ -180,7 +180,7 @@ def cached_computation(
         cache_instance = _general_cache
 
     def decorator(
-        func: Callable[[Any, FrequencyDistribution], None]
+        func: Callable[[Any, FrequencyDistribution], None],
     ) -> Callable[[Any, FrequencyDistribution], None]:
         @wraps(func)
         def wrapper(self: Any, freqdist: FrequencyDistribution) -> None:
