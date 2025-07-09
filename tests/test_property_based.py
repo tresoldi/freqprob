@@ -14,9 +14,9 @@ import pytest
 import freqprob
 
 try:
-    from hypothesis import assume, given, settings
+    from hypothesis import assume, given, settings  # type: ignore[import-not-found]
     from hypothesis import strategies as st
-    from hypothesis.stateful import RuleBasedStateMachine, invariant, rule
+    from hypothesis.stateful import RuleBasedStateMachine, invariant, rule  # type: ignore[import-not-found]
 
     HAS_HYPOTHESIS = True
 except ImportError:
@@ -63,7 +63,7 @@ class TestPropertyBasedSmoothing:
     @settings(max_examples=50, deadline=5000)
     def test_mle_probability_axioms(self, freq_dist: dict[str, int]) -> None:
         """Test that MLE satisfies basic probability axioms."""
-        mle = freqprob.MLE(freq_dist, logprob=False)
+        mle = freqprob.MLE(freq_dist, logprob=False)  # type: ignore[arg-type]
 
         # Property 1: All probabilities are non-negative
         for word in freq_dist:
@@ -93,7 +93,7 @@ class TestPropertyBasedSmoothing:
         # Ensure bins is at least as large as vocabulary
         bins = max(bins, len(freq_dist))
 
-        laplace = freqprob.Laplace(freq_dist, bins=bins, logprob=False)
+        laplace = freqprob.Laplace(freq_dist, bins=bins, logprob=False)  # type: ignore[arg-type]
 
         # Property 1: All probabilities are positive
         for word in freq_dist:
@@ -131,7 +131,7 @@ class TestPropertyBasedSmoothing:
         gamma = params["gamma"]
         bins = max(params["bins"], len(freq_dist))
 
-        lidstone = freqprob.Lidstone(freq_dist, gamma=gamma, bins=bins, logprob=False)
+        lidstone = freqprob.Lidstone(freq_dist, gamma=gamma, bins=bins, logprob=False)  # type: ignore[arg-type]
 
         # Property 1: All probabilities are positive
         for word in freq_dist:
@@ -160,8 +160,8 @@ class TestPropertyBasedSmoothing:
         """Test that ELE is equivalent to Lidstone with gamma=0.5."""
         bins = len(freq_dist) * 2  # Reasonable bins value
 
-        ele = freqprob.ELE(freq_dist, bins=bins, logprob=False)
-        lidstone = freqprob.Lidstone(freq_dist, gamma=0.5, bins=bins, logprob=False)
+        ele = freqprob.ELE(freq_dist, bins=bins, logprob=False)  # type: ignore[arg-type]
+        lidstone = freqprob.Lidstone(freq_dist, gamma=0.5, bins=bins, logprob=False)  # type: ignore[arg-type]
 
         # Should be equivalent for all words
         for word in freq_dist:
@@ -186,7 +186,7 @@ class TestPropertyBasedSmoothing:
         """Test Bayesian smoothing with Dirichlet prior."""
         alpha = params["alpha"]
 
-        bayesian = freqprob.BayesianSmoothing(freq_dist, alpha=alpha, logprob=False)
+        bayesian = freqprob.BayesianSmoothing(freq_dist, alpha=alpha, logprob=False)  # type: ignore[arg-type]
 
         # Property 1: All probabilities are positive
         for word in freq_dist:
@@ -249,8 +249,8 @@ class TestPropertyBasedSmoothing:
         scaled_dist = {word: count * scale_factor for word, count in freq_dist.items()}
 
         # Test MLE scaling invariance
-        original_mle = freqprob.MLE(freq_dist, logprob=False)
-        scaled_mle = freqprob.MLE(scaled_dist, logprob=False)
+        original_mle = freqprob.MLE(freq_dist, logprob=False)  # type: ignore[arg-type]
+        scaled_mle = freqprob.MLE(scaled_dist, logprob=False)  # type: ignore[arg-type]
 
         for word in freq_dist:
             original_prob = original_mle(word)
@@ -394,7 +394,7 @@ class TestPropertyBasedVectorized:
     @settings(max_examples=20, deadline=10000)
     def test_vectorized_consistency(self, freq_dist: dict[str, int]) -> None:
         """Test vectorized operations match individual calls."""
-        mle = freqprob.MLE(freq_dist, logprob=False)
+        mle = freqprob.MLE(freq_dist, logprob=False)  # type: ignore[arg-type]
         vectorized = freqprob.VectorizedScorer(mle)
 
         # Test words (mix of seen and unseen)
@@ -404,7 +404,7 @@ class TestPropertyBasedVectorized:
         individual_scores = [mle(word) for word in test_words]
 
         # Batch scores
-        batch_scores = vectorized.score_batch(test_words)
+        batch_scores = vectorized.score_batch(test_words)  # type: ignore[arg-type]
 
         # Should be identical
         assert len(individual_scores) == len(batch_scores)
@@ -431,9 +431,9 @@ class FreqProbStateMachine(RuleBasedStateMachine):
 
         # Recreate methods with updated distribution
         try:
-            self.methods["mle"] = freqprob.MLE(self.freq_dist, logprob=False)
+            self.methods["mle"] = freqprob.MLE(self.freq_dist, logprob=False)  # type: ignore[arg-type]
             self.methods["laplace"] = freqprob.Laplace(
-                self.freq_dist, bins=len(self.freq_dist) * 2, logprob=False
+                self.freq_dist, bins=len(self.freq_dist) * 2, logprob=False  # type: ignore[arg-type]
             )
         except Exception:
             # Some operations might fail, which is acceptable
