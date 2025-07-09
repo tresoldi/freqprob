@@ -70,8 +70,24 @@ ruff-check:
 mypy:
 	$(VIRTUAL_BIN)/mypy --strict $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
 
+## precommit - Run pre-commit hooks on all files
+precommit:
+	$(VIRTUAL_BIN)/pre-commit run --all-files
+
+## precommit-check - Run pre-commit hooks on staged files only
+precommit-check:
+	$(VIRTUAL_BIN)/pre-commit run
+
+## precommit-install - Install pre-commit hooks
+precommit-install:
+	$(VIRTUAL_BIN)/pre-commit install
+
+## precommit-update - Update pre-commit hooks to latest versions
+precommit-update:
+	$(VIRTUAL_BIN)/pre-commit autoupdate
+
 ## test - Test the project
 test:
 	$(VIRTUAL_BIN)/pytest
 
-.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy ruff ruff-check test
+.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy precommit precommit-check precommit-install precommit-update ruff ruff-check test
