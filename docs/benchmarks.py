@@ -49,7 +49,7 @@ class BenchmarkResult:
         metric: str,
         value: float,
         unit: str = "",
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ):
         self.method = method
         self.dataset = dataset
@@ -232,7 +232,7 @@ class PerformanceBenchmark:
                 for _ in range(5):
                     start_time = time.perf_counter()
                     try:
-                        model = method_func(dataset)
+                        model = method_func(dataset)  # type: ignore[no-untyped-call]  # type: ignore[no-untyped-call]
                         end_time = time.perf_counter()
                         if model is not None:
                             times.append(end_time - start_time)
@@ -290,7 +290,7 @@ class PerformanceBenchmark:
             for method_name, method_func in self.smoothing_methods.items():
                 try:
                     # Create model
-                    model = method_func(dataset)
+                    model = method_func(dataset)  # type: ignore[no-untyped-call]
                     if model is None:
                         continue  # type: ignore[unreachable]
 
@@ -340,7 +340,7 @@ class PerformanceBenchmark:
                     memory_before = process.memory_info().rss
 
                     # Create model
-                    model = method_func(dataset)
+                    model = method_func(dataset)  # type: ignore[no-untyped-call]
                     if model is None:
                         continue  # type: ignore[unreachable]
 
@@ -381,7 +381,7 @@ class PerformanceBenchmark:
 
             for method_name, method_func in self.smoothing_methods.items():
                 try:
-                    model = method_func(dataset)
+                    model = method_func(dataset)  # type: ignore[no-untyped-call]
                     if model is None:
                         continue  # type: ignore[unreachable]
 
@@ -432,7 +432,7 @@ class PerformanceBenchmark:
 
                 try:
                     start_time = time.perf_counter()
-                    model = method_func(dataset)
+                    model = method_func(dataset)  # type: ignore[no-untyped-call]
                     end_time = time.perf_counter()
 
                     if model is not None:
