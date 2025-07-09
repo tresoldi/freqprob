@@ -516,7 +516,9 @@ class TestAdvancedStatisticalProperties:
     def test_memory_efficient_accuracy_preservation(self) -> None:
         """Test that memory-efficient representations preserve accuracy."""
         # Create reference distribution
-        original_dist: FrequencyDistribution = {f"item_{i}": max(1, int(1000 / (i + 1))) for i in range(500)}
+        original_dist: FrequencyDistribution = {
+            f"item_{i}": max(1, int(1000 / (i + 1))) for i in range(500)
+        }
 
         # Create compressed version
         compressed_dist = freqprob.create_compressed_distribution(

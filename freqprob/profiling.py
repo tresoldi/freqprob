@@ -24,12 +24,10 @@ class ProfiledFunction(Protocol):
     """Protocol for functions decorated with profile_memory_usage."""
 
     _profiler: Any
-    
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        ...
-    
-    def get_profiler(self) -> Any:
-        ...
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
+
+    def get_profiler(self) -> Any: ...
 
 
 @dataclass
