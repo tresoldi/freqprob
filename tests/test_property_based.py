@@ -29,7 +29,9 @@ except ImportError:
 
 # Hypothesis strategies for generating test data
 @st.composite
-def frequency_distribution(draw: Any, min_vocab: int = 1, max_vocab: int = 100, min_count: int = 1, max_count: int = 1000) -> dict[str, int]:
+def frequency_distribution(
+    draw: Any, min_vocab: int = 1, max_vocab: int = 100, min_count: int = 1, max_count: int = 1000
+) -> dict[str, int]:
     """Generate a valid frequency distribution."""
     vocab_size = draw(st.integers(min_value=min_vocab, max_value=max_vocab))
 
