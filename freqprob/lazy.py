@@ -328,7 +328,7 @@ class LazyBatchScorer:
         self.lazy_scorer = lazy_scorer
         self._access_count: dict[Element, int] = {}
 
-    def score_batch(self, elements: list) -> list:
+    def score_batch(self, elements: list[Element]) -> list[float]:
         """Score a batch of elements with lazy evaluation.
 
         Parameters
