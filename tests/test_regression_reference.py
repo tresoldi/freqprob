@@ -15,7 +15,7 @@ import freqprob
 
 # Optional imports for reference implementations
 try:
-    from nltk.probability import (
+    from nltk.probability import (  # type: ignore[import-untyped]
         FreqDist,
         LaplaceeProbDist,
         LidstoneProbDist,
@@ -34,7 +34,7 @@ except ImportError:
     HAS_SCIPY = False
 
 try:
-    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.feature_extraction.text import CountVectorizer  # type: ignore[import-not-found]
 
     HAS_SKLEARN = True
 except ImportError:
@@ -54,7 +54,7 @@ class TestNLTKRegression:
             freq_counts[word] = freq_counts.get(word, 0) + 1
 
         # FreqProb MLE
-        freqprob_mle = freqprob.MLE(freq_counts, logprob=False)
+        freqprob_mle = freqprob.MLE(freq_counts, logprob=False)  # type: ignore[arg-type]
 
         # NLTK MLE
         nltk_freqdist = FreqDist(words)
@@ -85,7 +85,7 @@ class TestNLTKRegression:
         vocab_size = len(set(words))
 
         # FreqProb Laplace
-        freqprob_laplace = freqprob.Laplace(freq_counts, bins=vocab_size, logprob=False)
+        freqprob_laplace = freqprob.Laplace(freq_counts, bins=vocab_size, logprob=False)  # type: ignore[arg-type]
 
         # NLTK Laplace
         nltk_freqdist = FreqDist(words)
@@ -120,7 +120,7 @@ class TestNLTKRegression:
         for gamma in gamma_values:
             # FreqProb Lidstone
             freqprob_lidstone = freqprob.Lidstone(
-                freq_counts, gamma=gamma, bins=vocab_size, logprob=False
+                freq_counts, gamma=gamma, bins=vocab_size, logprob=False  # type: ignore[arg-type]
             )
 
             # NLTK Lidstone
@@ -192,7 +192,7 @@ class TestNLTKRegression:
     @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
     def test_ngram_generation_compatibility(self) -> None:
         """Test n-gram generation compatibility with NLTK."""
-        from nltk.util import ngrams as nltk_ngrams
+        from nltk.util import ngrams as nltk_ngrams  # type: ignore[import-untyped]
 
         tokens = ["the", "quick", "brown", "fox", "jumps"]
 
@@ -226,7 +226,7 @@ class TestScipyRegression:
         probs = [count / total for count in counts.values()]
 
         # FreqProb entropy calculation (manual)
-        mle = freqprob.MLE(counts, logprob=True)
+        mle = freqprob.MLE(counts, logprob=True)  # type: ignore[arg-type]
         freqprob_entropy = 0.0
         for word in counts:
             log_prob = mle(word)
@@ -255,8 +255,8 @@ class TestScipyRegression:
         probs2 = [counts2[w] / total2 for w in words]
 
         # FreqProb KL divergence
-        model1 = freqprob.MLE(counts1, logprob=True)
-        model2 = freqprob.MLE(counts2, logprob=True)
+        model1 = freqprob.MLE(counts1, logprob=True)  # type: ignore[arg-type]
+        model2 = freqprob.MLE(counts2, logprob=True)  # type: ignore[arg-type]
         test_data = words * 10  # Repeat for stable estimate
 
         freqprob_kl = freqprob.kl_divergence(model1, model2, test_data)
@@ -282,7 +282,7 @@ class TestScipyRegression:
 
         # Create FreqProb distribution
         freq_counts = dict(zip(categories, sample_counts, strict=False))
-        mle = freqprob.MLE(freq_counts, logprob=False)
+        mle = freqprob.MLE(freq_counts, logprob=False)  # type: ignore[arg-type]
 
         # Compare estimated probabilities with true probabilities
         for i, category in enumerate(categories):
@@ -312,7 +312,7 @@ class TestScipyRegression:
         # FreqProb Bayesian smoothing (using same alpha values)
         # Note: Our alpha parameter is applied per category
         for i, category in enumerate(categories):
-            bayesian = freqprob.BayesianSmoothing(freq_counts, alpha=alpha[i], logprob=False)
+            bayesian = freqprob.BayesianSmoothing(freq_counts, alpha=alpha[i], logprob=False)  # type: ignore[arg-type]
 
             # Test that probabilities are reasonable
             prob = bayesian(category)
@@ -381,7 +381,7 @@ class TestReferenceDataRegression:
         }
 
         # Test MLE probabilities are reasonable
-        mle = freqprob.MLE(brown_sample, logprob=False)
+        mle = freqprob.MLE(brown_sample, logprob=False)  # type: ignore[arg-type]
 
         # 'the' should be most frequent
         assert mle("the") > mle("of")
@@ -393,7 +393,7 @@ class TestReferenceDataRegression:
         assert abs(mle("the") - expected_the) < 1e-15
 
         # Test smoothing preserves ordering
-        laplace = freqprob.Laplace(brown_sample, bins=50000, logprob=False)
+        laplace = freqprob.Laplace(brown_sample, bins=50000, logprob=False)  # type: ignore[arg-type]
         assert laplace("the") > laplace("of")
         assert laplace("of") > laplace("and")
 
@@ -412,7 +412,7 @@ class TestReferenceDataRegression:
         zipf_counts = {f"word_{i}": freq for i, freq in enumerate(frequencies)}
 
         # Test that MLE preserves Zipfian properties
-        mle = freqprob.MLE(zipf_counts, logprob=False)
+        mle = freqprob.MLE(zipf_counts, logprob=False)  # type: ignore[arg-type]
 
         # Sample ranks and test Zipf relationship
         test_ranks = [1, 10, 100, 500]
@@ -432,7 +432,7 @@ class TestReferenceDataRegression:
         train_counts = {"a": 2, "b": 1}  # P(a)=2/3, P(b)=1/3
         test_data = ["a", "b"]  # Test on both words once
 
-        mle = freqprob.MLE(train_counts, logprob=True)
+        mle = freqprob.MLE(train_counts, logprob=True)  # type: ignore[arg-type]
         perplexity = freqprob.perplexity(mle, test_data)
 
         # Manual calculation:
@@ -451,7 +451,7 @@ class TestReferenceDataRegression:
         uniform_counts = {"x": 1, "y": 1, "z": 1}  # Each has probability 1/3
         test_data = ["x", "y", "z"]
 
-        mle = freqprob.MLE(uniform_counts, logprob=True)
+        mle = freqprob.MLE(uniform_counts, logprob=True)  # type: ignore[arg-type]
         ce = freqprob.cross_entropy(mle, test_data)
 
         # For uniform distribution over 3 symbols: H = log(3)
@@ -496,8 +496,8 @@ class TestReferenceDataRegression:
         counts = {"alpha": 25, "beta": 15, "gamma": 10}
 
         # Test log/linear probability consistency
-        mle_linear = freqprob.MLE(counts, logprob=False)
-        mle_log = freqprob.MLE(counts, logprob=True)
+        mle_linear = freqprob.MLE(counts, logprob=False)  # type: ignore[arg-type]
+        mle_log = freqprob.MLE(counts, logprob=True)  # type: ignore[arg-type]
 
         for word in counts:
             linear_prob = mle_linear(word)
@@ -508,15 +508,15 @@ class TestReferenceDataRegression:
             assert abs(linear_prob - converted_prob) < 1e-15
 
         # Test that Lidstone with gamma=1 equals Laplace
-        lidstone_1 = freqprob.Lidstone(counts, gamma=1.0, bins=100, logprob=False)
-        laplace = freqprob.Laplace(counts, bins=100, logprob=False)
+        lidstone_1 = freqprob.Lidstone(counts, gamma=1.0, bins=100, logprob=False)  # type: ignore[arg-type]
+        laplace = freqprob.Laplace(counts, bins=100, logprob=False)  # type: ignore[arg-type]
 
         for word in counts:
             assert abs(lidstone_1(word) - laplace(word)) < 1e-15
 
         # Test that ELE equals Lidstone with gamma=0.5
-        ele = freqprob.ELE(counts, bins=100, logprob=False)
-        lidstone_half = freqprob.Lidstone(counts, gamma=0.5, bins=100, logprob=False)
+        ele = freqprob.ELE(counts, bins=100, logprob=False)  # type: ignore[arg-type]
+        lidstone_half = freqprob.Lidstone(counts, gamma=0.5, bins=100, logprob=False)  # type: ignore[arg-type]
 
         for word in counts:
             assert abs(ele(word) - lidstone_half(word)) < 1e-15
@@ -550,9 +550,9 @@ class TestLiteratureRegression:
 
         # Test different smoothing methods
         methods = {
-            "mle": freqprob.MLE(train_counts, logprob=True),
-            "laplace": freqprob.Laplace(train_counts, bins=train_vocab_size * 2, logprob=True),
-            "ele": freqprob.ELE(train_counts, bins=train_vocab_size * 2, logprob=True),
+            "mle": freqprob.MLE(train_counts, logprob=True),  # type: ignore[arg-type]
+            "laplace": freqprob.Laplace(train_counts, bins=train_vocab_size * 2, logprob=True),  # type: ignore[arg-type]
+            "ele": freqprob.ELE(train_counts, bins=train_vocab_size * 2, logprob=True),  # type: ignore[arg-type]
         }
 
         perplexities = {}
@@ -600,7 +600,7 @@ class TestLiteratureRegression:
         freq_dist["common_2"] = 15
 
         try:
-            sgt = freqprob.SimpleGoodTuring(freq_dist, logprob=False)
+            sgt = freqprob.SimpleGoodTuring(freq_dist, logprob=False)  # type: ignore[arg-type]
 
             # Good-Turing should redistribute probability mass
             # Words with count 1 should get less probability than their MLE estimate
