@@ -44,7 +44,7 @@ class VectorizedScorer:
         """
         self.scorer = scorer
         self._element_cache: dict[Any, int] = {}
-        self._prob_array: np.ndarray = np.array([])
+        self._prob_array: np.ndarray[Any, Any] = np.array([])
         self._default_prob: float = 0.0
         self._build_lookup_arrays()
 
@@ -66,7 +66,7 @@ class VectorizedScorer:
             self._prob_array = np.array([])
             self._default_prob = 0.0
 
-    def score_batch(self, elements: list[Element] | np.ndarray) -> np.ndarray:
+    def score_batch(self, elements: list[Element] | np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """Score a batch of elements efficiently using vectorized operations.
 
         Parameters
@@ -103,7 +103,7 @@ class VectorizedScorer:
 
         return result
 
-    def score_parallel(self, element_batches: list[list[Element]]) -> list[np.ndarray]:
+    def score_parallel(self, element_batches: list[list[Element]]) -> list[np.ndarray[Any, Any]]:
         """Score multiple batches in parallel (when available).
 
         Parameters
@@ -120,7 +120,7 @@ class VectorizedScorer:
         # In the future, could use multiprocessing or threading
         return [self.score_batch(batch) for batch in element_batches]
 
-    def score_matrix(self, elements_2d: list[list[Element]]) -> np.ndarray:
+    def score_matrix(self, elements_2d: list[list[Element]]) -> np.ndarray[Any, Any]:
         """Score a 2D array of elements, returning a matrix of scores.
 
         Parameters
@@ -149,7 +149,7 @@ class VectorizedScorer:
 
         return result
 
-    def top_k_elements(self, k: int) -> tuple[list[Element], np.ndarray]:
+    def top_k_elements(self, k: int) -> tuple[list[Element], np.ndarray[Any, Any]]:
         """Get the top-k highest scoring elements.
 
         Parameters
@@ -176,7 +176,9 @@ class VectorizedScorer:
 
         return top_elements, top_scores
 
-    def percentile_scores(self, elements: list[Element], percentiles: list[float]) -> np.ndarray:
+    def percentile_scores(
+        self, elements: list[Element], percentiles: list[float]
+    ) -> np.ndarray[Any, Any]:
         """Compute percentile ranks for element scores.
 
         Parameters
@@ -262,7 +264,7 @@ class BatchScorer:
             name: VectorizedScorer(scorer) for name, scorer in scorers.items()
         }
 
-    def score_batch(self, elements: list[Element]) -> dict[str, np.ndarray]:
+    def score_batch(self, elements: list[Element]) -> dict[str, np.ndarray[Any, Any]]:
         """Score elements using all configured scoring methods.
 
         Parameters
@@ -349,7 +351,7 @@ class BatchScorer:
 # Numpy array conversion utilities
 
 
-def elements_to_numpy(elements: Iterable[str | int | float]) -> np.ndarray:
+def elements_to_numpy(elements: Iterable[str | int | float]) -> np.ndarray[Any, Any]:
     """Convert elements to numpy array with appropriate dtype.
 
     Parameters
@@ -378,7 +380,7 @@ def elements_to_numpy(elements: Iterable[str | int | float]) -> np.ndarray:
         return np.array(elem_list, dtype=object)  # type: ignore[unreachable]
 
 
-def scores_to_probabilities(log_scores: np.ndarray) -> np.ndarray:
+def scores_to_probabilities(log_scores: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
     """Convert log scores to probabilities using numerically stable computation.
 
     Parameters
@@ -394,11 +396,11 @@ def scores_to_probabilities(log_scores: np.ndarray) -> np.ndarray:
     # Use log-sum-exp trick for numerical stability
     max_score = np.max(log_scores)
     exp_scores = np.exp(log_scores - max_score)
-    result: np.ndarray = exp_scores / np.sum(exp_scores)
+    result: np.ndarray[Any, Any] = exp_scores / np.sum(exp_scores)
     return result
 
 
-def normalize_scores(scores: np.ndarray, method: str = "softmax") -> np.ndarray:
+def normalize_scores(scores: np.ndarray[Any, Any], method: str = "softmax") -> np.ndarray[Any, Any]:
     """Normalize scores using various methods.
 
     Parameters
@@ -418,7 +420,7 @@ def normalize_scores(scores: np.ndarray, method: str = "softmax") -> np.ndarray:
     elif method == "minmax":
         min_score, max_score = np.min(scores), np.max(scores)
         if max_score == min_score:
-            result: np.ndarray = np.ones_like(scores) / len(scores)
+            result: np.ndarray[Any, Any] = np.ones_like(scores) / len(scores)
             return result
         result = (scores - min_score) / (max_score - min_score)
         return result
