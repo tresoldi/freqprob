@@ -44,7 +44,7 @@ class ValidationReportGenerator:
         self.validator = ValidationSuite(self.profiler)
         self.benchmarker = BenchmarkSuite(self.profiler)
 
-        self.report_data = {
+        self.report_data: dict[str, Any] = {
             "metadata": {
                 "freqprob_version": getattr(freqprob, "__version__", "unknown"),
                 "generation_time": time.time(),
