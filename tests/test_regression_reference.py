@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 import freqprob
+from freqprob.base import FrequencyDistribution
 
 # Optional imports for reference implementations
 try:
@@ -40,7 +41,7 @@ except ImportError:
 class TestNLTKRegression:
     """Regression tests against NLTK implementations."""
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
     def test_mle_against_nltk(self) -> None:
         """Test MLE implementation against NLTK MLEProbDist."""
         # Sample data
@@ -69,7 +70,7 @@ class TestNLTKRegression:
         nltk_unknown = nltk_mle.prob("unknown")
         assert freqprob_unknown == nltk_unknown == 0.0
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
     def test_laplace_against_nltk(self) -> None:
         """Test Laplace smoothing against NLTK LaplaceeProbDist."""
         words = ["apple", "banana", "cherry", "apple", "banana", "apple"]
@@ -102,7 +103,7 @@ class TestNLTKRegression:
         relative_error = abs(freqprob_unknown - nltk_unknown) / nltk_unknown
         assert relative_error < 1e-10
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
     def test_lidstone_against_nltk(self) -> None:
         """Test Lidstone smoothing against NLTK LidstoneProbDist."""
         words = ["dog", "cat", "mouse", "dog", "cat", "dog"]
@@ -139,7 +140,7 @@ class TestNLTKRegression:
                 relative_error = abs(freqprob_unknown - nltk_unknown) / nltk_unknown
                 assert relative_error < 1e-10
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
     def test_frequency_distribution_compatibility(self) -> None:
         """Test frequency distribution compatibility with NLTK."""
         # Create sample text
@@ -185,7 +186,7 @@ class TestNLTKRegression:
         # Test total counts
         assert sum(freqprob_counts.values()) == nltk_freqdist.N()
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
     def test_ngram_generation_compatibility(self) -> None:
         """Test n-gram generation compatibility with NLTK."""
         from nltk.util import ngrams as nltk_ngrams
@@ -213,7 +214,7 @@ class TestNLTKRegression:
 class TestScipyRegression:
     """Regression tests against scipy implementations."""
 
-    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")
+    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")  # type: ignore[misc]
     def test_entropy_calculation(self) -> None:
         """Test entropy calculation against scipy."""
         # Create probability distribution
@@ -235,7 +236,7 @@ class TestScipyRegression:
         # Should be very close
         assert abs(freqprob_entropy - scipy_entropy) < 1e-12
 
-    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")
+    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")  # type: ignore[misc]
     def test_kl_divergence_calculation(self) -> None:
         """Test KL divergence calculation against scipy."""
         # Two distributions
@@ -264,7 +265,7 @@ class TestScipyRegression:
         relative_error = abs(freqprob_kl - scipy_kl) / scipy_kl
         assert relative_error < 0.01  # 1% tolerance
 
-    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")
+    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")  # type: ignore[misc]
     def test_multinomial_properties(self) -> None:
         """Test multinomial distribution properties against scipy."""
         # Parameters for multinomial distribution
@@ -289,7 +290,7 @@ class TestScipyRegression:
             error = abs(estimated_prob - true_prob)
             assert error < 0.05  # Allow 5% error
 
-    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")
+    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")  # type: ignore[misc]
     def test_dirichlet_prior_properties(self) -> None:
         """Test Dirichlet prior properties against scipy."""
         # Dirichlet parameters (concentration parameters)
@@ -319,7 +320,7 @@ class TestScipyRegression:
 class TestSklearnRegression:
     """Regression tests against scikit-learn implementations."""
 
-    @pytest.mark.skipif(not HAS_SKLEARN, reason="sklearn not available")
+    @pytest.mark.skipif(not HAS_SKLEARN, reason="sklearn not available")  # type: ignore[misc]
     def test_count_vectorizer_compatibility(self) -> None:
         """Test compatibility with sklearn CountVectorizer."""
         # Sample documents
@@ -335,7 +336,7 @@ class TestSklearnRegression:
         freq_counts = dict(zip(feature_names, total_counts, strict=False))
 
         # Test FreqProb MLE
-        mle = freqprob.MLE(freq_counts, logprob=False)
+        mle = freqprob.MLE(freq_counts, logprob=False)  # type: ignore[arg-type]
 
         # Verify probabilities sum to 1
         total_prob = sum(mle(word) for word in freq_counts)
@@ -454,7 +455,7 @@ class TestReferenceDataRegression:
         expected_ce = math.log(3)
         assert abs(ce - expected_ce) < 1e-14
 
-    @pytest.mark.parametrize(
+    @pytest.mark.parametrize(  # type: ignore[misc]
         ("smoothing_method", "params"),
         [
             ("Laplace", {"bins": 100}),
