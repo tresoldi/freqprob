@@ -6,6 +6,7 @@ extreme conditions, edge cases, and potential overflow/underflow scenarios.
 """
 
 import math
+from typing import Any
 
 import pytest
 
@@ -442,7 +443,7 @@ class TestNumericalStabilityAdvanced:
             ("BayesianSmoothing", {"alpha": 0.5}),
         ],
     )
-    def test_method_numerical_stability(self, method_name: str, params: dict) -> None:
+    def test_method_numerical_stability(self, method_name: str, params: dict[str, Any]) -> None:
         """Parametrized test for numerical stability across methods."""
         # Create challenging distribution
         dist = {
