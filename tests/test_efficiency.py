@@ -6,8 +6,6 @@ import time
 
 import numpy as np
 
-# mypy: disable-error-code=arg-type
-
 from freqprob import (
     MLE,
     BatchScorer,
@@ -24,6 +22,8 @@ from freqprob import (
 from freqprob.cache import ComputationCache, MemoizedProperty
 from freqprob.lazy import LazyLaplaceComputer, LazyMLEComputer
 from freqprob.vectorized import elements_to_numpy, normalize_scores, scores_to_probabilities
+
+# mypy: disable-error-code=arg-type
 
 
 class TestCaching:

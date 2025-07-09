@@ -16,12 +16,7 @@ import freqprob
 
 # Optional imports for reference implementations
 try:
-    from nltk.probability import (
-        FreqDist,
-        LaplaceeProbDist,
-        LidstoneProbDist,
-        MLEProbDist,
-    )
+    from nltk.probability import FreqDist, LaplaceeProbDist, LidstoneProbDist, MLEProbDist
 
     HAS_NLTK = True
 except ImportError:
@@ -467,7 +462,9 @@ class TestReferenceDataRegression:
             ("Lidstone", {"gamma": 0.5, "bins": 100}),
         ],
     )
-    def test_smoothing_monotonicity_regression(self, smoothing_method: str, params: dict[str, Any]) -> None:
+    def test_smoothing_monotonicity_regression(
+        self, smoothing_method: str, params: dict[str, Any]
+    ) -> None:
         """Test monotonicity properties across smoothing methods."""
         # Create distribution with clear frequency ordering
         ordered_counts = {

@@ -591,7 +591,9 @@ class TestAdvancedStatisticalProperties:
             ("Uniform", {"unobs_prob": 0.1}),
         ],
     )
-    def test_method_statistical_consistency(self, method_config: tuple[str, dict[str, Any]]) -> None:
+    def test_method_statistical_consistency(
+        self, method_config: tuple[str, dict[str, Any]]
+    ) -> None:
         """Parametrized test for statistical consistency across methods."""
         method_name, params = method_config
 
