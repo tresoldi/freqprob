@@ -277,7 +277,9 @@ class MemoryProfiler:
         }
 
 
-def profile_memory_usage(operation_name: str | None = None) -> Callable:
+def profile_memory_usage(
+    operation_name: str | None = None,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for profiling memory usage of functions.
 
 
@@ -299,7 +301,7 @@ def profile_memory_usage(operation_name: str | None = None) -> Callable:
     >>> result = my_function()
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             profiler = getattr(wrapper, "_profiler", None)
