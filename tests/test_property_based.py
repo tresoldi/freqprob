@@ -84,7 +84,9 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution(), params=smoothing_parameters())
     @settings(max_examples=30, deadline=5000)
-    def test_laplace_smoothing_properties(self, freq_dist: dict[str, int], params: dict[str, Any]) -> None:
+    def test_laplace_smoothing_properties(
+        self, freq_dist: dict[str, int], params: dict[str, Any]
+    ) -> None:
         """Test Laplace smoothing properties."""
         bins = params["bins"]
 
@@ -107,8 +109,8 @@ class TestPropertyBasedSmoothing:
         for i in range(len(sorted_words) - 1):
             word1, word2 = sorted_words[i], sorted_words[i + 1]
             if freq_dist[word1] > freq_dist[word2]:
-                assert (
-                    laplace(word1) >= laplace(word2)
+                assert laplace(word1) >= laplace(
+                    word2
                 ), f"Monotonicity violation: {word1}({freq_dist[word1]}) < {word2}({freq_dist[word2]})"
 
         # Property 4: Formula correctness
@@ -122,7 +124,9 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution(), params=smoothing_parameters())
     @settings(max_examples=30, deadline=5000)
-    def test_lidstone_generalization(self, freq_dist: dict[str, int], params: dict[str, Any]) -> None:
+    def test_lidstone_generalization(
+        self, freq_dist: dict[str, int], params: dict[str, Any]
+    ) -> None:
         """Test Lidstone smoothing as generalization of add-k."""
         gamma = params["gamma"]
         bins = max(params["bins"], len(freq_dist))
@@ -176,7 +180,9 @@ class TestPropertyBasedSmoothing:
 
     @given(freq_dist=frequency_distribution(), params=smoothing_parameters())
     @settings(max_examples=30, deadline=5000)
-    def test_bayesian_smoothing_properties(self, freq_dist: dict[str, int], params: dict[str, Any]) -> None:
+    def test_bayesian_smoothing_properties(
+        self, freq_dist: dict[str, int], params: dict[str, Any]
+    ) -> None:
         """Test Bayesian smoothing with Dirichlet prior."""
         alpha = params["alpha"]
 
