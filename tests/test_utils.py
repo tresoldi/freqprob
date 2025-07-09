@@ -17,7 +17,7 @@ from freqprob import (
 )
 
 
-def test_generate_ngrams_string():
+def test_generate_ngrams_string() -> None:
     """Test n-gram generation from string."""
     text = "hello"
 
@@ -28,16 +28,16 @@ def test_generate_ngrams_string():
 
     # Test bigrams
     bigrams = generate_ngrams(text, 2)
-    expected = [("h", "e"), ("e", "l"), ("l", "l"), ("l", "o")]
+    expected = [("h", "e"), ("e", "l"), ("l", "l"), ("l", "o")]  # type: ignore[list-item]
     assert bigrams == expected
 
     # Test trigrams
     trigrams = generate_ngrams(text, 3)
-    expected = [("h", "e", "l"), ("e", "l", "l"), ("l", "l", "o")]
+    expected = [("h", "e", "l"), ("e", "l", "l"), ("l", "l", "o")]  # type: ignore[list-item]
     assert trigrams == expected
 
 
-def test_generate_ngrams_list():
+def test_generate_ngrams_list() -> None:
     """Test n-gram generation from token list."""
     tokens = ["hello", "world", "test"]
 
@@ -48,16 +48,16 @@ def test_generate_ngrams_list():
 
     # Test bigrams
     bigrams = generate_ngrams(tokens, 2)
-    expected = [("hello", "world"), ("world", "test")]
+    expected = [("hello", "world"), ("world", "test")]  # type: ignore[list-item]
     assert bigrams == expected
 
     # Test trigrams
     trigrams = generate_ngrams(tokens, 3)
-    expected = [("hello", "world", "test")]
+    expected = [("hello", "world", "test")]  # type: ignore[list-item]
     assert trigrams == expected
 
 
-def test_generate_ngrams_edge_cases():
+def test_generate_ngrams_edge_cases() -> None:
     """Test edge cases for n-gram generation."""
     # Empty input
     assert generate_ngrams("", 1) == []
@@ -76,7 +76,7 @@ def test_generate_ngrams_edge_cases():
         generate_ngrams("test", -1)
 
 
-def test_word_frequency_string():
+def test_word_frequency_string() -> None:
     """Test word frequency from string."""
     text = "hello world hello"
 
@@ -91,7 +91,7 @@ def test_word_frequency_string():
     assert freq_norm == expected_norm
 
 
-def test_word_frequency_list():
+def test_word_frequency_list() -> None:
     """Test word frequency from token list."""
     tokens = ["hello", "world", "hello"]
 
@@ -106,7 +106,7 @@ def test_word_frequency_list():
     assert freq_norm == expected_norm
 
 
-def test_ngram_frequency():
+def test_ngram_frequency() -> None:
     """Test n-gram frequency computation."""
     text = "hello"
 
@@ -121,7 +121,7 @@ def test_ngram_frequency():
     assert freq_norm == expected_norm
 
 
-def test_perplexity():
+def test_perplexity() -> None:
     """Test perplexity calculation."""
     # Create a simple model
     model = MLE({"a": 2, "b": 1}, logprob=True)
@@ -141,7 +141,7 @@ def test_perplexity():
         perplexity(model_no_log, test_data)
 
 
-def test_cross_entropy():
+def test_cross_entropy() -> None:
     """Test cross-entropy calculation."""
     # Create a simple model
     model = MLE({"a": 2, "b": 1}, logprob=True)
@@ -161,7 +161,7 @@ def test_cross_entropy():
         cross_entropy(model_no_log, test_data)
 
 
-def test_kl_divergence():
+def test_kl_divergence() -> None:
     """Test KL divergence calculation."""
     # Create two simple models
     p_model = MLE({"a": 2, "b": 1}, logprob=True)
@@ -187,7 +187,7 @@ def test_kl_divergence():
         kl_divergence(p_model, q_model_no_log, test_data)
 
 
-def test_model_comparison():
+def test_model_comparison() -> None:
     """Test model comparison functionality."""
     # Create multiple models
     models = {
@@ -221,33 +221,33 @@ def test_model_comparison():
         model_comparison(models_no_log, test_data)
 
 
-def test_different_data_types():
+def test_different_data_types() -> None:
     """Test that the library works with different data types."""
     # Test with integers
     int_data = {1: 5, 2: 3, 3: 2}
-    model_int = MLE(int_data, logprob=True)
+    model_int = MLE(int_data, logprob=True)  # type: ignore[arg-type]
     assert model_int(1) > model_int(2)
     assert model_int(2) > model_int(3)
 
     # Test with tuples
     tuple_data = {("a", "b"): 3, ("b", "c"): 2, ("c", "d"): 1}
-    model_tuple = MLE(tuple_data, logprob=True)
+    model_tuple = MLE(tuple_data, logprob=True)  # type: ignore[arg-type]
     assert model_tuple(("a", "b")) > model_tuple(("b", "c"))
     assert model_tuple(("b", "c")) > model_tuple(("c", "d"))
 
     # Test with frozensets
     frozenset_data = {frozenset(["a", "b"]): 2, frozenset(["b", "c"]): 1}
-    model_frozenset = MLE(frozenset_data, logprob=True)
+    model_frozenset = MLE(frozenset_data, logprob=True)  # type: ignore[arg-type]
     assert model_frozenset(frozenset(["a", "b"])) > model_frozenset(frozenset(["b", "c"]))
 
     # Test with mixed types
     mixed_data = {"hello": 3, 42: 2, (1, 2): 1}
-    model_mixed = MLE(mixed_data, logprob=True)
+    model_mixed = MLE(mixed_data, logprob=True)  # type: ignore[arg-type]
     assert model_mixed("hello") > model_mixed(42)
     assert model_mixed(42) > model_mixed((1, 2))
 
 
-def test_utils_with_ngrams():
+def test_utils_with_ngrams() -> None:
     """Test utility functions with n-gram data."""
     text = "hello world hello"
 
@@ -255,7 +255,7 @@ def test_utils_with_ngrams():
     freq_dist = ngram_frequency(text.split(), 2)
 
     # Create model from n-grams
-    model = MLE(freq_dist, logprob=True)
+    model = MLE(freq_dist, logprob=True)  # type: ignore[arg-type]
 
     # Test perplexity with n-grams
     pp = perplexity(model, [("hello", "world"), ("world", "hello")])
