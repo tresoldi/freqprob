@@ -24,7 +24,7 @@ clean:
 
 ## black - Runs the Black Python formatter against the project
 black:
-	$(VIRTUAL_BIN)/black $(PROJECT_NAME)/ $(TEST_DIR)/
+	$(VIRTUAL_BIN)/black $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
 
 ## black-check - Checks if the project is formatted correctly against the Black rules
 black-check:
@@ -78,8 +78,11 @@ precommit:
 precommit-check:
 	$(VIRTUAL_BIN)/pre-commit run
 
-## precommit-install - Install pre-commit hooks
+## precommit-install - Install pre-commit hooks (not recommended for local development)
 precommit-install:
+	@echo "Warning: This will install pre-commit hooks to run automatically on commits."
+	@echo "For local development, use 'make precommit' instead."
+	@read -p "Are you sure you want to install Git hooks? [y/N]: " confirm && [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]
 	$(VIRTUAL_BIN)/pre-commit install
 
 ## precommit-update - Update pre-commit hooks to latest versions
@@ -90,4 +93,4 @@ precommit-update:
 test:
 	$(VIRTUAL_BIN)/pytest
 
-.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy precommit precommit-check precommit-install precommit-update ruff ruff-check test
+.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy precommit precommit-check precommit-update ruff ruff-check test
