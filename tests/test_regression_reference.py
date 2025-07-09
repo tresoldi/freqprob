@@ -500,9 +500,9 @@ class TestReferenceDataRegression:
 
         # Should be in descending order
         for i in range(len(probabilities) - 1):
-            assert probabilities[i] >= probabilities[i + 1], (
-                f"{smoothing_method} violates monotonicity: {words[i]} vs {words[i + 1]}"
-            )
+            assert (
+                probabilities[i] >= probabilities[i + 1]
+            ), f"{smoothing_method} violates monotonicity: {words[i]} vs {words[i + 1]}"
 
     def test_mathematical_identities_regression(self) -> None:
         """Test mathematical identities that should hold."""

@@ -115,18 +115,18 @@ class TestPropertyBasedSmoothing:
         for i in range(len(sorted_words) - 1):
             word1, word2 = sorted_words[i], sorted_words[i + 1]
             if freq_dist[word1] > freq_dist[word2]:
-                assert laplace(word1) >= laplace(word2), (
-                    f"Monotonicity violation: {word1}({freq_dist[word1]}) < {word2}({freq_dist[word2]})"
-                )
+                assert laplace(word1) >= laplace(
+                    word2
+                ), f"Monotonicity violation: {word1}({freq_dist[word1]}) < {word2}({freq_dist[word2]})"
 
         # Property 4: Formula correctness
         total_count = sum(freq_dist.values())
         for word, count in freq_dist.items():
             expected = (count + 1) / (total_count + bins)
             actual = laplace(word)
-            assert abs(actual - expected) < 1e-14, (
-                f"Formula violation for {word}: expected {expected}, got {actual}"
-            )
+            assert (
+                abs(actual - expected) < 1e-14
+            ), f"Formula violation for {word}: expected {expected}, got {actual}"
 
     @given(freq_dist=frequency_distribution(), params=smoothing_parameters())
     @settings(max_examples=30, deadline=5000)
@@ -149,16 +149,16 @@ class TestPropertyBasedSmoothing:
         for word, count in freq_dist.items():
             expected = (count + gamma) / (total_count + gamma * bins)
             actual = lidstone(word)
-            assert abs(actual - expected) < 1e-14, (
-                f"Lidstone formula violation for {word}: expected {expected}, got {actual}"
-            )
+            assert (
+                abs(actual - expected) < 1e-14
+            ), f"Lidstone formula violation for {word}: expected {expected}, got {actual}"
 
         # Property 3: Unknown word probability
         expected_unknown = gamma / (total_count + gamma * bins)
         actual_unknown = lidstone("unknown_word_xyz")
-        assert abs(actual_unknown - expected_unknown) < 1e-14, (
-            f"Unknown word probability: expected {expected_unknown}, got {actual_unknown}"
-        )
+        assert (
+            abs(actual_unknown - expected_unknown) < 1e-14
+        ), f"Unknown word probability: expected {expected_unknown}, got {actual_unknown}"
 
     @given(freq_dist=frequency_distribution())
     @settings(max_examples=30, deadline=5000)
@@ -173,16 +173,16 @@ class TestPropertyBasedSmoothing:
         for word in freq_dist:
             ele_prob = ele(word)
             lidstone_prob = lidstone(word)
-            assert abs(ele_prob - lidstone_prob) < 1e-14, (
-                f"ELE/Lidstone mismatch for {word}: {ele_prob} vs {lidstone_prob}"
-            )
+            assert (
+                abs(ele_prob - lidstone_prob) < 1e-14
+            ), f"ELE/Lidstone mismatch for {word}: {ele_prob} vs {lidstone_prob}"
 
         # Should be equivalent for unknown words
         ele_unknown = ele("unknown_word_xyz")
         lidstone_unknown = lidstone("unknown_word_xyz")
-        assert abs(ele_unknown - lidstone_unknown) < 1e-14, (
-            f"ELE/Lidstone unknown word mismatch: {ele_unknown} vs {lidstone_unknown}"
-        )
+        assert (
+            abs(ele_unknown - lidstone_unknown) < 1e-14
+        ), f"ELE/Lidstone unknown word mismatch: {ele_unknown} vs {lidstone_unknown}"
 
     @given(freq_dist=frequency_distribution(), params=smoothing_parameters())
     @settings(max_examples=30, deadline=5000)
@@ -206,9 +206,9 @@ class TestPropertyBasedSmoothing:
         for word, count in freq_dist.items():
             expected = (count + alpha) / (total_count + alpha * vocab_size)
             actual = bayesian(word)
-            assert abs(actual - expected) < 1e-14, (
-                f"Bayesian formula violation for {word}: expected {expected}, got {actual}"
-            )
+            assert (
+                abs(actual - expected) < 1e-14
+            ), f"Bayesian formula violation for {word}: expected {expected}, got {actual}"
 
         # Property 3: Probabilities sum to 1 for observed vocabulary
         total_prob = sum(bayesian(word) for word in freq_dist)
@@ -239,9 +239,9 @@ class TestPropertyBasedSmoothing:
                 converted_prob = math.exp(log_prob)
 
                 relative_error = abs(linear_prob - converted_prob) / max(linear_prob, 1e-10)
-                assert relative_error < 1e-12, (
-                    f"Log/linear inconsistency for {word}: {linear_prob} vs {converted_prob}"
-                )
+                assert (
+                    relative_error < 1e-12
+                ), f"Log/linear inconsistency for {word}: {linear_prob} vs {converted_prob}"
 
     @given(freq_dist=frequency_distribution())
     @settings(max_examples=20, deadline=5000)
@@ -261,9 +261,9 @@ class TestPropertyBasedSmoothing:
         for word in freq_dist:
             original_prob = original_mle(word)
             scaled_prob = scaled_mle(word)
-            assert abs(original_prob - scaled_prob) < 1e-14, (
-                f"MLE scaling violation for {word}: {original_prob} vs {scaled_prob}"
-            )
+            assert (
+                abs(original_prob - scaled_prob) < 1e-14
+            ), f"MLE scaling violation for {word}: {original_prob} vs {scaled_prob}"
 
     @given(freq_dist=frequency_distribution())
     @settings(max_examples=15, deadline=10000)
@@ -282,9 +282,9 @@ class TestPropertyBasedSmoothing:
         for method_factory in smoothing_methods:
             method = method_factory(cast("FrequencyDistribution", freq_dist))
             unknown_prob = method("definitely_unknown_word_xyz")
-            assert unknown_prob > 0, (
-                f"{method.__class__.__name__} gives zero probability to unknown word"
-            )
+            assert (
+                unknown_prob > 0
+            ), f"{method.__class__.__name__} gives zero probability to unknown word"
 
     @given(data=st.data())
     @settings(max_examples=10, deadline=15000)
@@ -337,9 +337,9 @@ class TestPropertyBasedUtilities:
 
             # Property 1: Correct number of n-grams
             expected_count = len(tokens) + 1  # +1 for sentence boundaries
-            assert len(ngrams) == expected_count, (
-                f"Wrong number of {n}-grams: expected {expected_count}, got {len(ngrams)}"
-            )
+            assert (
+                len(ngrams) == expected_count
+            ), f"Wrong number of {n}-grams: expected {expected_count}, got {len(ngrams)}"
 
             # Property 2: Each n-gram has correct length
             for ngram in ngrams:
@@ -363,15 +363,15 @@ class TestPropertyBasedUtilities:
 
         # Property 2: Total count equals number of tokens
         total_count = sum(freq_dict.values())
-        assert total_count == len(tokens), (
-            f"Total count mismatch: expected {len(tokens)}, got {total_count}"
-        )
+        assert total_count == len(
+            tokens
+        ), f"Total count mismatch: expected {len(tokens)}, got {total_count}"
 
         # Property 3: All words in tokens appear in frequency dict
         unique_tokens = set(tokens)
-        assert set(freq_dict.keys()) == unique_tokens, (
-            "Frequency dict keys don't match unique tokens"
-        )
+        assert (
+            set(freq_dict.keys()) == unique_tokens
+        ), "Frequency dict keys don't match unique tokens"
 
     @given(st.lists(st.text(min_size=1, max_size=10), min_size=3, max_size=20))
     @settings(max_examples=20, deadline=5000)
@@ -417,9 +417,9 @@ class TestPropertyBasedVectorized:
         for i, (ind_score, batch_score) in enumerate(
             zip(individual_scores, batch_scores, strict=False)
         ):
-            assert abs(ind_score - batch_score) < 1e-14, (
-                f"Vectorized mismatch for word {i}: {ind_score} vs {batch_score}"
-            )
+            assert (
+                abs(ind_score - batch_score) < 1e-14
+            ), f"Vectorized mismatch for word {i}: {ind_score} vs {batch_score}"
 
 
 class FreqProbStateMachine(RuleBasedStateMachine):
