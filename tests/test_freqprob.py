@@ -11,8 +11,6 @@ from collections import Counter
 # Import 3rd-party libraries
 import pytest
 
-# mypy: disable-error-code=arg-type
-
 # Import the library to test
 from freqprob import (
     ELE,
@@ -25,6 +23,9 @@ from freqprob import (
     Uniform,
     WittenBell,
 )
+
+# mypy: disable-error-code=arg-type
+
 
 # TODO: add tests with different bin values for the Lidstone family
 

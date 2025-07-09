@@ -5,8 +5,6 @@ Test memory management features: streaming, compression, and profiling.
 import os
 import tempfile
 
-# mypy: disable-error-code=arg-type
-
 from freqprob import (
     CompressedFrequencyDistribution,
     DistributionMemoryAnalyzer,
@@ -22,6 +20,8 @@ from freqprob import (
     create_sparse_distribution,
 )
 from freqprob.profiling import get_object_memory_usage, profile_memory_usage
+
+# mypy: disable-error-code=arg-type
 
 
 class TestStreamingFrequencyDistribution:

@@ -7,7 +7,7 @@ when only a subset of probabilities are accessed.
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Iterator, Iterable
+from typing import Any, Iterable, Iterator
 
 from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 

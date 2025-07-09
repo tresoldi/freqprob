@@ -32,6 +32,9 @@ black-check:
 ## format - Runs all formatting tools against the project
 format: black isort lint mypy
 
+## format-quick - Runs just isort and black formatting (for pre-push)
+format-quick: isort black
+
 ## format-check - Checks if the project is formatted correctly against all formatting rules
 format-check: black-check isort-check lint mypy
 
@@ -60,4 +63,4 @@ mypy:
 test:
 	$(VIRTUAL_BIN)/pytest
 
-.PHONY: help build coverage clean black black-check format format-check install isort isort-check lint mypy test
+.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy test
