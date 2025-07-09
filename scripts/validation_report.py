@@ -17,8 +17,8 @@ from typing import Any
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import freqprob  # noqa: E402
-from freqprob.validation import BenchmarkSuite, PerformanceProfiler, ValidationSuite  # noqa: E402
+import freqprob
+from freqprob.validation import BenchmarkSuite, PerformanceProfiler, ValidationSuite
 
 HAS_NUMPY = False
 HAS_PLOTTING = False
@@ -127,7 +127,9 @@ class ValidationReportGenerator:
             self.log(f"  Testing {method_name}...")
 
             method_results = self.validator.validate_numerical_stability(
-                method_class, test_distributions, **kwargs  # type: ignore[arg-type]
+                method_class,
+                test_distributions,
+                **kwargs,  # type: ignore[arg-type]
             )
 
             stability_results[method_name] = {
@@ -159,7 +161,9 @@ class ValidationReportGenerator:
             self.log(f"  Testing {method_name}...")
 
             result = self.validator.validate_statistical_correctness(
-                method_class, test_dist, **kwargs  # type: ignore[arg-type]
+                method_class,
+                test_dist,
+                **kwargs,  # type: ignore[arg-type]
             )
 
             correctness_results[method_name] = result.to_dict()
@@ -373,12 +377,12 @@ class ValidationReportGenerator:
 
     <div class="summary">
         <h2>Summary</h2>
-        <p><strong>Generated:</strong> {time.strftime('%Y-%m-%d %H:%M:%S')}</p>
-        <p><strong>FreqProb Version:</strong> {results.get('metadata', {}).get('freqprob_version', 'unknown')}</p>
-        <p><strong>Python Version:</strong> {results.get('metadata', {}).get('python_version', 'unknown')}</p>
+        <p><strong>Generated:</strong> {time.strftime("%Y-%m-%d %H:%M:%S")}</p>
+        <p><strong>FreqProb Version:</strong> {results.get("metadata", {}).get("freqprob_version", "unknown")}</p>
+        <p><strong>Python Version:</strong> {results.get("metadata", {}).get("python_version", "unknown")}</p>
         <p><strong>Overall Status:</strong>
-           <span class="{'passed' if results.get('summary', {}).get('overall_status') == 'PASSED' else 'failed'}">
-           {results.get('summary', {}).get('overall_status', 'UNKNOWN')}
+           <span class="{"passed" if results.get("summary", {}).get("overall_status") == "PASSED" else "failed"}">
+           {results.get("summary", {}).get("overall_status", "UNKNOWN")}
            </span>
         </p>
     </div>
@@ -400,9 +404,9 @@ class ValidationReportGenerator:
                 html_content += f"""
         <tr class="{status_class}">
             <td>{method}</td>
-            <td>{data['total_tests']}</td>
-            <td>{data['passed']}</td>
-            <td>{data['failed']}</td>
+            <td>{data["total_tests"]}</td>
+            <td>{data["passed"]}</td>
+            <td>{data["failed"]}</td>
             <td>{success_rate:.1%}</td>
         </tr>"""
         html_content += "</table>"
@@ -422,7 +426,7 @@ class ValidationReportGenerator:
                 html_content += f"""
         <tr class="{status_class}">
             <td>{method}</td>
-            <td><span class="{'passed' if data['passed'] else 'failed'}">{status}</span></td>
+            <td><span class="{"passed" if data["passed"] else "failed"}">{status}</span></td>
             <td>{error_msg}</td>
         </tr>"""
         html_content += "</table>"
@@ -440,9 +444,9 @@ class ValidationReportGenerator:
                     html_content += f"""
         <tr>
             <td>{method}</td>
-            <td class="metric">{data['duration_seconds']:.4f}</td>
-            <td class="metric">{data['memory_peak_mb']:.2f}</td>
-            <td class="metric">{data['memory_delta_mb']:.2f}</td>
+            <td class="metric">{data["duration_seconds"]:.4f}</td>
+            <td class="metric">{data["memory_peak_mb"]:.2f}</td>
+            <td class="metric">{data["memory_delta_mb"]:.2f}</td>
         </tr>"""
         html_content += "</table>"
 
@@ -454,13 +458,13 @@ class ValidationReportGenerator:
     <h2>Additional Test Results</h2>
     <table>
         <tr><th>Test Suite</th><th>Status</th></tr>
-        <tr class="{'status-passed' if regression_status == 'PASSED' else 'status-failed'}">
+        <tr class="{"status-passed" if regression_status == "PASSED" else "status-failed"}">
             <td>Regression Tests</td>
-            <td><span class="{'passed' if regression_status == 'PASSED' else 'failed'}">{regression_status}</span></td>
+            <td><span class="{"passed" if regression_status == "PASSED" else "failed"}">{regression_status}</span></td>
         </tr>
-        <tr class="{'status-passed' if property_status == 'PASSED' else 'status-failed'}">
+        <tr class="{"status-passed" if property_status == "PASSED" else "status-failed"}">
             <td>Property-Based Tests</td>
-            <td><span class="{'passed' if property_status == 'PASSED' else 'failed'}">{property_status}</span></td>
+            <td><span class="{"passed" if property_status == "PASSED" else "failed"}">{property_status}</span></td>
         </tr>
     </table>
 
@@ -483,20 +487,20 @@ class ValidationReportGenerator:
 
         try:
             # Run all validation components
-            self.report_data["test_results"][
-                "numerical_stability"
-            ] = self.run_numerical_stability_tests()
-            self.report_data["test_results"][
-                "statistical_correctness"
-            ] = self.run_statistical_correctness_tests()
+            self.report_data["test_results"]["numerical_stability"] = (
+                self.run_numerical_stability_tests()
+            )
+            self.report_data["test_results"]["statistical_correctness"] = (
+                self.run_statistical_correctness_tests()
+            )
             self.report_data["test_results"]["regression_tests"] = self.run_regression_tests()
-            self.report_data["test_results"][
-                "property_based_tests"
-            ] = self.run_property_based_tests()
+            self.report_data["test_results"]["property_based_tests"] = (
+                self.run_property_based_tests()
+            )
 
-            self.report_data["performance_results"][
-                "performance_benchmarks"
-            ] = self.run_performance_benchmarks()
+            self.report_data["performance_results"]["performance_benchmarks"] = (
+                self.run_performance_benchmarks()
+            )
 
             # Generate summary
             self.report_data["summary"] = self.generate_summary_statistics(

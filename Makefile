@@ -31,13 +31,13 @@ black-check:
 	$(VIRTUAL_BIN)/black $(PROJECT_NAME)/ $(TEST_DIR)/ --check
 
 ## format - Runs all formatting tools against the project
-format: black isort lint mypy
+format: black isort ruff lint mypy
 
-## format-quick - Runs just isort and black formatting (for pre-push)
-format-quick: isort black
+## format-quick - Runs just isort, black, and ruff formatting (for pre-push)
+format-quick: isort black ruff
 
 ## format-check - Checks if the project is formatted correctly against all formatting rules
-format-check: black-check isort-check lint mypy
+format-check: black-check isort-check ruff-check lint mypy
 
 ## install - Install the project locally
 install:
@@ -56,6 +56,16 @@ isort-check:
 lint:
 	$(VIRTUAL_BIN)/flake8 $(PROJECT_NAME)/ $(TEST_DIR)/
 
+## ruff - Run ruff linting and formatting
+ruff:
+	$(VIRTUAL_BIN)/ruff check $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/ --fix
+	$(VIRTUAL_BIN)/ruff format $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
+
+## ruff-check - Check ruff linting and formatting without fixing
+ruff-check:
+	$(VIRTUAL_BIN)/ruff check $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
+	$(VIRTUAL_BIN)/ruff format $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/ --check
+
 ## mypy - Run mypy type checking on the project
 mypy:
 	$(VIRTUAL_BIN)/mypy --strict $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
@@ -64,4 +74,4 @@ mypy:
 test:
 	$(VIRTUAL_BIN)/pytest
 
-.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy test
+.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy ruff ruff-check test

@@ -26,7 +26,7 @@ import numpy as np
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import freqprob  # noqa: E402
+import freqprob
 
 HAS_PLOTTING = False
 
@@ -606,14 +606,14 @@ class PerformanceBenchmark:
 </head>
 <body>
     <h1>FreqProb Performance Benchmarks</h1>
-    <p>Generated on {time.strftime('%Y-%m-%d %H:%M:%S')}</p>
+    <p>Generated on {time.strftime("%Y-%m-%d %H:%M:%S")}</p>
 
     <h2>Summary</h2>
     <ul>
-        <li>Total Results: {analysis['summary']['total_results']}</li>
-        <li>Methods Tested: {', '.join(analysis['summary']['methods_tested'])}</li>
-        <li>Datasets Tested: {', '.join(analysis['summary']['datasets_tested'])}</li>
-        <li>Metrics: {', '.join(analysis['summary']['metrics_tested'])}</li>
+        <li>Total Results: {analysis["summary"]["total_results"]}</li>
+        <li>Methods Tested: {", ".join(analysis["summary"]["methods_tested"])}</li>
+        <li>Datasets Tested: {", ".join(analysis["summary"]["datasets_tested"])}</li>
+        <li>Metrics: {", ".join(analysis["summary"]["metrics_tested"])}</li>
     </ul>
 
     <h2>Best Performers</h2>
@@ -625,9 +625,9 @@ class PerformanceBenchmark:
             html_content += f"""
         <tr>
             <td class="metric">{metric}</td>
-            <td class="best">{best['method']}</td>
-            <td>{best['dataset']}</td>
-            <td>{best['value']:.4f}</td>
+            <td class="best">{best["method"]}</td>
+            <td>{best["dataset"]}</td>
+            <td>{best["value"]:.4f}</td>
         </tr>"""
 
         html_content += """

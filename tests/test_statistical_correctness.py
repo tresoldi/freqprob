@@ -368,7 +368,7 @@ class TestStatisticalCorrectness:
             assert not math.isinf(metrics["perplexity"])
             assert not math.isinf(metrics["cross_entropy"])
 
-    @pytest.mark.slow()
+    @pytest.mark.slow
     def test_large_vocabulary_statistical_properties(self) -> None:
         """Test statistical properties with large vocabularies."""
         # Create large Zipfian distribution
