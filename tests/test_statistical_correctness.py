@@ -7,13 +7,15 @@ and mathematical expectations.
 """
 
 import math
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pytest
 
 import freqprob
-from freqprob.base import FrequencyDistribution
+
+if TYPE_CHECKING:
+    from freqprob.base import FrequencyDistribution
 
 
 class TestStatisticalCorrectness:
