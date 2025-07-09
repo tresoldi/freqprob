@@ -1,4 +1,6 @@
 PYTHON_BINARY := python3
+VIRTUAL_ENV := venv
+VIRTUAL_BIN := $(VIRTUAL_ENV)/bin
 PROJECT_NAME := freqprob
 TEST_DIR := tests
 
@@ -8,24 +10,24 @@ help:
 
 ## build - Builds the project in preparation for release
 build:
-	$(PYTHON_BINARY) -m build
+	$(VIRTUAL_BIN)/python -m build
 
 ## coverage - Test the project and generate an HTML coverage report
 coverage:
-	pytest --cov=$(PROJECT_NAME) --cov-branch --cov-report=html --cov-report=lcov --cov-report=term-missing
+	$(VIRTUAL_BIN)/pytest --cov=$(PROJECT_NAME) --cov-branch --cov-report=html --cov-report=lcov --cov-report=term-missing
 
-## clean - Remove build artifacts and clear out .pyc files
+## clean - Remove the virtual environment and clear out .pyc files
 clean:
-	rm -rf dist *.egg-info .coverage
+	rm -rf $(VIRTUAL_ENV) dist *.egg-info .coverage
 	find . -name '*.pyc' -delete
 
 ## black - Runs the Black Python formatter against the project
 black:
-	black $(PROJECT_NAME)/ $(TEST_DIR)/
+	$(VIRTUAL_BIN)/black $(PROJECT_NAME)/ $(TEST_DIR)/
 
 ## black-check - Checks if the project is formatted correctly against the Black rules
 black-check:
-	black $(PROJECT_NAME)/ $(TEST_DIR)/ --check
+	$(VIRTUAL_BIN)/black $(PROJECT_NAME)/ $(TEST_DIR)/ --check
 
 ## format - Runs all formatting tools against the project
 format: black isort lint mypy
@@ -38,26 +40,27 @@ format-check: black-check isort-check lint mypy
 
 ## install - Install the project locally
 install:
-	pip install -e ."[dev]"
+	$(PYTHON_BINARY) -m venv $(VIRTUAL_ENV)
+	$(VIRTUAL_BIN)/pip install -e ."[dev]"
 
 ## isort - Sorts imports throughout the project
 isort:
-	isort $(PROJECT_NAME)/ $(TEST_DIR)/
+	$(VIRTUAL_BIN)/isort $(PROJECT_NAME)/ $(TEST_DIR)/
 
 ## isort-check - Checks that imports throughout the project are sorted correctly
 isort-check:
-	isort $(PROJECT_NAME)/ $(TEST_DIR)/ --check-only
+	$(VIRTUAL_BIN)/isort $(PROJECT_NAME)/ $(TEST_DIR)/ --check-only
 
 ## lint - Lint the project
 lint:
-	flake8 $(PROJECT_NAME)/ $(TEST_DIR)/
+	$(VIRTUAL_BIN)/flake8 $(PROJECT_NAME)/ $(TEST_DIR)/
 
 ## mypy - Run mypy type checking on the project
 mypy:
-	mypy $(PROJECT_NAME)/ $(TEST_DIR)/
+	$(VIRTUAL_BIN)/mypy $(PROJECT_NAME)/ $(TEST_DIR)/
 
 ## test - Test the project
 test:
-	pytest
+	$(VIRTUAL_BIN)/pytest
 
 .PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy test
