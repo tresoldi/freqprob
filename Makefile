@@ -57,7 +57,7 @@ lint:
 
 ## mypy - Run mypy type checking on the project
 mypy:
-	$(VIRTUAL_BIN)/mypy $(PROJECT_NAME)/ $(TEST_DIR)/
+	$(VIRTUAL_BIN)/mypy --strict $(PROJECT_NAME)/ $(TEST_DIR)/
 
 ## test - Test the project
 test:
