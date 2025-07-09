@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 import freqprob
+from freqprob.base import FrequencyDistribution
 
 
 class TestStatisticalCorrectness:
@@ -367,7 +368,7 @@ class TestStatisticalCorrectness:
             assert not math.isinf(metrics["perplexity"])
             assert not math.isinf(metrics["cross_entropy"])
 
-    @pytest.mark.slow()
+    @pytest.mark.slow()  # type: ignore[misc]
     def test_large_vocabulary_statistical_properties(self) -> None:
         """Test statistical properties with large vocabularies."""
         # Create large Zipfian distribution
@@ -471,12 +472,12 @@ class TestAdvancedStatisticalProperties:
 
     def test_interpolated_smoothing_weights(self) -> None:
         """Test interpolated smoothing weight properties."""
-        high_order = {("a", "b", "c"): 10, ("d", "e", "f"): 5}
-        low_order = {("b", "c"): 20, ("e", "f"): 15, ("x", "y"): 10}
+        high_order: FrequencyDistribution = {("a", "b", "c"): 10, ("d", "e", "f"): 5}
+        low_order: FrequencyDistribution = {("b", "c"): 20, ("e", "f"): 15, ("x", "y"): 10}
 
         for lambda_weight in [0.1, 0.3, 0.5, 0.7, 0.9]:
             interpolated = freqprob.InterpolatedSmoothing(
-                high_order, low_order, lambda_weight=lambda_weight, logprob=False  # type: ignore[arg-type]
+                high_order, low_order, lambda_weight=lambda_weight, logprob=False
             )
 
             # Test that probabilities are valid
@@ -515,11 +516,11 @@ class TestAdvancedStatisticalProperties:
     def test_memory_efficient_accuracy_preservation(self) -> None:
         """Test that memory-efficient representations preserve accuracy."""
         # Create reference distribution
-        original_dist = {f"item_{i}": max(1, int(1000 / (i + 1))) for i in range(500)}
+        original_dist: FrequencyDistribution = {f"item_{i}": max(1, int(1000 / (i + 1))) for i in range(500)}
 
         # Create compressed version
         compressed_dist = freqprob.create_compressed_distribution(
-            original_dist, quantization_levels=64  # type: ignore[arg-type]
+            original_dist, quantization_levels=64
         )
 
         # Test accuracy preservation
@@ -580,7 +581,7 @@ class TestAdvancedStatisticalProperties:
             lazy_prob = lazy_mle(word)
             assert abs(regular_prob - lazy_prob) < 1e-15
 
-    @pytest.mark.parametrize(
+    @pytest.mark.parametrize(  # type: ignore[misc]
         "method_config",
         [
             ("MLE", {}),
