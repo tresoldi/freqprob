@@ -9,12 +9,12 @@ range of generated inputs.
 # mypy: disable-error-code=misc
 
 import math
-from typing import Any
+from typing import Any, Callable, cast
 
 import pytest
 
 import freqprob
-from freqprob.base import FrequencyDistribution
+from freqprob.base import FrequencyDistribution, ScoringMethod
 
 try:
     from hypothesis import assume, given, settings
@@ -271,7 +271,7 @@ class TestPropertyBasedSmoothing:
         bins = len(freq_dist) * 2
 
         # Methods that should smooth (give positive probability to unseen words)
-        smoothing_methods = [
+        smoothing_methods: list[Callable[[FrequencyDistribution], ScoringMethod]] = [
             lambda fd: freqprob.Laplace(fd, bins=bins, logprob=False),
             lambda fd: freqprob.ELE(fd, bins=bins, logprob=False),
             lambda fd: freqprob.Lidstone(fd, gamma=0.5, bins=bins, logprob=False),
@@ -279,7 +279,7 @@ class TestPropertyBasedSmoothing:
         ]
 
         for method_factory in smoothing_methods:
-            method = method_factory(freq_dist)
+            method = method_factory(cast(FrequencyDistribution, freq_dist))
             unknown_prob = method("definitely_unknown_word_xyz")
             assert (
                 unknown_prob > 0
