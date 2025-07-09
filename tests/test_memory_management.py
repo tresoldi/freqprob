@@ -511,7 +511,7 @@ class TestMemoryProfiling:
         assert len(result) == 1000
 
         # Check profiler was attached
-        profiler = test_function.get_profiler()
+        profiler = test_function.get_profiler()  # type: ignore[attr-defined]
         assert profiler is not None
 
         metrics = profiler.get_latest_metrics()
