@@ -314,21 +314,24 @@ def profile_memory_usage(
     def decorator(func: Callable[..., Any]) -> ProfiledFunction:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            profiler = getattr(wrapper, "_profiler", None)
-            if profiler is None:
-                profiler = MemoryProfiler()
-                setattr(wrapper, "_profiler", profiler)
+            if typed_wrapper._profiler is None:
+                typed_wrapper._profiler = MemoryProfiler()
 
             op_name = operation_name or func.__name__
-            with profiler.profile_operation(op_name):
+            with typed_wrapper._profiler.profile_operation(op_name):
                 return func(*args, **kwargs)
 
-        def get_profiler() -> Any:
-            return getattr(wrapper, "_profiler", None)
+        # Initialize attributes for mypy
+        typed_wrapper: ProfiledFunction = cast(ProfiledFunction, wrapper)
+        typed_wrapper._profiler = None
 
-        setattr(wrapper, "get_profiler", get_profiler)
-        # Explicitly cast to ProfiledFunction so mypy knows about the dynamic attributes
-        return cast(ProfiledFunction, wrapper)
+        def get_profiler() -> Any:
+            return typed_wrapper._profiler
+
+        # Use setattr to assign the method to avoid mypy method assignment error
+        setattr(typed_wrapper, 'get_profiler', get_profiler)
+
+        return typed_wrapper
 
     return decorator
 
