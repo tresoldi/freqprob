@@ -4,6 +4,7 @@ VIRTUAL_BIN := $(VIRTUAL_ENV)/bin
 PROJECT_NAME := freqprob
 TEST_DIR := tests
 SCRIPTS_DIR := scripts
+DOCS_DIR := docs
 
 ## help - Display help about make targets for this Makefile
 help:
@@ -56,15 +57,15 @@ isort-check:
 lint:
 	$(VIRTUAL_BIN)/flake8 $(PROJECT_NAME)/ $(TEST_DIR)/
 
-## ruff - Run ruff linting and formatting
+## ruff - Run ruff linting and formatting (including notebooks)
 ruff:
-	$(VIRTUAL_BIN)/ruff check $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/ --fix
-	$(VIRTUAL_BIN)/ruff format $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
+	$(VIRTUAL_BIN)/ruff check $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/ $(DOCS_DIR)/ --fix
+	$(VIRTUAL_BIN)/ruff format $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/ $(DOCS_DIR)/
 
-## ruff-check - Check ruff linting and formatting without fixing
+## ruff-check - Check ruff linting and formatting without fixing (including notebooks)
 ruff-check:
-	$(VIRTUAL_BIN)/ruff check $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
-	$(VIRTUAL_BIN)/ruff format $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/ --check
+	$(VIRTUAL_BIN)/ruff check $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/ $(DOCS_DIR)/
+	$(VIRTUAL_BIN)/ruff format $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/ $(DOCS_DIR)/ --check
 
 ## mypy - Run mypy type checking on the project
 mypy:
