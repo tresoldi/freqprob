@@ -742,7 +742,7 @@ class BenchmarkSuite:
         return results
 
     def compare_methods(
-        self, method_configs: list[tuple[type, dict]], test_distribution: dict[str, int]
+        self, method_configs: list[tuple[type, dict[str, Any]]], test_distribution: dict[str, int]
     ) -> dict[str, PerformanceMetrics]:
         """Compare multiple methods on the same distribution."""
         results = {}
@@ -813,7 +813,7 @@ def profile_method_performance(
 
 
 def compare_method_performance(
-    method_configs: list[tuple[type, dict]], test_dist: dict[str, int]
+    method_configs: list[tuple[type, dict[str, Any]]], test_dist: dict[str, int]
 ) -> dict[str, float]:
     """Compare creation times of multiple methods."""
     benchmarker = BenchmarkSuite()
