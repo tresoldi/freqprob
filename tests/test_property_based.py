@@ -14,6 +14,7 @@ from typing import Any
 import pytest
 
 import freqprob
+from freqprob.base import FrequencyDistribution
 
 try:
     from hypothesis import assume, given, settings
@@ -28,7 +29,7 @@ except ImportError:
 
 # Hypothesis strategies for generating test data
 @st.composite
-def frequency_distribution(draw, min_vocab: int = 1, max_vocab: int = 100, min_count: int = 1, max_count: int = 1000) -> dict[str, int]:  # type: ignore
+def frequency_distribution(draw: Any, min_vocab: int = 1, max_vocab: int = 100, min_count: int = 1, max_count: int = 1000) -> dict[str, int]:
     """Generate a valid frequency distribution."""
     vocab_size = draw(st.integers(min_value=min_vocab, max_value=max_vocab))
 
@@ -276,7 +277,7 @@ class TestPropertyBasedSmoothing:
         ]
 
         for method_factory in smoothing_methods:
-            method = method_factory(freq_dist)  # type: ignore[no-untyped-call]
+            method = method_factory(freq_dist)
             unknown_prob = method("definitely_unknown_word_xyz")
             assert (
                 unknown_prob > 0
@@ -423,7 +424,7 @@ class FreqProbStateMachine(RuleBasedStateMachine):
 
     def __init__(self) -> None:
         super().__init__()
-        self.freq_dist = {"initial": 1}  # Start with minimal distribution
+        self.freq_dist: dict[str, int] = {"initial": 1}  # Start with minimal distribution
         self.methods: dict[str, Any] = {}
 
     @rule(word=st.text(min_size=1, max_size=10), count=st.integers(min_value=1, max_value=100))
