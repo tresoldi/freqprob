@@ -41,7 +41,7 @@ for i, context in enumerate(contexts):
 
 def test_kneser_ney_basic() -> None:
     """Test basic Kneser-Ney functionality."""
-    kn = KneserNey(BIGRAM_DATA, discount=0.75, logprob=False)
+    kn = KneserNey(BIGRAM_DATA, discount=0.75, logprob=False)  # type: ignore[arg-type]
 
     # Test observed bigrams
     prob_the_cat = kn(("the", "cat"))
@@ -61,7 +61,7 @@ def test_kneser_ney_basic() -> None:
 
 def test_kneser_ney_logprob() -> None:
     """Test Kneser-Ney with log-probabilities."""
-    kn = KneserNey(BIGRAM_DATA, discount=0.75, logprob=True)
+    kn = KneserNey(BIGRAM_DATA, discount=0.75, logprob=True)  # type: ignore[arg-type]
 
     # Test that log-probabilities are negative
     log_prob = kn(("the", "cat"))
@@ -76,18 +76,18 @@ def test_kneser_ney_logprob() -> None:
 def test_kneser_ney_discount_validation() -> None:
     """Test that Kneser-Ney validates discount parameter."""
     with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
-        KneserNey(BIGRAM_DATA, discount=0.0)  # Invalid: discount must be > 0
+        KneserNey(BIGRAM_DATA, discount=0.0)  # type: ignore[arg-type]  # Invalid: discount must be > 0
 
     with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
-        KneserNey(BIGRAM_DATA, discount=1.0)  # Invalid: discount must be < 1
+        KneserNey(BIGRAM_DATA, discount=1.0)  # type: ignore[arg-type]  # Invalid: discount must be < 1
 
     with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
-        KneserNey(BIGRAM_DATA, discount=1.5)  # Invalid: discount must be < 1
+        KneserNey(BIGRAM_DATA, discount=1.5)  # type: ignore[arg-type]  # Invalid: discount must be < 1
 
 
 def test_modified_kneser_ney_basic() -> None:
     """Test basic Modified Kneser-Ney functionality."""
-    mkn = ModifiedKneserNey(LARGE_BIGRAM_DATA, logprob=False)
+    mkn = ModifiedKneserNey(LARGE_BIGRAM_DATA, logprob=False)  # type: ignore[arg-type]
 
     # Test observed bigrams with different counts
     high_count_bigram = ("the", "cat")
@@ -107,7 +107,7 @@ def test_modified_kneser_ney_basic() -> None:
 
 def test_modified_kneser_ney_logprob() -> None:
     """Test Modified Kneser-Ney with log-probabilities."""
-    mkn = ModifiedKneserNey(LARGE_BIGRAM_DATA, logprob=True)
+    mkn = ModifiedKneserNey(LARGE_BIGRAM_DATA, logprob=True)  # type: ignore[arg-type]
 
     log_prob = mkn(("the", "cat"))
     assert log_prob < 0
@@ -122,7 +122,7 @@ def test_interpolated_smoothing_basic() -> None:
     high_order = {"trigram_1": 3, "trigram_2": 2, "trigram_3": 1}
     low_order = {"bigram_1": 5, "bigram_2": 3, "trigram_1": 1}  # Some overlap
 
-    interp = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.7, logprob=False)
+    interp = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.7, logprob=False)  # type: ignore[arg-type]
 
     # Test element that appears in both distributions
     prob_common = interp("trigram_1")
@@ -147,10 +147,10 @@ def test_interpolated_smoothing_weights() -> None:
     low_order = {"common": 1}
 
     # Test with high weight on high-order model
-    interp_high = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.9, logprob=False)
+    interp_high = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.9, logprob=False)  # type: ignore[arg-type]
 
     # Test with high weight on low-order model
-    interp_low = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.1, logprob=False)
+    interp_low = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.1, logprob=False)  # type: ignore[arg-type]
 
     # Both should give same result for this balanced case
     prob_high = interp_high("common")
@@ -165,15 +165,15 @@ def test_interpolated_smoothing_validation() -> None:
     low_order = {"b": 1}
 
     with pytest.raises(ValueError, match="Lambda.*between.*0.*1"):
-        InterpolatedSmoothing(high_order, low_order, lambda_weight=-0.1)
+        InterpolatedSmoothing(high_order, low_order, lambda_weight=-0.1)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="Lambda.*between.*0.*1"):
-        InterpolatedSmoothing(high_order, low_order, lambda_weight=1.1)
+        InterpolatedSmoothing(high_order, low_order, lambda_weight=1.1)  # type: ignore[arg-type]
 
 
 def test_bayesian_smoothing_basic() -> None:
     """Test basic Bayesian smoothing functionality."""
-    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)
+    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]
 
     # Test observed elements
     prob_apple = bayes("apple")  # (6+1)/(10+3*1) = 7/13
@@ -189,10 +189,10 @@ def test_bayesian_smoothing_basic() -> None:
 def test_bayesian_smoothing_alpha_effects() -> None:
     """Test that different alpha values affect smoothing strength."""
     # Minimal smoothing
-    bayes_min = BayesianSmoothing(SIMPLE_DATA, alpha=0.1, logprob=False)
+    bayes_min = BayesianSmoothing(SIMPLE_DATA, alpha=0.1, logprob=False)  # type: ignore[arg-type]
 
     # Strong smoothing
-    bayes_strong = BayesianSmoothing(SIMPLE_DATA, alpha=5.0, logprob=False)
+    bayes_strong = BayesianSmoothing(SIMPLE_DATA, alpha=5.0, logprob=False)  # type: ignore[arg-type]
 
     prob_common_min = bayes_min("apple")
     prob_unseen_min = bayes_min("unseen")
@@ -208,7 +208,7 @@ def test_bayesian_smoothing_alpha_effects() -> None:
 
 def test_bayesian_smoothing_logprob() -> None:
     """Test Bayesian smoothing with log-probabilities."""
-    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=True)
+    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=True)  # type: ignore[arg-type]
 
     log_prob = bayes("apple")
     assert log_prob < 0
@@ -221,18 +221,18 @@ def test_bayesian_smoothing_logprob() -> None:
 def test_bayesian_smoothing_validation() -> None:
     """Test that Bayesian smoothing validates alpha parameter."""
     with pytest.raises(ValueError, match="Alpha.*positive"):
-        BayesianSmoothing(SIMPLE_DATA, alpha=0.0)
+        BayesianSmoothing(SIMPLE_DATA, alpha=0.0)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="Alpha.*positive"):
-        BayesianSmoothing(SIMPLE_DATA, alpha=-1.0)
+        BayesianSmoothing(SIMPLE_DATA, alpha=-1.0)  # type: ignore[arg-type]
 
 
 def test_all_methods_string_representation() -> None:
     """Test that all methods have proper string representation."""
-    kn = KneserNey(BIGRAM_DATA)
-    mkn = ModifiedKneserNey(BIGRAM_DATA)
+    kn = KneserNey(BIGRAM_DATA)  # type: ignore[arg-type]
+    mkn = ModifiedKneserNey(BIGRAM_DATA)  # type: ignore[arg-type]
     interp = InterpolatedSmoothing({"a": 1}, {"b": 1})
-    bayes = BayesianSmoothing(SIMPLE_DATA)
+    bayes = BayesianSmoothing(SIMPLE_DATA)  # type: ignore[arg-type]
 
     assert "Kneser-Ney" in str(kn)
     assert "Modified Kneser-Ney" in str(mkn)
@@ -253,7 +253,7 @@ def test_edge_case_empty_data() -> None:
 
     # These should not crash but may produce degenerate results
     try:
-        kn = KneserNey(empty_data, logprob=False)
+        kn = KneserNey(empty_data, logprob=False)  # type: ignore[arg-type]
         prob = kn(("any", "bigram"))
         assert prob >= 0
     except (ZeroDivisionError, ValueError):
@@ -262,7 +262,7 @@ def test_edge_case_empty_data() -> None:
 
     # Test with minimal data
     minimal_data = {("a", "b"): 1}
-    kn = KneserNey(minimal_data, logprob=False)
+    kn = KneserNey(minimal_data, logprob=False)  # type: ignore[arg-type]
     prob = kn(("a", "b"))
     assert prob > 0
 
@@ -272,8 +272,8 @@ def test_consistency_with_traditional_methods() -> None:
     from freqprob import Laplace
 
     # For unigram data, Bayesian with alpha=1 should match Laplace
-    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)
-    laplace = Laplace(SIMPLE_DATA, logprob=False)
+    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]
+    laplace = Laplace(SIMPLE_DATA, logprob=False)  # type: ignore[arg-type]
 
     # Test observed elements
     for element in SIMPLE_DATA:
@@ -289,7 +289,7 @@ def test_consistency_with_traditional_methods() -> None:
 
 def test_probability_normalization() -> None:
     """Test that probabilities are reasonable (don't test exact normalization)."""
-    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)
+    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]
 
     # Test that all probabilities are positive and reasonable
     for element in SIMPLE_DATA:
@@ -317,7 +317,7 @@ def test_kneser_ney_context_sensitivity() -> None:
         ("context1", "narrow"): 10,  # Higher frequency but less diverse
     }
 
-    kn = KneserNey(bigram_data, discount=0.5, logprob=False)
+    kn = KneserNey(bigram_data, discount=0.5, logprob=False)  # type: ignore[arg-type]
 
     # Test that both words get some probability in new contexts
     # (the exact relationship depends on the implementation details)
