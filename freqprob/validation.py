@@ -231,7 +231,11 @@ class PerformanceProfiler:
         return results
 
     def profile_concurrent_access(
-        self, method: Any, test_words: list[str], num_threads: int = 4, queries_per_thread: int = 100
+        self,
+        method: Any,
+        test_words: list[str],
+        num_threads: int = 4,
+        queries_per_thread: int = 100,
     ) -> PerformanceMetrics:
         """Profile concurrent access to methods."""
         errors = []
@@ -428,7 +432,11 @@ class ValidationSuite:
         return results
 
     def validate_statistical_correctness(
-        self, method_class: type, reference_dist: dict[str, int], tolerance: float = 1e-10, **kwargs: Any
+        self,
+        method_class: type,
+        reference_dist: dict[str, int],
+        tolerance: float = 1e-10,
+        **kwargs: Any,
     ) -> ValidationResult:
         """Validate statistical correctness against known theoretical results."""
         test_name = f"{method_class.__name__}_statistical_correctness"

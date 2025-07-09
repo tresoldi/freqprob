@@ -218,7 +218,7 @@ class CertaintyDegree(ScoringMethod):
         if self.logprob:
             # Ensure unobs_prob is not None and handle self._unobs initialization
             unobs_prob = unobs_prob or 0.0
-            current_unobs = getattr(self, '_unobs', 0.0) or 0.0
+            current_unobs = getattr(self, "_unobs", 0.0) or 0.0
             unobs_prob = max(unobs_prob, current_unobs)
             prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
             self._prob = {
