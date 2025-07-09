@@ -7,7 +7,7 @@ compatibility and correctness.
 """
 
 import math
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -17,7 +17,7 @@ from freqprob.base import FrequencyDistribution
 
 # Optional imports for reference implementations
 try:
-    from nltk.probability import FreqDist, LaplaceeProbDist, LidstoneProbDist, MLEProbDist
+    from nltk.probability import FreqDist, LaplaceeProbDist, LidstoneProbDist, MLEProbDist  # type: ignore[import-untyped]
 
     HAS_NLTK = True
 except ImportError:
@@ -31,7 +31,7 @@ except ImportError:
     HAS_SCIPY = False
 
 try:
-    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.feature_extraction.text import CountVectorizer  # type: ignore[import-untyped]
 
     HAS_SKLEARN = True
 except ImportError:
@@ -41,7 +41,7 @@ except ImportError:
 class TestNLTKRegression:
     """Regression tests against NLTK implementations."""
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  
     def test_mle_against_nltk(self) -> None:
         """Test MLE implementation against NLTK MLEProbDist."""
         # Sample data
@@ -51,7 +51,7 @@ class TestNLTKRegression:
             freq_counts[word] = freq_counts.get(word, 0) + 1
 
         # FreqProb MLE
-        freqprob_mle = freqprob.MLE(freq_counts, logprob=False)  # type: ignore[arg-type]
+        freqprob_mle = freqprob.MLE(cast(FrequencyDistribution, freq_counts), logprob=False)  
 
         # NLTK MLE
         nltk_freqdist = FreqDist(words)
@@ -70,7 +70,7 @@ class TestNLTKRegression:
         nltk_unknown = nltk_mle.prob("unknown")
         assert freqprob_unknown == nltk_unknown == 0.0
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  
     def test_laplace_against_nltk(self) -> None:
         """Test Laplace smoothing against NLTK LaplaceeProbDist."""
         words = ["apple", "banana", "cherry", "apple", "banana", "apple"]
@@ -82,7 +82,7 @@ class TestNLTKRegression:
         vocab_size = len(set(words))
 
         # FreqProb Laplace
-        freqprob_laplace = freqprob.Laplace(freq_counts, bins=vocab_size, logprob=False)  # type: ignore[arg-type]
+        freqprob_laplace = freqprob.Laplace(cast(FrequencyDistribution, freq_counts), bins=vocab_size, logprob=False)  
 
         # NLTK Laplace
         nltk_freqdist = FreqDist(words)
@@ -103,7 +103,7 @@ class TestNLTKRegression:
         relative_error = abs(freqprob_unknown - nltk_unknown) / nltk_unknown
         assert relative_error < 1e-10
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available") 
     def test_lidstone_against_nltk(self) -> None:
         """Test Lidstone smoothing against NLTK LidstoneProbDist."""
         words = ["dog", "cat", "mouse", "dog", "cat", "dog"]
@@ -117,7 +117,7 @@ class TestNLTKRegression:
         for gamma in gamma_values:
             # FreqProb Lidstone
             freqprob_lidstone = freqprob.Lidstone(
-                freq_counts, gamma=gamma, bins=vocab_size, logprob=False  # type: ignore[arg-type]
+                cast(FrequencyDistribution, freq_counts), gamma=gamma, bins=vocab_size, logprob=False  
             )
 
             # NLTK Lidstone
@@ -140,7 +140,7 @@ class TestNLTKRegression:
                 relative_error = abs(freqprob_unknown - nltk_unknown) / nltk_unknown
                 assert relative_error < 1e-10
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available") 
     def test_frequency_distribution_compatibility(self) -> None:
         """Test frequency distribution compatibility with NLTK."""
         # Create sample text
@@ -186,10 +186,10 @@ class TestNLTKRegression:
         # Test total counts
         assert sum(freqprob_counts.values()) == nltk_freqdist.N()
 
-    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available") 
     def test_ngram_generation_compatibility(self) -> None:
         """Test n-gram generation compatibility with NLTK."""
-        from nltk.util import ngrams as nltk_ngrams
+        from nltk.util import ngrams as nltk_ngrams  # type: ignore[import-untyped]
 
         tokens = ["the", "quick", "brown", "fox", "jumps"]
 
@@ -214,7 +214,7 @@ class TestNLTKRegression:
 class TestScipyRegression:
     """Regression tests against scipy implementations."""
 
-    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available") 
     def test_entropy_calculation(self) -> None:
         """Test entropy calculation against scipy."""
         # Create probability distribution
@@ -223,7 +223,7 @@ class TestScipyRegression:
         probs = [count / total for count in counts.values()]
 
         # FreqProb entropy calculation (manual)
-        mle = freqprob.MLE(counts, logprob=True)  # type: ignore[arg-type]
+        mle = freqprob.MLE(cast(FrequencyDistribution, counts), logprob=True) 
         freqprob_entropy = 0.0
         for word in counts:
             log_prob = mle(word)
@@ -236,7 +236,7 @@ class TestScipyRegression:
         # Should be very close
         assert abs(freqprob_entropy - scipy_entropy) < 1e-12
 
-    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available") 
     def test_kl_divergence_calculation(self) -> None:
         """Test KL divergence calculation against scipy."""
         # Two distributions
@@ -252,8 +252,8 @@ class TestScipyRegression:
         probs2 = [counts2[w] / total2 for w in words]
 
         # FreqProb KL divergence
-        model1 = freqprob.MLE(counts1, logprob=True)  # type: ignore[arg-type]
-        model2 = freqprob.MLE(counts2, logprob=True)  # type: ignore[arg-type]
+        model1 = freqprob.MLE(cast(FrequencyDistribution, counts1), logprob=True)  
+        model2 = freqprob.MLE(cast(FrequencyDistribution, counts2), logprob=True)  
         test_data = words * 10  # Repeat for stable estimate
 
         freqprob_kl = freqprob.kl_divergence(model1, model2, test_data)
@@ -265,7 +265,7 @@ class TestScipyRegression:
         relative_error = abs(freqprob_kl - scipy_kl) / scipy_kl
         assert relative_error < 0.01  # 1% tolerance
 
-    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available") 
     def test_multinomial_properties(self) -> None:
         """Test multinomial distribution properties against scipy."""
         # Parameters for multinomial distribution
@@ -279,7 +279,7 @@ class TestScipyRegression:
 
         # Create FreqProb distribution
         freq_counts = dict(zip(categories, sample_counts, strict=False))
-        mle = freqprob.MLE(freq_counts, logprob=False)  # type: ignore[arg-type]
+        mle = freqprob.MLE(cast(FrequencyDistribution, freq_counts), logprob=False) 
 
         # Compare estimated probabilities with true probabilities
         for i, category in enumerate(categories):
@@ -290,7 +290,7 @@ class TestScipyRegression:
             error = abs(estimated_prob - true_prob)
             assert error < 0.05  # Allow 5% error
 
-    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_SCIPY, reason="scipy not available")  
     def test_dirichlet_prior_properties(self) -> None:
         """Test Dirichlet prior properties against scipy."""
         # Dirichlet parameters (concentration parameters)
@@ -309,7 +309,7 @@ class TestScipyRegression:
         # FreqProb Bayesian smoothing (using same alpha values)
         # Note: Our alpha parameter is applied per category
         for i, category in enumerate(categories):
-            bayesian = freqprob.BayesianSmoothing(freq_counts, alpha=alpha[i], logprob=False)  # type: ignore[arg-type]
+            bayesian = freqprob.BayesianSmoothing(cast(FrequencyDistribution, freq_counts), alpha=alpha[i], logprob=False)  
 
             # Test that probabilities are reasonable
             prob = bayesian(category)
@@ -320,7 +320,7 @@ class TestScipyRegression:
 class TestSklearnRegression:
     """Regression tests against scikit-learn implementations."""
 
-    @pytest.mark.skipif(not HAS_SKLEARN, reason="sklearn not available")  # type: ignore[misc]
+    @pytest.mark.skipif(not HAS_SKLEARN, reason="sklearn not available") 
     def test_count_vectorizer_compatibility(self) -> None:
         """Test compatibility with sklearn CountVectorizer."""
         # Sample documents
@@ -336,7 +336,7 @@ class TestSklearnRegression:
         freq_counts = dict(zip(feature_names, total_counts, strict=False))
 
         # Test FreqProb MLE
-        mle = freqprob.MLE(freq_counts, logprob=False)  # type: ignore[arg-type]
+        mle = freqprob.MLE(cast(FrequencyDistribution, freq_counts), logprob=False) 
 
         # Verify probabilities sum to 1
         total_prob = sum(mle(word) for word in freq_counts)
@@ -378,7 +378,7 @@ class TestReferenceDataRegression:
         }
 
         # Test MLE probabilities are reasonable
-        mle = freqprob.MLE(brown_sample, logprob=False)  # type: ignore[arg-type]
+        mle = freqprob.MLE(cast(FrequencyDistribution, brown_sample), logprob=False)  
 
         # 'the' should be most frequent
         assert mle("the") > mle("of")
@@ -390,7 +390,7 @@ class TestReferenceDataRegression:
         assert abs(mle("the") - expected_the) < 1e-15
 
         # Test smoothing preserves ordering
-        laplace = freqprob.Laplace(brown_sample, bins=50000, logprob=False)  # type: ignore[arg-type]
+        laplace = freqprob.Laplace(cast(FrequencyDistribution, brown_sample), bins=50000, logprob=False)  
         assert laplace("the") > laplace("of")
         assert laplace("of") > laplace("and")
 
@@ -409,7 +409,7 @@ class TestReferenceDataRegression:
         zipf_counts = {f"word_{i}": freq for i, freq in enumerate(frequencies)}
 
         # Test that MLE preserves Zipfian properties
-        mle = freqprob.MLE(zipf_counts, logprob=False)  # type: ignore[arg-type]
+        mle = freqprob.MLE(cast(FrequencyDistribution, zipf_counts), logprob=False) 
 
         # Sample ranks and test Zipf relationship
         test_ranks = [1, 10, 100, 500]
@@ -429,7 +429,7 @@ class TestReferenceDataRegression:
         train_counts = {"a": 2, "b": 1}  # P(a)=2/3, P(b)=1/3
         test_data = ["a", "b"]  # Test on both words once
 
-        mle = freqprob.MLE(train_counts, logprob=True)  # type: ignore[arg-type]
+        mle = freqprob.MLE(cast(FrequencyDistribution, train_counts), logprob=True)  
         perplexity = freqprob.perplexity(mle, test_data)
 
         # Manual calculation:
@@ -448,14 +448,14 @@ class TestReferenceDataRegression:
         uniform_counts = {"x": 1, "y": 1, "z": 1}  # Each has probability 1/3
         test_data = ["x", "y", "z"]
 
-        mle = freqprob.MLE(uniform_counts, logprob=True)  # type: ignore[arg-type]
+        mle = freqprob.MLE(cast(FrequencyDistribution, uniform_counts), logprob=True)  
         ce = freqprob.cross_entropy(mle, test_data)
 
         # For uniform distribution over 3 symbols: H = log(3)
         expected_ce = math.log(3)
         assert abs(ce - expected_ce) < 1e-14
 
-    @pytest.mark.parametrize(  # type: ignore[misc]
+    @pytest.mark.parametrize(  
         ("smoothing_method", "params"),
         [
             ("Laplace", {"bins": 100}),
@@ -495,8 +495,8 @@ class TestReferenceDataRegression:
         counts = {"alpha": 25, "beta": 15, "gamma": 10}
 
         # Test log/linear probability consistency
-        mle_linear = freqprob.MLE(counts, logprob=False)  # type: ignore[arg-type]
-        mle_log = freqprob.MLE(counts, logprob=True)  # type: ignore[arg-type]
+        mle_linear = freqprob.MLE(cast(FrequencyDistribution, counts), logprob=False)  
+        mle_log = freqprob.MLE(cast(FrequencyDistribution, counts), logprob=True)  
 
         for word in counts:
             linear_prob = mle_linear(word)
@@ -507,15 +507,15 @@ class TestReferenceDataRegression:
             assert abs(linear_prob - converted_prob) < 1e-15
 
         # Test that Lidstone with gamma=1 equals Laplace
-        lidstone_1 = freqprob.Lidstone(counts, gamma=1.0, bins=100, logprob=False)  # type: ignore[arg-type]
-        laplace = freqprob.Laplace(counts, bins=100, logprob=False)  # type: ignore[arg-type]
+        lidstone_1 = freqprob.Lidstone(cast(FrequencyDistribution, counts), gamma=1.0, bins=100, logprob=False)  
+        laplace = freqprob.Laplace(cast(FrequencyDistribution, counts), bins=100, logprob=False) 
 
         for word in counts:
             assert abs(lidstone_1(word) - laplace(word)) < 1e-15
 
         # Test that ELE equals Lidstone with gamma=0.5
-        ele = freqprob.ELE(counts, bins=100, logprob=False)  # type: ignore[arg-type]
-        lidstone_half = freqprob.Lidstone(counts, gamma=0.5, bins=100, logprob=False)  # type: ignore[arg-type]
+        ele = freqprob.ELE(cast(FrequencyDistribution, counts), bins=100, logprob=False) 
+        lidstone_half = freqprob.Lidstone(cast(FrequencyDistribution, counts), gamma=0.5, bins=100, logprob=False) 
 
         for word in counts:
             assert abs(ele(word) - lidstone_half(word)) < 1e-15
@@ -549,9 +549,9 @@ class TestLiteratureRegression:
 
         # Test different smoothing methods
         methods = {
-            "mle": freqprob.MLE(train_counts, logprob=True),  # type: ignore[arg-type]
-            "laplace": freqprob.Laplace(train_counts, bins=train_vocab_size * 2, logprob=True),  # type: ignore[arg-type]
-            "ele": freqprob.ELE(train_counts, bins=train_vocab_size * 2, logprob=True),  # type: ignore[arg-type]
+            "mle": freqprob.MLE(cast(FrequencyDistribution, train_counts), logprob=True), 
+            "laplace": freqprob.Laplace(cast(FrequencyDistribution, train_counts), bins=train_vocab_size * 2, logprob=True), 
+            "ele": freqprob.ELE(cast(FrequencyDistribution, train_counts), bins=train_vocab_size * 2, logprob=True),  
         }
 
         perplexities = {}
@@ -599,7 +599,7 @@ class TestLiteratureRegression:
         freq_dist["common_2"] = 15
 
         try:
-            sgt = freqprob.SimpleGoodTuring(freq_dist, logprob=False)  # type: ignore[arg-type]
+            sgt = freqprob.SimpleGoodTuring(cast(FrequencyDistribution, freq_dist), logprob=False) 
 
             # Good-Turing should redistribute probability mass
             # Words with count 1 should get less probability than their MLE estimate

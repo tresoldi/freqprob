@@ -368,7 +368,7 @@ class TestStatisticalCorrectness:
             assert not math.isinf(metrics["perplexity"])
             assert not math.isinf(metrics["cross_entropy"])
 
-    @pytest.mark.slow()  # type: ignore[misc]
+    @pytest.mark.slow()  
     def test_large_vocabulary_statistical_properties(self) -> None:
         """Test statistical properties with large vocabularies."""
         # Create large Zipfian distribution
@@ -583,7 +583,7 @@ class TestAdvancedStatisticalProperties:
             lazy_prob = lazy_mle(word)
             assert abs(regular_prob - lazy_prob) < 1e-15
 
-    @pytest.mark.parametrize(  # type: ignore[misc]
+    @pytest.mark.parametrize(  
         "method_config",
         [
             ("MLE", {}),
