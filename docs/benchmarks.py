@@ -61,7 +61,7 @@ class BenchmarkResult:
 
     def to_dict(self) -> dict[str, Any]:
         # Convert numpy types to native Python types for JSON serialization
-        def convert_numpy(obj):
+        def convert_numpy(obj: Any) -> Any:
             if hasattr(obj, "item"):  # numpy scalar
                 return obj.item()
             if isinstance(obj, dict):
@@ -143,7 +143,7 @@ class DatasetGenerator:
 class PerformanceBenchmark:
     """Main benchmarking class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.results: list[BenchmarkResult] = []
         self.datasets: dict[str, dict[str, int]] = {}
         self.test_datasets: dict[str, dict[str, int]] = {}
@@ -164,15 +164,15 @@ class PerformanceBenchmark:
         }
 
         # Add advanced methods if they work
-        def try_sgt(freq):
+        def try_sgt(freq: dict[str, int]) -> Any:
             try:
-                return freqprob.SimpleGoodTuring(freq, logprob=True)
+                return freqprob.SimpleGoodTuring(freq, logprob=True)  # type: ignore[arg-type]
             except Exception:
                 return None
 
         self.smoothing_methods["SimpleGoodTuring"] = try_sgt
 
-    def generate_datasets(self):
+    def generate_datasets(self) -> None:
         """Generate benchmark datasets."""
         print("Generating benchmark datasets...")
 
@@ -216,7 +216,7 @@ class PerformanceBenchmark:
             f"Generated {len(self.datasets)} training datasets and {len(self.test_datasets)} test datasets"
         )
 
-    def benchmark_creation_time(self):
+    def benchmark_creation_time(self) -> None:
         """Benchmark model creation time."""
         print("Benchmarking model creation time...")
 
@@ -233,11 +233,11 @@ class PerformanceBenchmark:
                     start_time = time.perf_counter()
                     try:
                         model = method_func(dataset)
+                        end_time = time.perf_counter()
                         if model is not None:
-                            end_time = time.perf_counter()
                             times.append(end_time - start_time)
                         else:
-                            times.append(float("inf"))  # Failed
+                            times.append(float("inf"))  # type: ignore[unreachable]  # Failed
                     except Exception:
                         times.append(float("inf"))  # Failed
 
@@ -273,7 +273,7 @@ class PerformanceBenchmark:
                     )
                     self.results.append(result)
 
-    def benchmark_query_performance(self):
+    def benchmark_query_performance(self) -> None:
         """Benchmark query performance."""
         print("Benchmarking query performance...")
 
@@ -292,7 +292,7 @@ class PerformanceBenchmark:
                     # Create model
                     model = method_func(dataset)
                     if model is None:
-                        continue
+                        continue  # type: ignore[unreachable]
 
                     # Benchmark individual queries
                     times = []
@@ -322,7 +322,7 @@ class PerformanceBenchmark:
                 except Exception:
                     pass  # Skip failed methods
 
-    def benchmark_memory_usage(self):
+    def benchmark_memory_usage(self) -> None:
         """Benchmark memory usage."""
         print("Benchmarking memory usage...")
 
@@ -342,7 +342,7 @@ class PerformanceBenchmark:
                     # Create model
                     model = method_func(dataset)
                     if model is None:
-                        continue
+                        continue  # type: ignore[unreachable]
 
                     # Measure memory after
                     memory_after = process.memory_info().rss
@@ -364,7 +364,7 @@ class PerformanceBenchmark:
                 except Exception:
                     pass  # Skip failed methods
 
-    def benchmark_perplexity(self):
+    def benchmark_perplexity(self) -> None:
         """Benchmark perplexity on test data."""
         print("Benchmarking perplexity...")
 
@@ -383,7 +383,7 @@ class PerformanceBenchmark:
                 try:
                     model = method_func(dataset)
                     if model is None:
-                        continue
+                        continue  # type: ignore[unreachable]
 
                     # Calculate perplexity
                     perplexity = freqprob.perplexity(model, test_words)
@@ -405,7 +405,7 @@ class PerformanceBenchmark:
                     # Some methods might fail on certain datasets
                     pass
 
-    def benchmark_scaling(self):
+    def benchmark_scaling(self) -> None:
         """Benchmark scaling behavior."""
         print("Benchmarking scaling behavior...")
 
@@ -451,7 +451,7 @@ class PerformanceBenchmark:
                 except Exception:
                     pass
 
-    def run_all_benchmarks(self):
+    def run_all_benchmarks(self) -> None:
         """Run all benchmarks."""
         print("Starting FreqProb Performance Benchmarks")
         print("=" * 50)
@@ -467,7 +467,7 @@ class PerformanceBenchmark:
 
     def analyze_results(self) -> dict[str, Any]:
         """Analyze benchmark results."""
-        analysis = {
+        analysis: dict[str, Any] = {
             "summary": {},
             "best_performers": {},
             "scaling_analysis": {},
@@ -538,7 +538,7 @@ class PerformanceBenchmark:
             r for r in self.results if r.value == float("inf") or r.metadata.get("failed", False)
         ]
 
-        failure_by_method = defaultdict(int)
+        failure_by_method: dict[str, int] = defaultdict(int)
         for result in failed_results:
             failure_by_method[result.method] += 1
 
@@ -549,7 +549,7 @@ class PerformanceBenchmark:
 
         return analysis
 
-    def save_results(self, output_dir: str, format_type: str = "json"):
+    def save_results(self, output_dir: str, format_type: str = "json") -> None:
         """Save benchmark results."""
         output_path = Path(output_dir)
         output_path.mkdir(exist_ok=True)
@@ -586,7 +586,7 @@ class PerformanceBenchmark:
         if format_type in ["html", "all"]:
             self.generate_html_report(output_path, analysis)
 
-    def generate_html_report(self, output_path: Path, analysis: dict[str, Any]):
+    def generate_html_report(self, output_path: Path, analysis: dict[str, Any]) -> None:
         """Generate HTML report."""
         html_content = f"""
 <!DOCTYPE html>
@@ -682,7 +682,7 @@ class PerformanceBenchmark:
             f.write(html_content)
         print(f"Saved HTML report to {html_file}")
 
-    def print_summary(self):
+    def print_summary(self) -> None:
         """Print a summary of results."""
         analysis = self.analyze_results()
 
@@ -737,7 +737,7 @@ class PerformanceBenchmark:
             )
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Run FreqProb performance benchmarks")
     parser.add_argument(
         "--output", default="benchmark_results", help="Output directory for results"
