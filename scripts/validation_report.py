@@ -487,20 +487,20 @@ class ValidationReportGenerator:
 
         try:
             # Run all validation components
-            self.report_data["test_results"]["numerical_stability"] = (
-                self.run_numerical_stability_tests()
-            )
-            self.report_data["test_results"]["statistical_correctness"] = (
-                self.run_statistical_correctness_tests()
-            )
+            self.report_data["test_results"][
+                "numerical_stability"
+            ] = self.run_numerical_stability_tests()
+            self.report_data["test_results"][
+                "statistical_correctness"
+            ] = self.run_statistical_correctness_tests()
             self.report_data["test_results"]["regression_tests"] = self.run_regression_tests()
-            self.report_data["test_results"]["property_based_tests"] = (
-                self.run_property_based_tests()
-            )
+            self.report_data["test_results"][
+                "property_based_tests"
+            ] = self.run_property_based_tests()
 
-            self.report_data["performance_results"]["performance_benchmarks"] = (
-                self.run_performance_benchmarks()
-            )
+            self.report_data["performance_results"][
+                "performance_benchmarks"
+            ] = self.run_performance_benchmarks()
 
             # Generate summary
             self.report_data["summary"] = self.generate_summary_statistics(
