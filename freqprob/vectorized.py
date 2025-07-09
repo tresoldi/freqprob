@@ -372,12 +372,11 @@ def elements_to_numpy(elements: Iterable[str | int | float]) -> np.ndarray[Any, 
     first_elem = elem_list[0]
     if isinstance(first_elem, str):
         return np.array(elem_list, dtype="U")  # Unicode string
-    elif isinstance(first_elem, int):
+    if isinstance(first_elem, int):
         return np.array(elem_list, dtype=np.int64)
-    elif isinstance(first_elem, float):
+    if isinstance(first_elem, float):
         return np.array(elem_list, dtype=np.float64)
-    else:
-        return np.array(elem_list, dtype=object)  # type: ignore[unreachable]
+    return np.array(elem_list, dtype=object)  # type: ignore[unreachable]
 
 
 def scores_to_probabilities(log_scores: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
@@ -417,18 +416,17 @@ def normalize_scores(scores: np.ndarray[Any, Any], method: str = "softmax") -> n
     """
     if method == "softmax":
         return scores_to_probabilities(scores)
-    elif method == "minmax":
+    if method == "minmax":
         min_score, max_score = np.min(scores), np.max(scores)
         if max_score == min_score:
             result: np.ndarray[Any, Any] = np.ones_like(scores) / len(scores)
             return result
         result = (scores - min_score) / (max_score - min_score)
         return result
-    elif method == "zscore":
+    if method == "zscore":
         mean_score, std_score = np.mean(scores), np.std(scores)
         if std_score == 0:
             return np.zeros_like(scores)
         result = (scores - mean_score) / std_score
         return result
-    else:
-        raise ValueError(f"Unknown normalization method: {method}")
+    raise ValueError(f"Unknown normalization method: {method}")

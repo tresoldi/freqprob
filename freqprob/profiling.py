@@ -9,11 +9,11 @@ import gc
 import sys
 import time
 import tracemalloc
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Iterator, Protocol, cast
+from typing import Any, Protocol, cast
 
 import psutil
 
@@ -322,14 +322,14 @@ def profile_memory_usage(
                 return func(*args, **kwargs)
 
         # Initialize attributes for mypy
-        typed_wrapper: ProfiledFunction = cast(ProfiledFunction, wrapper)
+        typed_wrapper: ProfiledFunction = cast("ProfiledFunction", wrapper)
         typed_wrapper._profiler = None
 
         def get_profiler() -> Any:
             return typed_wrapper._profiler
 
         # Use setattr to assign the method to avoid mypy method assignment error
-        setattr(typed_wrapper, "get_profiler", get_profiler)
+        typed_wrapper.get_profiler = get_profiler
 
         return typed_wrapper
 

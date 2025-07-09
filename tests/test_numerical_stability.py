@@ -241,7 +241,7 @@ class TestNumericalStability:
         assert mle_tiny("word") == 1.0
         assert not math.isnan(mle_tiny("word"))
 
-    @pytest.mark.slow()
+    @pytest.mark.slow
     def test_convergence_properties(self) -> None:
         """Test convergence properties with increasing data size."""
         base_dist = {"common": 1000, "rare": 1}
