@@ -116,7 +116,9 @@ _sgt_cache = ComputationCache(max_size=100)  # Smaller cache for SGT due to larg
 _general_cache = ComputationCache(max_size=1000)
 
 
-def cached_sgt_computation(func: Callable) -> Callable:
+def cached_sgt_computation(
+    func: Callable[[Any, FrequencyDistribution], None]
+) -> Callable[[Any, FrequencyDistribution], None]:
     """Decorator to cache Simple Good-Turing computations.
 
     Parameters
@@ -157,7 +159,11 @@ def cached_sgt_computation(func: Callable) -> Callable:
     return wrapper
 
 
-def cached_computation(cache_instance: ComputationCache | None = None) -> Callable:
+def cached_computation(
+    cache_instance: ComputationCache | None = None,
+) -> Callable[
+    [Callable[[Any, FrequencyDistribution], None]], Callable[[Any, FrequencyDistribution], None]
+]:
     """Generic decorator to cache expensive computations.
 
     Parameters
@@ -173,7 +179,9 @@ def cached_computation(cache_instance: ComputationCache | None = None) -> Callab
     if cache_instance is None:
         cache_instance = _general_cache
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(
+        func: Callable[[Any, FrequencyDistribution], None]
+    ) -> Callable[[Any, FrequencyDistribution], None]:
         @wraps(func)
         def wrapper(self: Any, freqdist: FrequencyDistribution) -> None:
             # Create cache key using all configuration parameters
@@ -229,7 +237,7 @@ class MemoizedProperty:
     should behave like normal attributes.
     """
 
-    def __init__(self, func: Callable):
+    def __init__(self, func: Callable[[Any], Any]):
         """Initialize memoized property.
 
         Parameters
