@@ -19,12 +19,7 @@ if TYPE_CHECKING:
 
 # Optional imports for reference implementations
 try:
-    from nltk.probability import (  # type: ignore[import-untyped]
-        FreqDist,
-        LaplaceeProbDist,
-        LidstoneProbDist,
-        MLEProbDist,
-    )
+    from nltk.probability import FreqDist, LaplaceeProbDist, LidstoneProbDist, MLEProbDist
 
     HAS_NLTK = True
 except ImportError:
@@ -38,7 +33,7 @@ except ImportError:
     HAS_SCIPY = False
 
 try:
-    from sklearn.feature_extraction.text import CountVectorizer  # type: ignore[import-untyped]
+    from sklearn.feature_extraction.text import CountVectorizer
 
     HAS_SKLEARN = True
 except ImportError:
@@ -201,7 +196,7 @@ class TestNLTKRegression:
     @pytest.mark.skipif(not HAS_NLTK, reason="NLTK not available")
     def test_ngram_generation_compatibility(self) -> None:
         """Test n-gram generation compatibility with NLTK."""
-        from nltk.util import ngrams as nltk_ngrams  # type: ignore[import-untyped]
+        from nltk.util import ngrams as nltk_ngrams
 
         tokens = ["the", "quick", "brown", "fox", "jumps"]
 
