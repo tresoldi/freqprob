@@ -18,7 +18,6 @@ from .base import FrequencyDistribution, Probability, ScoringMethod, ScoringMeth
 class UniformConfig(ScoringMethodConfig):
     """Configuration for Uniform distribution.
 
-
     Attributes
     ----------
     unobs_prob : Probability
@@ -35,7 +34,6 @@ class UniformConfig(ScoringMethodConfig):
 @dataclass
 class RandomConfig(ScoringMethodConfig):
     """Configuration for Random distribution.
-
 
     Attributes
     ----------
@@ -57,7 +55,6 @@ class RandomConfig(ScoringMethodConfig):
 class MLEConfig(ScoringMethodConfig):
     """Configuration for Maximum Likelihood Estimation.
 
-
     Attributes
     ----------
     unobs_prob : Probability
@@ -73,7 +70,6 @@ class MLEConfig(ScoringMethodConfig):
 
 class Uniform(ScoringMethod):
     """Uniform probability distribution.
-
 
     The simplest smoothing method that assigns equal probability to all
     observed elements, ignoring their frequency counts. This serves as
@@ -127,6 +123,7 @@ class Uniform(ScoringMethod):
     def __init__(
         self, freqdist: FrequencyDistribution, unobs_prob: Probability = 0.0, logprob: bool = True
     ) -> None:
+        """Initialize Uniform distribution."""
         config = UniformConfig(unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "Uniform"
@@ -134,7 +131,6 @@ class Uniform(ScoringMethod):
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute uniform probabilities for all elements.
-
 
         Parameters
         ----------
@@ -160,7 +156,6 @@ class Uniform(ScoringMethod):
 
 class Random(ScoringMethod):
     """Random probability distribution.
-
 
     Assigns random probabilities to elements, useful for testing and as a
     baseline that provides non-deterministic probability estimates. The random
@@ -219,6 +214,7 @@ class Random(ScoringMethod):
         logprob: bool = True,
         seed: int | None = None,
     ) -> None:
+        """Initialize Random distribution."""
         config = RandomConfig(unobs_prob=unobs_prob, logprob=logprob, seed=seed)
         super().__init__(config)
         self.name = "Random"
@@ -226,7 +222,6 @@ class Random(ScoringMethod):
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute random probabilities based on randomized counts.
-
 
         Parameters
         ----------
@@ -266,7 +261,6 @@ class Random(ScoringMethod):
 
 class MLE(ScoringMethod):
     """Maximum Likelihood Estimation probability distribution.
-
 
     The most intuitive probability estimation method that directly uses
     observed frequencies as probability estimates. This is the natural
@@ -339,6 +333,7 @@ class MLE(ScoringMethod):
     def __init__(
         self, freqdist: FrequencyDistribution, unobs_prob: Probability = 0.0, logprob: bool = True
     ) -> None:
+        """Initialize MLE distribution."""
         config = MLEConfig(unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "MLE"
@@ -346,7 +341,6 @@ class MLE(ScoringMethod):
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Maximum Likelihood probability estimates.
-
 
         Parameters
         ----------
