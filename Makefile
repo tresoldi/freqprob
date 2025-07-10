@@ -32,13 +32,13 @@ black-check:
 	$(VIRTUAL_BIN)/black $(PROJECT_NAME)/ $(TEST_DIR)/ --check
 
 ## format - Runs all formatting tools against the project
-format: black isort ruff lint mypy
+format: black isort ruff lint mypy pydocstyle
 
 ## format-quick - Runs just isort, black, and ruff formatting (for pre-push)
 format-quick: isort black ruff
 
 ## format-check - Checks if the project is formatted correctly against all formatting rules
-format-check: black-check isort-check ruff-check lint mypy
+format-check: black-check isort-check ruff-check lint mypy pydocstyle-check
 
 ## install - Install the project locally
 install:
@@ -71,6 +71,13 @@ ruff-check:
 mypy:
 	$(VIRTUAL_BIN)/mypy --strict $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
 
+## pydocstyle - Check documentation style compliance
+pydocstyle:
+	$(VIRTUAL_BIN)/pydocstyle $(PROJECT_NAME)/ $(SCRIPTS_DIR)/
+
+## pydocstyle-check - Check documentation style compliance (alias for pydocstyle)
+pydocstyle-check: pydocstyle
+
 ## precommit - Run pre-commit hooks on all files
 precommit:
 	$(VIRTUAL_BIN)/pre-commit run --all-files
@@ -94,4 +101,4 @@ precommit-update:
 test:
 	$(VIRTUAL_BIN)/pytest
 
-.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy precommit precommit-check precommit-update ruff ruff-check test
+.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy pydocstyle pydocstyle-check precommit precommit-check precommit-update ruff ruff-check test
