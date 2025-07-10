@@ -289,7 +289,7 @@ class MemoryProfiler:
 def profile_memory_usage(
     operation_name: str | None = None,
 ) -> Callable[[Callable[..., Any]], ProfiledFunction]:
-    """Decorator for profiling memory usage of functions.
+    """Decorate functions to profile memory usage.
 
 
     Parameters

@@ -429,7 +429,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         self._recompute_probabilities()
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """This method is not used in streaming mode."""
+        """Override parent method - not used in streaming mode."""
         # Overridden by _recompute_probabilities
 
     def _recompute_probabilities(self) -> None:
