@@ -24,7 +24,6 @@ from .cache import cached_computation, cached_sgt_computation
 class WittenBellConfig(ScoringMethodConfig):
     """Configuration for Witten-Bell smoothing.
 
-
     Attributes
     ----------
     bins : int | None
@@ -41,7 +40,6 @@ class WittenBellConfig(ScoringMethodConfig):
 @dataclass
 class CertaintyDegreeConfig(ScoringMethodConfig):
     """Configuration for Certainty Degree estimation.
-
 
     Attributes
     ----------
@@ -62,7 +60,6 @@ class CertaintyDegreeConfig(ScoringMethodConfig):
 @dataclass
 class SimpleGoodTuringConfig(ScoringMethodConfig):
     """Configuration for Simple Good-Turing smoothing.
-
 
     Attributes
     ----------
@@ -85,7 +82,6 @@ class SimpleGoodTuringConfig(ScoringMethodConfig):
 
 class WittenBell(ScoringMethod):
     """Returns a Witten-Bell estimate probability distribution.
-
 
     In a Witten-Bell estimate log-probability a uniform probability mass is
     allocated to yet unobserved samples by using the number of samples that
@@ -119,6 +115,7 @@ class WittenBell(ScoringMethod):
     def __init__(
         self, freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
     ) -> None:
+        """Initialize Witten-Bell smoothing."""
         config = WittenBellConfig(bins=bins, logprob=logprob)
         super().__init__(config)
         self.name = "Witten-Bell"
@@ -150,7 +147,6 @@ class WittenBell(ScoringMethod):
 
 class CertaintyDegree(ScoringMethod):
     """Returns a Certainty Degree probability distribution.
-
 
     In this distribution a mass probability is reserved for unobserved samples
     from a computation of the degree of certainty that the are no unobserved
@@ -188,6 +184,7 @@ class CertaintyDegree(ScoringMethod):
         unobs_prob: Probability = 0.0,
         logprob: bool = True,
     ) -> None:
+        """Initialize Certainty Degree estimation."""
         config = CertaintyDegreeConfig(bins=bins, unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "Certainty Degree"
@@ -235,7 +232,6 @@ class CertaintyDegree(ScoringMethod):
 
 class SimpleGoodTuring(ScoringMethod):
     """Returns a Simple Good-Turing estimate probability distribution.
-
 
     The returned probability distribution is based on the Good-Turing
     frequency estimation, as first developed by Alan Turing and I. J. Good and
@@ -294,6 +290,7 @@ class SimpleGoodTuring(ScoringMethod):
         logprob: bool = True,
         allow_fail: bool = True,
     ) -> None:
+        """Initialize Simple Good-Turing smoothing."""
         config = SimpleGoodTuringConfig(
             p_value=p_value, default_p0=default_p0, logprob=logprob, allow_fail=allow_fail
         )

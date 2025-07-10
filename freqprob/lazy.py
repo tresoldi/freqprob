@@ -65,6 +65,7 @@ class LazyMLEComputer(LazyProbabilityComputer):
     """Lazy computation for Maximum Likelihood Estimation."""
 
     def __init__(self) -> None:
+        """Initialize lazy MLE computer."""
         self._total_count: int | None = None
         self._unobs_prob: float | None = None
 
@@ -103,6 +104,7 @@ class LazyLaplaceComputer(LazyProbabilityComputer):
     """Lazy computation for Laplace smoothing."""
 
     def __init__(self) -> None:
+        """Initialize lazy Laplace computer."""
         self._total_count: int | None = None
         self._vocab_size: int | None = None
 

@@ -16,7 +16,6 @@ from .base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 class LidstoneConfig(ScoringMethodConfig):
     """Configuration for Lidstone smoothing.
 
-
     Attributes
     ----------
     gamma : float
@@ -37,7 +36,6 @@ class LidstoneConfig(ScoringMethodConfig):
 class LaplaceConfig(ScoringMethodConfig):
     """Configuration for Laplace smoothing (Lidstone with gamma=1).
 
-
     Attributes
     ----------
     bins : int | None
@@ -55,7 +53,6 @@ class LaplaceConfig(ScoringMethodConfig):
 class ELEConfig(ScoringMethodConfig):
     """Configuration for Expected Likelihood Estimation (Lidstone with gamma=0.5).
 
-
     Attributes
     ----------
     bins : int | None
@@ -71,7 +68,6 @@ class ELEConfig(ScoringMethodConfig):
 
 class Lidstone(ScoringMethod):
     """Lidstone additive smoothing probability distribution.
-
 
     Also known as "additive smoothing," this method addresses the zero
     probability problem by adding a virtual count gamma (gamma) to each possible
@@ -161,6 +157,7 @@ class Lidstone(ScoringMethod):
         bins: int | None = None,
         logprob: bool = True,
     ) -> None:
+        """Initialize Lidstone smoothing."""
         # Default bins to vocabulary size if not specified
         if bins is None:
             bins = len(freqdist)
@@ -172,7 +169,6 @@ class Lidstone(ScoringMethod):
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Lidstone smoothed probabilities.
-
 
         Parameters
         ----------
@@ -204,7 +200,6 @@ class Lidstone(ScoringMethod):
 
 class Laplace(Lidstone):
     """Laplace smoothing probability distribution.
-
 
     A special case of Lidstone smoothing with gamma = 1.0, also known as
     "add-one smoothing." This is the most commonly used additive smoothing
@@ -251,6 +246,7 @@ class Laplace(Lidstone):
     def __init__(
         self, freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
     ) -> None:
+        """Initialize Laplace smoothing."""
         # Call parent with gamma=1.0 for Laplace smoothing
         super().__init__(freqdist, gamma=1.0, bins=bins, logprob=logprob)
         self.name = "Laplace"
@@ -258,7 +254,6 @@ class Laplace(Lidstone):
 
 class ELE(Lidstone):
     """Expected Likelihood Estimation probability distribution.
-
 
     A special case of Lidstone smoothing with gamma = 0.5, corresponding to
     the Jeffreys prior for multinomial distributions. This provides a
@@ -305,6 +300,7 @@ class ELE(Lidstone):
     def __init__(
         self, freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
     ) -> None:
+        """Initialize Expected Likelihood Estimation."""
         # Call parent with gamma=0.5 for ELE
         super().__init__(freqdist, gamma=0.5, bins=bins, logprob=logprob)
         self.name = "ELE"

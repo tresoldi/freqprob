@@ -17,7 +17,6 @@ from .cache import cached_computation
 class KneserNeyConfig(ScoringMethodConfig):
     """Configuration for Kneser-Ney smoothing.
 
-
     Attributes
     ----------
     discount : float
@@ -35,7 +34,6 @@ class KneserNeyConfig(ScoringMethodConfig):
 class ModifiedKneserNeyConfig(ScoringMethodConfig):
     """Configuration for Modified Kneser-Ney smoothing.
 
-
     Attributes
     ----------
     logprob : bool
@@ -48,7 +46,6 @@ class ModifiedKneserNeyConfig(ScoringMethodConfig):
 @dataclass
 class InterpolatedConfig(ScoringMethodConfig):
     """Configuration for interpolated smoothing methods.
-
 
     Attributes
     ----------
@@ -67,7 +64,6 @@ class InterpolatedConfig(ScoringMethodConfig):
 class BayesianConfig(ScoringMethodConfig):
     """Configuration for Bayesian smoothing methods.
 
-
     Attributes
     ----------
     alpha : float
@@ -83,7 +79,6 @@ class BayesianConfig(ScoringMethodConfig):
 
 class KneserNey(ScoringMethod):
     """Kneser-Ney smoothing probability distribution.
-
 
     Kneser-Ney smoothing is one of the most effective smoothing methods for
     language modeling. It uses absolute discounting combined with interpolation
@@ -154,6 +149,7 @@ class KneserNey(ScoringMethod):
     def __init__(
         self, freqdist: FrequencyDistribution, discount: float = 0.75, logprob: bool = True
     ) -> None:
+        """Initialize Kneser-Ney smoothing."""
         if not 0 < discount < 1:
             raise ValueError("Discount parameter must be between 0 and 1")
 
@@ -165,7 +161,6 @@ class KneserNey(ScoringMethod):
     @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Kneser-Ney smoothed probabilities.
-
 
         Parameters
         ----------
@@ -238,7 +233,6 @@ class KneserNey(ScoringMethod):
 class ModifiedKneserNey(ScoringMethod):
     """Modified Kneser-Ney smoothing probability distribution.
 
-
     An enhanced version of Kneser-Ney smoothing that uses different discount
     values for different frequency counts. This typically provides better
     performance than standard Kneser-Ney by adapting the discounting strategy
@@ -295,6 +289,7 @@ class ModifiedKneserNey(ScoringMethod):
     __slots__ = ()
 
     def __init__(self, freqdist: FrequencyDistribution, logprob: bool = True) -> None:
+        """Initialize Modified Kneser-Ney smoothing."""
         config = ModifiedKneserNeyConfig(logprob=logprob)
         super().__init__(config)
         self.name = "Modified Kneser-Ney"
@@ -303,7 +298,6 @@ class ModifiedKneserNey(ScoringMethod):
     @cached_computation()
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Modified Kneser-Ney smoothed probabilities.
-
 
         Parameters
         ----------
@@ -422,7 +416,6 @@ class ModifiedKneserNey(ScoringMethod):
 class InterpolatedSmoothing(ScoringMethod):
     """Linear interpolation smoothing between multiple models.
 
-
     Combines probability estimates from different models (e.g., different n-gram
     orders) using weighted linear interpolation. This is a fundamental technique
     in language modeling for combining the benefits of different model orders.
@@ -479,6 +472,7 @@ class InterpolatedSmoothing(ScoringMethod):
         lambda_weight: float = 0.7,
         logprob: bool = True,
     ) -> None:
+        """Initialize Interpolated smoothing."""
         if not 0 <= lambda_weight <= 1:
             raise ValueError("Lambda weight must be between 0 and 1")
 
@@ -491,7 +485,6 @@ class InterpolatedSmoothing(ScoringMethod):
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute interpolated probabilities.
-
 
         Parameters
         ----------
@@ -540,7 +533,6 @@ class InterpolatedSmoothing(ScoringMethod):
 
 class BayesianSmoothing(ScoringMethod):
     """Bayesian smoothing with Dirichlet prior.
-
 
     Uses a Dirichlet prior distribution to provide Bayesian probability estimates.
     This method is theoretically principled and provides natural uncertainty
@@ -620,6 +612,7 @@ class BayesianSmoothing(ScoringMethod):
     def __init__(
         self, freqdist: FrequencyDistribution, alpha: float = 1.0, logprob: bool = True
     ) -> None:
+        """Initialize Bayesian smoothing."""
         if alpha <= 0:
             raise ValueError("Alpha must be positive")
 
@@ -630,7 +623,6 @@ class BayesianSmoothing(ScoringMethod):
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute Bayesian smoothed probabilities.
-
 
         Parameters
         ----------
