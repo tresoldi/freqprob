@@ -1,5 +1,4 @@
-"""
-Basic probability scoring methods.
+"""Basic probability scoring methods.
 
 This module implements fundamental probability scoring methods including
 Uniform, Random, and Maximum Likelihood Estimation (MLE). These methods

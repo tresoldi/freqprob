@@ -1,5 +1,4 @@
-"""
-Advanced probability scoring methods.
+"""Advanced probability scoring methods.
 
 This module implements sophisticated smoothing methods including
 Witten-Bell discounting, Certainty Degree estimation, and

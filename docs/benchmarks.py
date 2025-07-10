@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-FreqProb Performance Benchmarks
+"""FreqProb Performance Benchmarks.
 
 This script provides comprehensive performance benchmarks for FreqProb
 smoothing methods across different scenarios and datasets.
@@ -51,6 +50,16 @@ class BenchmarkResult:
         unit: str = "",
         metadata: dict[str, Any] | None = None,
     ):
+        """Initialize benchmark result.
+
+        Args:
+            method: Name of the benchmarked method
+            dataset: Dataset used for benchmarking
+            metric: Performance metric measured
+            value: Measured value
+            unit: Unit of measurement
+            metadata: Additional metadata
+        """
         self.method = method
         self.dataset = dataset
         self.metric = metric
@@ -60,6 +69,11 @@ class BenchmarkResult:
         self.timestamp = time.time()
 
     def to_dict(self) -> dict[str, Any]:
+        """Convert result to dictionary format.
+
+        Returns:
+            Dictionary representation of the benchmark result
+        """
         # Convert numpy types to native Python types for JSON serialization
         def convert_numpy(obj: Any) -> Any:
             if hasattr(obj, "item"):  # numpy scalar
@@ -144,6 +158,7 @@ class PerformanceBenchmark:
     """Main benchmarking class."""
 
     def __init__(self) -> None:
+        """Initialize performance benchmark."""
         self.results: list[BenchmarkResult] = []
         self.datasets: dict[str, dict[str, int]] = {}
         self.test_datasets: dict[str, dict[str, int]] = {}
@@ -738,6 +753,7 @@ class PerformanceBenchmark:
 
 
 def main() -> None:
+    """Run the benchmarking script."""
     parser = argparse.ArgumentParser(description="Run FreqProb performance benchmarks")
     parser.add_argument(
         "--output", default="benchmark_results", help="Output directory for results"
