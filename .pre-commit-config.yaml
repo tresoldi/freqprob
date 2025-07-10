@@ -74,8 +74,14 @@ repos:
       - id: nbqa-isort
         additional_dependencies: [isort==5.13.2]
       - id: nbqa-ruff
-        additional_dependencies: [ruff==0.1.9]
+        additional_dependencies: [ruff==0.12.2]
         args: [--ignore=E402]
+      - id: nbqa
+        name: nbqa-ruff-format
+        entry: nbqa ruff --select I --fix
+        language: python
+        types_or: [jupyter]
+        additional_dependencies: [ruff==0.12.2]
 
   # Check for common security issues
   - repo: https://github.com/Yelp/detect-secrets
