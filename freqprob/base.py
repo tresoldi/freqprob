@@ -1,5 +1,4 @@
-"""
-Base classes for frequency probability scoring methods.
+"""Base classes for frequency probability scoring methods.
 
 This module provides the abstract base class and common functionality
 for all smoothing methods in the freqprob library.

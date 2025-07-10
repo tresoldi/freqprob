@@ -1,5 +1,4 @@
-"""
-Streaming and incremental frequency distribution updates.
+"""Streaming and incremental frequency distribution updates.
 
 This module provides efficient streaming support for frequency distributions,
 allowing incremental updates and online learning scenarios with minimal

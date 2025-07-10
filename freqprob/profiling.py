@@ -1,5 +1,4 @@
-"""
-Memory profiling and monitoring utilities.
+"""Memory profiling and monitoring utilities.
 
 This module provides tools for monitoring memory usage, profiling performance,
 and analyzing memory efficiency of different frequency distribution representations.

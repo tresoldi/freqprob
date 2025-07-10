@@ -73,7 +73,7 @@ mypy:
 
 ## pydocstyle - Check documentation style compliance
 pydocstyle:
-	$(VIRTUAL_BIN)/pydocstyle $(PROJECT_NAME)/ $(SCRIPTS_DIR)/
+	$(VIRTUAL_BIN)/pydocstyle --convention=google $(PROJECT_NAME)/ $(SCRIPTS_DIR)/ $(DOCS_DIR)/
 
 ## pydocstyle-check - Check documentation style compliance (alias for pydocstyle)
 pydocstyle-check: pydocstyle
