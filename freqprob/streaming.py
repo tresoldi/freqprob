@@ -20,7 +20,6 @@ from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodCo
 class StreamingFrequencyDistribution:
     """Memory-efficient streaming frequency distribution with incremental updates.
 
-
     This class supports real-time updates to frequency distributions while
     maintaining memory efficiency through various optimization strategies.
 
@@ -56,7 +55,6 @@ class StreamingFrequencyDistribution:
     ):
         """Initialize streaming frequency distribution.
 
-
         Parameters
         ----------
         max_vocabulary_size : Optional[int]
@@ -84,7 +82,6 @@ class StreamingFrequencyDistribution:
 
     def update(self, element: Element, count: int = 1) -> None:
         """Update count for a single element.
-
 
         Parameters
         ----------
@@ -115,7 +112,6 @@ class StreamingFrequencyDistribution:
 
     def update_batch(self, elements: list[Element], counts: list[int] | None = None) -> None:
         """Update counts for multiple elements efficiently.
-
 
         Parameters
         ----------
@@ -227,7 +223,6 @@ class StreamingFrequencyDistribution:
     def get_count(self, element: Element) -> float:
         """Get count for an element.
 
-
         Parameters
         ----------
         element : Element
@@ -243,7 +238,6 @@ class StreamingFrequencyDistribution:
 
     def get_frequency(self, element: Element) -> float:
         """Get relative frequency for an element.
-
 
         Parameters
         ----------
@@ -306,7 +300,6 @@ class StreamingFrequencyDistribution:
     def to_dict(self) -> dict[Element, int]:
         """Convert to regular dictionary with integer counts.
 
-
         Returns
         -------
         Dict[Element, int]
@@ -317,7 +310,6 @@ class StreamingFrequencyDistribution:
 
     def get_statistics(self) -> dict[str, Any]:
         """Get statistics about the streaming distribution.
-
 
         Returns
         -------
@@ -342,7 +334,6 @@ class StreamingFrequencyDistribution:
 class IncrementalScoringMethod(ABC):
     """Abstract base class for scoring methods that support incremental updates.
 
-
     This class defines the interface for scoring methods that can be updated
     incrementally as new data arrives, without recomputing everything from scratch.
     """
@@ -350,7 +341,6 @@ class IncrementalScoringMethod(ABC):
     @abstractmethod
     def update_single(self, element: Element, count: int = 1) -> None:
         """Update the model with a single element observation.
-
 
         Parameters
         ----------
@@ -363,7 +353,6 @@ class IncrementalScoringMethod(ABC):
     @abstractmethod
     def update_batch(self, elements: list[Element], counts: list[int] | None = None) -> None:
         """Update the model with multiple element observations.
-
 
         Parameters
         ----------
@@ -380,7 +369,6 @@ class IncrementalScoringMethod(ABC):
 
 class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
     """Streaming Maximum Likelihood Estimation with incremental updates.
-
 
     This implementation maintains a streaming frequency distribution and
     updates probability estimates incrementally as new data arrives.
@@ -536,7 +524,6 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
     def save_state(self, filepath: str) -> None:
         """Save the current state to disk.
 
-
         Parameters
         ----------
         filepath : str
@@ -550,7 +537,6 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
     @classmethod
     def load_state(cls, filepath: str) -> "StreamingMLE":
         """Load state from disk.
-
 
         Parameters
         ----------
@@ -579,7 +565,6 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
 
 class StreamingLaplace(StreamingMLE):
     """Streaming Laplace smoothing with incremental updates.
-
 
     Extends StreamingMLE to provide Laplace (add-one) smoothing
     in a streaming context.
@@ -653,7 +638,6 @@ class StreamingLaplace(StreamingMLE):
 class StreamingDataProcessor:
     """High-level processor for streaming text data.
 
-
     This class provides utilities for processing streaming text data
     and maintaining multiple frequency distributions efficiently.
 
@@ -694,7 +678,6 @@ class StreamingDataProcessor:
     def process_element(self, element: Element, count: int = 1) -> None:
         """Process a single element.
 
-
         Parameters
         ----------
         element : Element
@@ -711,7 +694,6 @@ class StreamingDataProcessor:
     def process_batch(self, elements: list[Element], counts: list[int] | None = None) -> None:
         """Process a batch of elements.
 
-
         Parameters
         ----------
         elements : List[Element]
@@ -727,7 +709,6 @@ class StreamingDataProcessor:
 
     def process_text_stream(self, text_stream: Iterator[str]) -> None:
         """Process a stream of text tokens.
-
 
         Parameters
         ----------
@@ -748,7 +729,6 @@ class StreamingDataProcessor:
 
     def get_score(self, method_name: str, element: Element) -> float:
         """Get score for an element from a specific method.
-
 
         Parameters
         ----------
@@ -771,7 +751,6 @@ class StreamingDataProcessor:
 
     def get_statistics(self) -> dict[str, Any]:
         """Get statistics for all scoring methods.
-
 
         Returns
         -------
@@ -801,7 +780,6 @@ class StreamingDataProcessor:
 
     def save_all_states(self, base_filename: str) -> None:
         """Save states of all scoring methods.
-
 
         Parameters
         ----------

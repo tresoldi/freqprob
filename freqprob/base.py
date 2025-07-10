@@ -25,7 +25,6 @@ T = TypeVar("T", bound="ScoringMethod")
 class ScoringMethodConfig:
     """Configuration for scoring methods.
 
-
     This dataclass encapsulates all configuration parameters that can be
     used across different scoring methods, providing type safety and validation.
 
@@ -84,7 +83,6 @@ class ScoringMethodConfig:
 class ScoringMethod(ABC):
     """Abstract base class for frequency-based probability smoothing methods.
 
-
     This class provides a unified interface for all probability estimation
     methods, supporting both regular probabilities and log-probabilities.
 
@@ -128,7 +126,6 @@ class ScoringMethod(ABC):
     def __init__(self, config: ScoringMethodConfig) -> None:
         """Initialize the scoring method.
 
-
         Parameters
         ----------
         config : ScoringMethodConfig
@@ -148,7 +145,6 @@ class ScoringMethod(ABC):
 
     def __call__(self, element: Element) -> Probability | LogProbability:
         """Score a single element.
-
 
         Parameters
         ----------
@@ -207,7 +203,6 @@ class ScoringMethod(ABC):
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute probabilities for the given frequency distribution.
 
-
         This method must be implemented by subclasses to compute the
         actual probability values according to their specific smoothing strategy.
 
@@ -223,7 +218,6 @@ class ScoringMethod(ABC):
 
     def fit(self, freqdist: FrequencyDistribution) -> "ScoringMethod":
         """Fit the scoring method to a frequency distribution.
-
 
         This method trains the scorer on the provided frequency data,
         computing probability estimates for all observed elements.
