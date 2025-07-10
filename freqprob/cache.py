@@ -119,7 +119,7 @@ _general_cache = ComputationCache(max_size=1000)
 def cached_sgt_computation(
     func: Callable[[Any, FrequencyDistribution], None],
 ) -> Callable[[Any, FrequencyDistribution], None]:
-    """Decorator to cache Simple Good-Turing computations.
+    """Cache Simple Good-Turing computations.
 
     Parameters
     ----------
@@ -164,7 +164,7 @@ def cached_computation(
 ) -> Callable[
     [Callable[[Any, FrequencyDistribution], None]], Callable[[Any, FrequencyDistribution], None]
 ]:
-    """Generic decorator to cache expensive computations.
+    """Cache expensive computations.
 
     Parameters
     ----------
@@ -250,6 +250,7 @@ class MemoizedProperty:
         self.__doc__ = func.__doc__
 
     def __set_name__(self, owner: Any, name: str) -> None:
+        """Set the name when used as a descriptor."""
         if self.attrname is None:
             self.attrname = name
         elif name != self.attrname:
@@ -259,6 +260,7 @@ class MemoizedProperty:
             )
 
     def __get__(self, instance: Any, owner: Any = None) -> Any:
+        """Get the cached property value."""
         if instance is None:
             return self
         if self.attrname is None:
