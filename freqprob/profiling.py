@@ -321,7 +321,7 @@ def profile_memory_usage(
             return typed_wrapper._profiler
 
         # Use setattr to assign the method to avoid mypy method assignment error
-        typed_wrapper.get_profiler = get_profiler
+        typed_wrapper.get_profiler = get_profiler  # type: ignore[method-assign]
 
         return typed_wrapper
 

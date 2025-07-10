@@ -74,6 +74,7 @@ class BenchmarkResult:
         Returns:
             Dictionary representation of the benchmark result
         """
+
         # Convert numpy types to native Python types for JSON serialization
         def convert_numpy(obj: Any) -> Any:
             if hasattr(obj, "item"):  # numpy scalar
