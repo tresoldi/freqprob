@@ -75,6 +75,7 @@ repos:
         additional_dependencies: [isort==5.13.2]
       - id: nbqa-ruff
         additional_dependencies: [ruff==0.1.9]
+        args: [--ignore=E402]
 
   # Check for common security issues
   - repo: https://github.com/Yelp/detect-secrets
