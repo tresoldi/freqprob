@@ -541,7 +541,7 @@ class ValidationReportGenerator:
 
 
 def main() -> None:
-    """Main entry point for validation report generation."""
+    """Generate validation report from command line."""
     parser = argparse.ArgumentParser(description="Generate FreqProb validation report")
 
     parser.add_argument(
