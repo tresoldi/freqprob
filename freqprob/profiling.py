@@ -38,7 +38,6 @@ class ProfiledFunction(Protocol):
 class MemorySnapshot:
     """Memory usage snapshot.
 
-
     Attributes
     ----------
     timestamp : float
@@ -64,7 +63,6 @@ class MemorySnapshot:
 @dataclass
 class PerformanceMetrics:
     """Performance measurement results.
-
 
     Attributes
     ----------
@@ -101,7 +99,6 @@ class PerformanceMetrics:
 class MemoryProfiler:
     """Memory profiler for analyzing memory usage patterns.
 
-
     This class provides utilities for monitoring memory usage during
     various operations and analyzing memory efficiency.
 
@@ -137,7 +134,6 @@ class MemoryProfiler:
     def take_snapshot(self) -> MemorySnapshot:
         """Take a memory usage snapshot.
 
-
         Returns
         -------
         MemorySnapshot
@@ -171,7 +167,6 @@ class MemoryProfiler:
     @contextmanager
     def profile_operation(self, operation_name: str) -> Iterator[None]:
         """Context manager for profiling an operation.
-
 
         Parameters
         ----------
@@ -217,7 +212,6 @@ class MemoryProfiler:
     def get_latest_metrics(self) -> PerformanceMetrics | None:
         """Get the latest performance metrics.
 
-
         Returns
         -------
         Optional[PerformanceMetrics]
@@ -228,7 +222,6 @@ class MemoryProfiler:
     def get_all_metrics(self) -> list[PerformanceMetrics]:
         """Get all performance metrics.
 
-
         Returns
         -------
         List[PerformanceMetrics]
@@ -238,7 +231,6 @@ class MemoryProfiler:
 
     def get_snapshots(self) -> list[MemorySnapshot]:
         """Get all memory snapshots.
-
 
         Returns
         -------
@@ -255,7 +247,6 @@ class MemoryProfiler:
 
     def get_memory_summary(self) -> dict[str, Any]:
         """Get a summary of memory usage patterns.
-
 
         Returns
         -------
@@ -294,7 +285,6 @@ def profile_memory_usage(
     operation_name: str | None = None,
 ) -> Callable[[Callable[..., Any]], ProfiledFunction]:
     """Decorate functions to profile memory usage.
-
 
     Parameters
     ----------
@@ -342,7 +332,6 @@ def profile_memory_usage(
 class DistributionMemoryAnalyzer:
     """Analyzer for comparing memory usage of different distribution representations.
 
-
     This class helps analyze and compare memory usage between regular dictionaries,
     compressed distributions, sparse distributions, and other representations.
 
@@ -360,7 +349,6 @@ class DistributionMemoryAnalyzer:
 
     def measure_distribution_memory(self, freqdist: FrequencyDistribution) -> dict[str, float]:
         """Measure memory usage of a frequency distribution.
-
 
         Parameters
         ----------
@@ -388,7 +376,6 @@ class DistributionMemoryAnalyzer:
 
     def compare_representations(self, freqdist: FrequencyDistribution) -> dict[str, Any]:
         """Compare memory usage of different distribution representations.
-
 
         Parameters
         ----------
@@ -455,7 +442,6 @@ class DistributionMemoryAnalyzer:
         methods_to_test: list[str] | None = None,
     ) -> dict[str, Any]:
         """Benchmark memory usage and performance of different scoring methods.
-
 
         Parameters
         ----------
@@ -526,7 +512,6 @@ class DistributionMemoryAnalyzer:
 class MemoryMonitor:
     """Continuous memory monitor for long-running processes.
 
-
     This class provides continuous monitoring of memory usage patterns
     and can trigger alerts when memory usage exceeds thresholds.
 
@@ -572,7 +557,6 @@ class MemoryMonitor:
     def check_memory(self) -> dict[str, Any] | None:
         """Check current memory usage and trigger alerts if needed.
 
-
         Returns
         -------
         Optional[Dict[str, Any]]
@@ -599,7 +583,6 @@ class MemoryMonitor:
 
     def get_monitoring_report(self) -> dict[str, Any]:
         """Get a comprehensive monitoring report.
-
 
         Returns
         -------
@@ -649,7 +632,6 @@ class MemoryMonitor:
 def get_object_memory_usage(obj: Any) -> dict[str, int | float | str]:
     """Get detailed memory usage information for an object.
 
-
     Parameters
     ----------
     obj : Any
@@ -689,7 +671,6 @@ def get_object_memory_usage(obj: Any) -> dict[str, int | float | str]:
 
 def force_garbage_collection() -> dict[str, int]:
     """Force garbage collection and return statistics.
-
 
     Returns
     -------

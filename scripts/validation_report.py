@@ -30,7 +30,6 @@ class ValidationReportGenerator:
     def __init__(self, output_dir: Path, verbose: bool = True):
         """Initialize the validation report generator.
 
-
         Args:
             output_dir: Directory to save reports and artifacts
             verbose: Whether to print progress information
