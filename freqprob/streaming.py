@@ -124,7 +124,6 @@ class StreamingFrequencyDistribution:
         counts : Optional[List[int]]
             Counts for each element (defaults to 1 for all)
         """
-
         if counts is None:
             counts = [1] * len(elements)
         elif len(counts) != len(elements):
@@ -152,7 +151,6 @@ class StreamingFrequencyDistribution:
 
     def _apply_decay(self) -> None:
         """Apply exponential decay to all counts."""
-
         if self._decay_factor is None:
             return
 
@@ -199,7 +197,6 @@ class StreamingFrequencyDistribution:
 
     def _enforce_vocabulary_limit(self) -> None:
         """Enforce maximum vocabulary size by removing least important elements."""
-
         if not self._max_vocab_size or len(self._counts) <= self._max_vocab_size:
             return
 
@@ -478,7 +475,6 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
 
     def update_batch(self, elements: list[Element], counts: list[int] | None = None) -> None:
         """Update with multiple element observations."""
-
         if counts is None:
             counts = [1] * len(elements)
 
@@ -706,7 +702,6 @@ class StreamingDataProcessor:
         count : int, default=1
             Count for the element
         """
-
         for method in self.scoring_methods.values():
             method.update_single(element, count)
 
@@ -724,7 +719,6 @@ class StreamingDataProcessor:
         counts : Optional[List[int]]
             Counts for each element
         """
-
         for method in self.scoring_methods.values():
             method.update_batch(elements, counts)
 
@@ -740,7 +734,6 @@ class StreamingDataProcessor:
         text_stream : Iterator[str]
             Stream of text tokens
         """
-
         for token in text_stream:
             self._batch_buffer.append(token)
 
@@ -769,7 +762,6 @@ class StreamingDataProcessor:
         float
             Score for the element
         """
-
         if method_name not in self.scoring_methods:
             raise ValueError(f"Unknown scoring method: {method_name}")
 
@@ -804,7 +796,6 @@ class StreamingDataProcessor:
 
     def _check_auto_save(self) -> None:
         """Check if automatic saving should be triggered."""
-
         if self.auto_save_interval and self._processed_count % self.auto_save_interval == 0:
             self.save_all_states(f"auto_save_{self._processed_count}")
 
@@ -817,7 +808,6 @@ class StreamingDataProcessor:
         base_filename : str
             Base filename for saving states
         """
-
         for name, method in self.scoring_methods.items():
             if hasattr(method, "save_state"):
                 method.save_state(f"{base_filename}_{name}.pkl")
