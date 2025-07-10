@@ -237,8 +237,16 @@ module = [
     "psutil.*",
     "matplotlib.*",
     "seaborn.*",
+    "pytest.*",
+    "nltk.*",
+    "sklearn.*",
+    "hypothesis.*",
 ]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disable_error_code = ["misc", "no-untyped-def", "method-assign"]
 
 # Pytest configuration
 [tool.pytest.ini_options]
