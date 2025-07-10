@@ -25,9 +25,13 @@ class ProfiledFunction(Protocol):
 
     _profiler: Any
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """Call the profiled function."""
+        ...
 
-    def get_profiler(self) -> Any: ...
+    def get_profiler(self) -> Any:
+        """Get the memory profiler instance."""
+        ...
 
 
 @dataclass
