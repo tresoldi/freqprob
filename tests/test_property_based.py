@@ -1,5 +1,4 @@
-"""
-Property-based testing for FreqProb using Hypothesis.
+"""Property-based testing for FreqProb using Hypothesis.
 
 This module uses property-based testing to verify mathematical properties
 and invariants that should hold for all smoothing methods across a wide

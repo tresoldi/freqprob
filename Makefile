@@ -23,39 +23,23 @@ clean:
 	rm -rf $(VIRTUAL_ENV) dist *.egg-info .coverage
 	find . -name '*.pyc' -delete
 
-## black - Runs the Black Python formatter against the project
-black:
-	$(VIRTUAL_BIN)/black $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
-
-## black-check - Checks if the project is formatted correctly against the Black rules
-black-check:
-	$(VIRTUAL_BIN)/black $(PROJECT_NAME)/ $(TEST_DIR)/ --check
-
 ## format - Runs all formatting tools against the project
-format: black isort ruff lint mypy pydocstyle
+format: ruff lint mypy
 
-## format-quick - Runs just isort, black, and ruff formatting (for pre-push)
-format-quick: isort black ruff
+## format-quick - Runs just ruff formatting (for pre-push)
+format-quick: ruff
 
 ## format-check - Checks if the project is formatted correctly against all formatting rules
-format-check: black-check isort-check ruff-check lint mypy pydocstyle-check
+format-check: ruff-check lint mypy
 
 ## install - Install the project locally
 install:
 	$(PYTHON_BINARY) -m venv $(VIRTUAL_ENV)
 	$(VIRTUAL_BIN)/pip install -e ."[dev]"
 
-## isort - Sorts imports throughout the project
-isort:
-	$(VIRTUAL_BIN)/isort $(PROJECT_NAME)/ $(TEST_DIR)/
-
-## isort-check - Checks that imports throughout the project are sorted correctly
-isort-check:
-	$(VIRTUAL_BIN)/isort $(PROJECT_NAME)/ $(TEST_DIR)/ --check-only
-
 ## lint - Lint the project
 lint:
-	$(VIRTUAL_BIN)/flake8 $(PROJECT_NAME)/ $(TEST_DIR)/
+	$(VIRTUAL_BIN)/ruff check $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/ $(DOCS_DIR)/
 
 ## ruff - Run ruff linting and formatting (including notebooks)
 ruff:
@@ -71,12 +55,6 @@ ruff-check:
 mypy:
 	$(VIRTUAL_BIN)/mypy --strict $(PROJECT_NAME)/ $(TEST_DIR)/ $(SCRIPTS_DIR)/
 
-## pydocstyle - Check documentation style compliance
-pydocstyle:
-	$(VIRTUAL_BIN)/pydocstyle $(PROJECT_NAME)/ $(SCRIPTS_DIR)/ $(DOCS_DIR)/
-
-## pydocstyle-check - Check documentation style compliance (alias for pydocstyle)
-pydocstyle-check: pydocstyle
 
 ## precommit - Run pre-commit hooks on all files
 precommit:
@@ -101,4 +79,4 @@ precommit-update:
 test:
 	$(VIRTUAL_BIN)/pytest
 
-.PHONY: help build coverage clean black black-check format format-quick format-check install isort isort-check lint mypy pydocstyle pydocstyle-check precommit precommit-check precommit-update ruff ruff-check test
+.PHONY: help build coverage clean format format-quick format-check install lint mypy precommit precommit-check precommit-update ruff ruff-check test

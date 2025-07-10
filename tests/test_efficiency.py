@@ -1,6 +1,4 @@
-"""
-Test computational efficiency features: caching, vectorization, and lazy evaluation.
-"""
+"""Test computational efficiency features: caching, vectorization, and lazy evaluation."""
 
 import time
 

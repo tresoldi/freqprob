@@ -17,7 +17,7 @@ from .cache import cached_computation
 class KneserNeyConfig(ScoringMethodConfig):
     """Configuration for Kneser-Ney smoothing.
 
-    Attributes
+    Attributes:
     ----------
     discount : float
         Absolute discounting parameter (0 < d < 1, default: 0.75)
@@ -34,7 +34,7 @@ class KneserNeyConfig(ScoringMethodConfig):
 class ModifiedKneserNeyConfig(ScoringMethodConfig):
     """Configuration for Modified Kneser-Ney smoothing.
 
-    Attributes
+    Attributes:
     ----------
     logprob : bool
         Whether to return log-probabilities (default: True)
@@ -47,7 +47,7 @@ class ModifiedKneserNeyConfig(ScoringMethodConfig):
 class InterpolatedConfig(ScoringMethodConfig):
     """Configuration for interpolated smoothing methods.
 
-    Attributes
+    Attributes:
     ----------
     lambda_weight : float
         Interpolation weight for higher-order model (0 ≤ λ ≤ 1, default: 0.7)
@@ -64,7 +64,7 @@ class InterpolatedConfig(ScoringMethodConfig):
 class BayesianConfig(ScoringMethodConfig):
     """Configuration for Bayesian smoothing methods.
 
-    Attributes
+    Attributes:
     ----------
     alpha : float
         Dirichlet concentration parameter (alpha > 0, default: 1.0)
@@ -108,7 +108,7 @@ class KneserNey(ScoringMethod):
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
-    Examples
+    Examples:
     --------
     Basic Kneser-Ney smoothing:
     >>> bigram_counts = {
@@ -134,7 +134,7 @@ class KneserNey(ScoringMethod):
     - Particularly effective for n-gram language models
     - Widely used baseline in NLP applications
 
-    Notes
+    Notes:
     -----
     This implementation assumes bigram input but can be extended to higher-order
     n-grams. The discount parameter d is typically set between 0.5-0.8, with
@@ -259,7 +259,7 @@ class ModifiedKneserNey(ScoringMethod):
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
-    Examples
+    Examples:
     --------
     >>> bigram_counts = {
     ...     ('the', 'cat'): 5, ('the', 'dog'): 3, ('a', 'cat'): 2,
@@ -279,7 +279,7 @@ class ModifiedKneserNey(ScoringMethod):
     - Robust across different data sizes and domains
     - Standard method in modern language modeling
 
-    Notes
+    Notes:
     -----
     Modified Kneser-Ney is considered the state-of-the-art classical smoothing
     method for n-gram language models. It automatically estimates optimal
@@ -440,7 +440,7 @@ class InterpolatedSmoothing(ScoringMethod):
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
-    Examples
+    Examples:
     --------
     Interpolating trigram and bigram models:
     >>> trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
@@ -456,7 +456,7 @@ class InterpolatedSmoothing(ScoringMethod):
     - Flexible weighting allows domain adaptation
     - Foundation for hierarchical smoothing methods
 
-    Notes
+    Notes:
     -----
     The interpolation weight λ can be tuned on held-out data for optimal
     performance. Higher λ values favor the high-order model (more specificity),
@@ -563,7 +563,7 @@ class BayesianSmoothing(ScoringMethod):
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
-    Examples
+    Examples:
     --------
     Basic Bayesian smoothing with uniform prior:
     >>> freqdist = {'apple': 8, 'banana': 4, 'cherry': 1}
@@ -596,7 +596,7 @@ class BayesianSmoothing(ScoringMethod):
     - Smooth probability estimates
     - Prior encodes domain knowledge
 
-    Notes
+    Notes:
     -----
     The choice of alpha reflects prior beliefs about outcome probabilities:
     - alpha = 1: Uniform prior (no preference for any outcome)

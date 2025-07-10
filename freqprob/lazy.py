@@ -35,7 +35,7 @@ class LazyProbabilityComputer(ABC):
         config : ScoringMethodConfig
             Configuration parameters
 
-        Returns
+        Returns:
         -------
         float
             Computed probability
@@ -54,7 +54,7 @@ class LazyProbabilityComputer(ABC):
         config : ScoringMethodConfig
             Configuration parameters
 
-        Returns
+        Returns:
         -------
         float
             Unobserved probability
@@ -151,7 +151,7 @@ class LazyScoringMethod(ScoringMethod):
     name : str
         Name of the scoring method
 
-    Examples
+    Examples:
     --------
     >>> from freqprob.lazy import LazyScoringMethod, LazyMLEComputer
     >>> computer = LazyMLEComputer()
@@ -198,7 +198,7 @@ class LazyScoringMethod(ScoringMethod):
         element : Element
             Element to score
 
-        Returns
+        Returns:
         -------
         Union[float, float]
             Probability or log-probability for the element
@@ -272,7 +272,7 @@ class LazyScoringMethod(ScoringMethod):
     def get_computed_elements(self) -> set[Element]:
         """Get the set of elements that have been computed so far.
 
-        Returns
+        Returns:
         -------
         Set[Element]
             Set of computed elements
@@ -309,7 +309,7 @@ class LazyBatchScorer:
     lazy_scorer : LazyScoringMethod
         Lazy scoring method to use
 
-    Examples
+    Examples:
     --------
     >>> computer = LazyMLEComputer()
     >>> config = ScoringMethodConfig(logprob=False)
@@ -339,7 +339,7 @@ class LazyBatchScorer:
         elements : list
             Elements to score
 
-        Returns
+        Returns:
         -------
         list
             Scores for the elements
@@ -364,7 +364,7 @@ class LazyBatchScorer:
         element_stream : Iterable
             Stream of elements to score
 
-        Yields
+        Yields:
         ------
         float
             Score for each element
@@ -387,7 +387,7 @@ class LazyBatchScorer:
     def get_access_statistics(self) -> dict[str, Any]:
         """Get statistics about element access patterns.
 
-        Returns
+        Returns:
         -------
         Dict[str, Any]
             Access statistics
@@ -425,7 +425,7 @@ def create_lazy_mle(
     logprob : bool, default=True
         Whether to use log probabilities
 
-    Returns
+    Returns:
     -------
     LazyScoringMethod
         Lazy MLE scorer
@@ -453,7 +453,7 @@ def create_lazy_laplace(
     logprob : bool, default=True
         Whether to use log probabilities
 
-    Returns
+    Returns:
     -------
     LazyScoringMethod
         Lazy Laplace scorer

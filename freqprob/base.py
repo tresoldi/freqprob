@@ -27,7 +27,7 @@ class ScoringMethodConfig:
     This dataclass encapsulates all configuration parameters that can be
     used across different scoring methods, providing type safety and validation.
 
-    Attributes
+    Attributes:
     ----------
     unobs_prob : Probability | None
         Reserved probability mass for unobserved elements (0.0 ≤ p ≤ 1.0)
@@ -38,7 +38,7 @@ class ScoringMethodConfig:
     logprob : bool
         Whether to return log-probabilities instead of probabilities
 
-    Examples
+    Examples:
     --------
     >>> config = ScoringMethodConfig(unobs_prob=0.1, logprob=True)
     >>> config.unobs_prob
@@ -48,7 +48,7 @@ class ScoringMethodConfig:
     >>> config.gamma
     1.5
 
-    Raises
+    Raises:
     ------
     ValueError
         If any parameter is outside its valid range
@@ -63,7 +63,7 @@ class ScoringMethodConfig:
     def __post_init__(self) -> None:
         """Validate configuration parameters after initialization.
 
-        Raises
+        Raises:
         ------
         ValueError
             If unobs_prob is not in [0.0, 1.0], gamma is negative,
@@ -100,7 +100,7 @@ class ScoringMethod(ABC):
     For unobserved elements (w ∉ D), methods reserve probability mass
     to avoid zero probabilities.
 
-    Attributes
+    Attributes:
     ----------
     config : ScoringMethodConfig
         Configuration parameters for the method
@@ -109,7 +109,7 @@ class ScoringMethod(ABC):
     logprob : bool | None
         Whether this instance returns log-probabilities
 
-    Examples
+    Examples:
     --------
     >>> from freqprob import MLE
     >>> freqdist = {'apple': 3, 'banana': 2, 'cherry': 1}
@@ -130,7 +130,7 @@ class ScoringMethod(ABC):
         config : ScoringMethodConfig
             Configuration object containing method parameters
 
-        Note
+        Note:
         ----
         This constructor should typically be called by subclass constructors,
         not directly by users.
@@ -150,14 +150,14 @@ class ScoringMethod(ABC):
         element : Element
             Element to be scored
 
-        Returns
+        Returns:
         -------
         Probability | LogProbability
             The probability (if logprob=False) or log-probability (if logprob=True)
             of the element. Returns probability for unobserved elements based
             on the method's smoothing strategy.
 
-        Examples
+        Examples:
         --------
         >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
         >>> scorer('a')
@@ -170,17 +170,17 @@ class ScoringMethod(ABC):
     def __str__(self) -> str:
         """Return a string representation of the smoothing method.
 
-        Returns
+        Returns:
         -------
         str
             Human-readable description of the method
 
-        Raises
+        Raises:
         ------
         ValueError
             If the method has not been properly initialized
 
-        Examples
+        Examples:
         --------
         >>> str(MLE({'a': 1}, logprob=True))
         'MLE log-scorer, 1 elements.'
@@ -210,7 +210,7 @@ class ScoringMethod(ABC):
         freqdist : FrequencyDistribution
             Frequency distribution mapping elements to their observed counts
 
-        Note
+        Note:
         ----
         Implementations should populate self._prob and self._unobs.
         """
@@ -226,12 +226,12 @@ class ScoringMethod(ABC):
         freqdist : FrequencyDistribution
             Frequency distribution mapping elements to their observed counts
 
-        Returns
+        Returns:
         -------
         ScoringMethod
             Self, for method chaining
 
-        Examples
+        Examples:
         --------
         >>> scorer = MLE({}).fit({'a': 2, 'b': 1})
         >>> scorer('a')

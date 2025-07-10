@@ -23,7 +23,7 @@ from .cache import cached_computation, cached_sgt_computation
 class WittenBellConfig(ScoringMethodConfig):
     """Configuration for Witten-Bell smoothing.
 
-    Attributes
+    Attributes:
     ----------
     bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
@@ -40,7 +40,7 @@ class WittenBellConfig(ScoringMethodConfig):
 class CertaintyDegreeConfig(ScoringMethodConfig):
     """Configuration for Certainty Degree estimation.
 
-    Attributes
+    Attributes:
     ----------
     bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
@@ -60,7 +60,7 @@ class CertaintyDegreeConfig(ScoringMethodConfig):
 class SimpleGoodTuringConfig(ScoringMethodConfig):
     """Configuration for Simple Good-Turing smoothing.
 
-    Attributes
+    Attributes:
     ----------
     p_value : float
         Confidence level for smoothing threshold (default: 0.05)

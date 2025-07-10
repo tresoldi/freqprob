@@ -1,5 +1,4 @@
-"""
-Statistical correctness validation for FreqProb smoothing methods.
+"""Statistical correctness validation for FreqProb smoothing methods.
 
 This module validates that smoothing methods produce statistically correct
 results by testing against known theoretical properties, distributions,

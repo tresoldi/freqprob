@@ -36,7 +36,7 @@ class CompressedFrequencyDistribution:
     intern_strings : bool, default=True
         Whether to intern string elements for memory efficiency
 
-    Examples
+    Examples:
     --------
     >>> compressed_dist = CompressedFrequencyDistribution()
     >>> compressed_dist.update({'word1': 1000, 'word2': 500, 'word3': 1})
@@ -176,7 +176,7 @@ class CompressedFrequencyDistribution:
         element : Element
             Element to query
 
-        Returns
+        Returns:
         -------
         int
             Count for the element (dequantized if quantization is used)
@@ -226,7 +226,7 @@ class CompressedFrequencyDistribution:
     def get_memory_usage(self) -> dict[str, int]:
         """Get detailed memory usage information.
 
-        Returns
+        Returns:
         -------
         Dict[str, int]
             Memory usage breakdown in bytes
@@ -258,7 +258,7 @@ class CompressedFrequencyDistribution:
     def compress_to_bytes(self) -> bytes:
         """Compress the entire distribution to bytes.
 
-        Returns
+        Returns:
         -------
         bytes
             Compressed representation
@@ -292,7 +292,7 @@ class CompressedFrequencyDistribution:
         use_compression : bool, default=True
             Whether the data is compressed
 
-        Returns
+        Returns:
         -------
         CompressedFrequencyDistribution
             Decompressed distribution
@@ -333,7 +333,7 @@ class SparseFrequencyDistribution:
     use_sorted_storage : bool, default=True
         Whether to keep elements sorted by frequency for faster access
 
-    Examples
+    Examples:
     --------
     >>> sparse_dist = SparseFrequencyDistribution()
     >>> sparse_dist.update({'rare_word': 1, 'common_word': 1000})
@@ -404,7 +404,7 @@ class SparseFrequencyDistribution:
         element : Element
             Element to query
 
-        Returns
+        Returns:
         -------
         int
             Count for the element
@@ -436,7 +436,7 @@ class SparseFrequencyDistribution:
         k : int
             Number of top elements to return
 
-        Returns
+        Returns:
         -------
         List[Tuple[Element, int]]
             List of (element, count) pairs
@@ -459,7 +459,7 @@ class SparseFrequencyDistribution:
         max_count : int
             Maximum count (inclusive)
 
-        Returns
+        Returns:
         -------
         List[Element]
             Elements with counts in the specified range
@@ -473,7 +473,7 @@ class SparseFrequencyDistribution:
     def get_count_histogram(self) -> dict[int, int]:
         """Get histogram of counts (count -> frequency of that count).
 
-        Returns
+        Returns:
         -------
         Dict[int, int]
             Histogram mapping counts to their frequencies
@@ -502,7 +502,7 @@ class SparseFrequencyDistribution:
     def get_memory_usage(self) -> dict[str, int]:
         """Get memory usage information.
 
-        Returns
+        Returns:
         -------
         Dict[str, int]
             Memory usage breakdown in bytes
@@ -537,7 +537,7 @@ class QuantizedProbabilityTable:
     log_space : bool, default=True
         Whether to quantize in log space for better precision
 
-    Examples
+    Examples:
     --------
     >>> prob_table = QuantizedProbabilityTable(num_quantization_levels=1024)
     >>> prob_table.set_probabilities({'word1': 0.5, 'word2': 0.3, 'word3': 0.2})
@@ -576,7 +576,7 @@ class QuantizedProbabilityTable:
         prob : float
             Probability to quantize
 
-        Returns
+        Returns:
         -------
         int
             Quantized probability
@@ -603,7 +603,7 @@ class QuantizedProbabilityTable:
         quantized_prob : int
             Quantized probability
 
-        Returns
+        Returns:
         -------
         float
             Dequantized probability
@@ -650,7 +650,7 @@ class QuantizedProbabilityTable:
         element : Element
             Element to query
 
-        Returns
+        Returns:
         -------
         float
             Dequantized probability
@@ -675,7 +675,7 @@ class QuantizedProbabilityTable:
     def get_memory_usage(self) -> dict[str, int]:
         """Get memory usage information.
 
-        Returns
+        Returns:
         -------
         Dict[str, int]
             Memory usage breakdown in bytes
@@ -696,7 +696,7 @@ class QuantizedProbabilityTable:
         original_probs : Dict[Element, float]
             Original probabilities for comparison
 
-        Returns
+        Returns:
         -------
         Dict[str, float]
             Error statistics
@@ -749,7 +749,7 @@ def memory_usage_comparison(
     sparse_dist : SparseFrequencyDistribution
         Sparse distribution
 
-    Returns
+    Returns:
     -------
     Dict[str, Dict[str, int]]
         Memory usage comparison
@@ -785,7 +785,7 @@ def create_compressed_distribution(
     use_compression : bool, default=True
         Whether to use data compression
 
-    Returns
+    Returns:
     -------
     CompressedFrequencyDistribution
         Compressed distribution
@@ -809,7 +809,7 @@ def create_sparse_distribution(
     default_count : int, default=0
         Default count for unobserved elements
 
-    Returns
+    Returns:
     -------
     SparseFrequencyDistribution
         Sparse distribution

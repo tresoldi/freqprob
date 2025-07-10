@@ -1,6 +1,4 @@
-"""
-Test the library functions.
-"""
+"""Test the library functions."""
 
 # Import Python standard libraries
 import itertools
@@ -57,9 +55,7 @@ TEST_OBS2["z"] = 1000
 
 
 def test_uniform_dist_nolog_noobs() -> None:
-    """
-    Test the Uniform distribution without logprob and without unobserved states score.
-    """
+    """Test the Uniform distribution without logprob and without unobserved states score."""
 
     scorer1 = Uniform(TEST_OBS1, logprob=False)
     assert scorer1("A") == scorer1("E")
@@ -73,9 +69,7 @@ def test_uniform_dist_nolog_noobs() -> None:
 
 
 def test_uniform_dist_log_noobs() -> None:
-    """
-    Test the Uniform distribution with logprob and without unobserved states score.
-    """
+    """Test the Uniform distribution with logprob and without unobserved states score."""
 
     scorer1 = Uniform(TEST_OBS1)
     assert scorer1("A") == scorer1("E")
@@ -89,9 +83,7 @@ def test_uniform_dist_log_noobs() -> None:
 
 
 def test_uniform_dist_nolog_obs() -> None:
-    """
-    Test the Uniform distribution without logprob and with unobserved states score.
-    """
+    """Test the Uniform distribution without logprob and with unobserved states score."""
 
     scorer1 = Uniform(TEST_OBS1, 0.1, logprob=False)
     assert scorer1("A") == scorer1("E")
@@ -107,9 +99,7 @@ def test_uniform_dist_nolog_obs() -> None:
 
 
 def test_uniform_dist_log_obs() -> None:
-    """
-    Test the Uniform distribution with logprob and with unobserved states score.
-    """
+    """Test the Uniform distribution with logprob and with unobserved states score."""
 
     scorer1 = Uniform(TEST_OBS1, 0.1)
     assert scorer1("A") == scorer1("E")
@@ -125,9 +115,7 @@ def test_uniform_dist_log_obs() -> None:
 
 
 def test_uniform_raises() -> None:
-    """
-    Test the Uniform distribution raises the correct errors.
-    """
+    """Test the Uniform distribution raises the correct errors."""
 
     with pytest.raises(ValueError, match="reserved.*probability.*between"):
         Uniform(TEST_OBS1, -1.0, logprob=False)
@@ -137,9 +125,7 @@ def test_uniform_raises() -> None:
 
 
 def test_random_dist_nolog_noobs() -> None:
-    """
-    Test the Random distribution without logprob and without unobserved states score.
-    """
+    """Test the Random distribution without logprob and without unobserved states score."""
 
     scorer1 = Random(TEST_OBS1, logprob=False, seed=13)
     assert scorer1("A") == pytest.approx(0.25)
@@ -153,9 +139,7 @@ def test_random_dist_nolog_noobs() -> None:
 
 
 def test_random_dist_log_noobs() -> None:
-    """
-    Test the Random distribution with logprob and without unobserved states score.
-    """
+    """Test the Random distribution with logprob and without unobserved states score."""
 
     scorer1 = Random(TEST_OBS1, seed=13)
     assert scorer1("A") == pytest.approx(-1.386294)
@@ -169,9 +153,7 @@ def test_random_dist_log_noobs() -> None:
 
 
 def test_random_dist_nolog_obs() -> None:
-    """
-    Test the Random distribution without logprob and with unobserved states score.
-    """
+    """Test the Random distribution without logprob and with unobserved states score."""
 
     scorer1 = Random(TEST_OBS1, 0.1, logprob=False, seed=13)
     assert scorer1("A") == pytest.approx(0.225)
@@ -185,9 +167,7 @@ def test_random_dist_nolog_obs() -> None:
 
 
 def test_random_dist_log_obs() -> None:
-    """
-    Test the Random distribution with logprob and with unobserved states score.
-    """
+    """Test the Random distribution with logprob and with unobserved states score."""
 
     scorer1 = Random(TEST_OBS1, 0.1, seed=13)
     assert scorer1("A") == pytest.approx(-1.491654)
@@ -201,9 +181,7 @@ def test_random_dist_log_obs() -> None:
 
 
 def test_random_raises() -> None:
-    """
-    Test the Random distribution raises the correct errors.
-    """
+    """Test the Random distribution raises the correct errors."""
 
     with pytest.raises(ValueError, match="reserved.*probability.*between"):
         Random(TEST_OBS1, -1.0, logprob=False)
@@ -213,9 +191,7 @@ def test_random_raises() -> None:
 
 
 def test_mle_dist_nolog_noobs() -> None:
-    """
-    Test the MLE distribution without logprob and without unobserved states score.
-    """
+    """Test the MLE distribution without logprob and without unobserved states score."""
 
     scorer1 = MLE(TEST_OBS1, logprob=False)
     assert scorer1("A") == pytest.approx(0.07142857142857142)
@@ -229,9 +205,7 @@ def test_mle_dist_nolog_noobs() -> None:
 
 
 def test_mle_dist_log_noobs() -> None:
-    """
-    Test the MLE distribution with logprob and without unobserved states score.
-    """
+    """Test the MLE distribution with logprob and without unobserved states score."""
 
     scorer1 = MLE(TEST_OBS1)
     assert scorer1("A") == pytest.approx(-2.639057329715259)
@@ -245,9 +219,7 @@ def test_mle_dist_log_noobs() -> None:
 
 
 def test_mle_dist_nolog_obs() -> None:
-    """
-    Test the MLE distribution without logprob and with unobserved states score.
-    """
+    """Test the MLE distribution without logprob and with unobserved states score."""
 
     scorer1 = MLE(TEST_OBS1, 0.1, logprob=False)
     assert scorer1("A") == pytest.approx(0.06428571428571428)
@@ -261,9 +233,7 @@ def test_mle_dist_nolog_obs() -> None:
 
 
 def test_mle_dist_log_obs() -> None:
-    """
-    Test the MLE distribution with logprob and with unobserved states score.
-    """
+    """Test the MLE distribution with logprob and with unobserved states score."""
 
     scorer1 = MLE(TEST_OBS1, 0.1)
     assert scorer1("A") == pytest.approx(-2.744417845273085)
@@ -277,9 +247,7 @@ def test_mle_dist_log_obs() -> None:
 
 
 def test_mle_raises() -> None:
-    """
-    Test the MLE distribution raises the correct errors.
-    """
+    """Test the MLE distribution raises the correct errors."""
 
     with pytest.raises(ValueError, match="reserved.*probability.*between"):
         MLE(TEST_OBS1, -1.0, logprob=False)
@@ -289,8 +257,7 @@ def test_mle_raises() -> None:
 
 
 def test_lidstone_dist_nolog_noobs() -> None:
-    """
-    Test the Lidstone distribution without logprob and without unobserved states score.
+    """Test the Lidstone distribution without logprob and without unobserved states score.
 
     For testing purposes, the Lidstone distributions for the tests are initialized
     with a gamma of 1.5.
@@ -308,8 +275,7 @@ def test_lidstone_dist_nolog_noobs() -> None:
 
 
 def test_lidstone_dist_log_noobs() -> None:
-    """
-    Test the Lidstone distribution with logprob and without unobserved states score.
+    """Test the Lidstone distribution with logprob and without unobserved states score.
 
     For testing purposes, the Lidstone distributions for the tests are initialized
     with a gamma of 1.5.
@@ -327,8 +293,7 @@ def test_lidstone_dist_log_noobs() -> None:
 
 
 def test_lidstone_dist_nolog_obs() -> None:
-    """
-    Test the Lidstone distribution without logprob and with unobserved states score.
+    """Test the Lidstone distribution without logprob and with unobserved states score.
 
     For testing purposes, the Lidstone distributions for the tests are initialized
     with a gamma of 1.5.
@@ -346,8 +311,7 @@ def test_lidstone_dist_nolog_obs() -> None:
 
 
 def test_lidstone_dist_log_obs() -> None:
-    """
-    Test the Lidstone distribution with logprob and with unobserved states score.
+    """Test the Lidstone distribution with logprob and with unobserved states score.
 
     For testing purposes, the Lidstone distributions for the tests are initialized
     with a gamma of 1.5.
@@ -365,9 +329,7 @@ def test_lidstone_dist_log_obs() -> None:
 
 
 def test_lidstone_raises() -> None:
-    """
-    Test the Lidstone distribution raises the correct errors.
-    """
+    """Test the Lidstone distribution raises the correct errors."""
 
     with pytest.raises(ValueError, match="bins.*positive"):
         Lidstone(TEST_OBS1, gamma=1.0, bins=0)
@@ -377,9 +339,7 @@ def test_lidstone_raises() -> None:
 
 
 def test_laplace_dist_nolog_noobs() -> None:
-    """
-    Test the Laplace distribution without logprob and without unobserved states score.
-    """
+    """Test the Laplace distribution without logprob and without unobserved states score."""
 
     scorer1 = Laplace(TEST_OBS1, logprob=False)
     assert scorer1("A") == pytest.approx(0.10526315789473684)
@@ -393,9 +353,7 @@ def test_laplace_dist_nolog_noobs() -> None:
 
 
 def test_laplace_dist_log_noobs() -> None:
-    """
-    Test the Laplace distribution with logprob and without unobserved states score.
-    """
+    """Test the Laplace distribution with logprob and without unobserved states score."""
 
     scorer1 = Laplace(TEST_OBS1)
     assert scorer1("A") == pytest.approx(-2.2512917986064953)
@@ -409,9 +367,7 @@ def test_laplace_dist_log_noobs() -> None:
 
 
 def test_laplace_dist_nolog_obs() -> None:
-    """
-    Test the Laplace distribution without logprob and with unobserved states score.
-    """
+    """Test the Laplace distribution without logprob and with unobserved states score."""
 
     scorer1 = Laplace(TEST_OBS1, logprob=False)
     assert scorer1("A") == pytest.approx(0.10526315789473684)
@@ -425,9 +381,7 @@ def test_laplace_dist_nolog_obs() -> None:
 
 
 def test_laplace_dist_log_obs() -> None:
-    """
-    Test the Laplace distribution with logprob and with unobserved states score.
-    """
+    """Test the Laplace distribution with logprob and with unobserved states score."""
 
     scorer1 = Laplace(TEST_OBS1)
     assert scorer1("A") == pytest.approx(-2.2512917986064953)
@@ -441,18 +395,14 @@ def test_laplace_dist_log_obs() -> None:
 
 
 def test_laplace_raises() -> None:
-    """
-    Test the Laplace distribution raises the correct errors.
-    """
+    """Test the Laplace distribution raises the correct errors."""
 
     with pytest.raises(ValueError, match="bins.*positive"):
         Laplace(TEST_OBS1, bins=-1)
 
 
 def test_ele_dist_nolog_noobs() -> None:
-    """
-    Test the ELE distribution without logprob and without unobserved states score.
-    """
+    """Test the ELE distribution without logprob and without unobserved states score."""
 
     scorer1 = ELE(TEST_OBS1, logprob=False)
     assert scorer1("A") == pytest.approx(0.09090909090909091)
@@ -466,9 +416,7 @@ def test_ele_dist_nolog_noobs() -> None:
 
 
 def test_ele_dist_log_noobs() -> None:
-    """
-    Test the ELE distribution with logprob and without unobserved states score.
-    """
+    """Test the ELE distribution with logprob and without unobserved states score."""
 
     scorer1 = ELE(TEST_OBS1)
     assert scorer1("A") == pytest.approx(-2.3978952727983707)
@@ -482,9 +430,7 @@ def test_ele_dist_log_noobs() -> None:
 
 
 def test_ele_dist_nolog_obs() -> None:
-    """
-    Test the ELE distribution without logprob and with unobserved states score.
-    """
+    """Test the ELE distribution without logprob and with unobserved states score."""
 
     scorer1 = ELE(TEST_OBS1, logprob=False)
     assert scorer1("A") == pytest.approx(0.09090909090909091)
@@ -498,9 +444,7 @@ def test_ele_dist_nolog_obs() -> None:
 
 
 def test_ele_dist_log_obs() -> None:
-    """
-    Test the ELE distribution with logprob and with unobserved states score.
-    """
+    """Test the ELE distribution with logprob and with unobserved states score."""
 
     scorer1 = ELE(TEST_OBS1)
     assert scorer1("A") == pytest.approx(-2.3978952727983707)
@@ -514,18 +458,14 @@ def test_ele_dist_log_obs() -> None:
 
 
 def test_ele_raises() -> None:
-    """
-    Test the ELE distribution raises the correct errors.
-    """
+    """Test the ELE distribution raises the correct errors."""
 
     with pytest.raises(ValueError, match="bins.*positive"):
         ELE(TEST_OBS1, bins=-1)
 
 
 def test_wb_dist_nolog_noobs() -> None:
-    """
-    Test the Witten-Bell distribution without logprob and without unobserved states score.
-    """
+    """Test the Witten-Bell distribution without logprob and without unobserved states score."""
 
     scorer1 = WittenBell(TEST_OBS1, logprob=False)
     assert scorer1("A") == pytest.approx(0.05263157894736842)
@@ -539,9 +479,7 @@ def test_wb_dist_nolog_noobs() -> None:
 
 
 def test_wb_dist_log_noobs() -> None:
-    """
-    Test the Witten-Bell distribution with logprob and without unobserved states score.
-    """
+    """Test the Witten-Bell distribution with logprob and without unobserved states score."""
 
     scorer1 = WittenBell(TEST_OBS1)
     assert scorer1("A") == pytest.approx(-2.9444389791664407)
@@ -555,9 +493,7 @@ def test_wb_dist_log_noobs() -> None:
 
 
 def test_wb_dist_nolog_obs() -> None:
-    """
-    Test the Witten-Bell distribution without logprob and with unobserved states score.
-    """
+    """Test the Witten-Bell distribution without logprob and with unobserved states score."""
 
     scorer1 = WittenBell(TEST_OBS1, logprob=False)
     assert scorer1("A") == pytest.approx(0.05263157894736842)
@@ -571,9 +507,7 @@ def test_wb_dist_nolog_obs() -> None:
 
 
 def test_wb_dist_log_obs() -> None:
-    """
-    Test the Witten-Bell distribution with logprob and with unobserved states score.
-    """
+    """Test the Witten-Bell distribution with logprob and with unobserved states score."""
 
     scorer1 = WittenBell(TEST_OBS1)
     assert scorer1("A") == pytest.approx(-2.9444389791664407)
@@ -587,15 +521,11 @@ def test_wb_dist_log_obs() -> None:
 
 
 def test_wb_raises() -> None:
-    """
-    Test the Witten-Bell distribution raises the correct errors.
-    """
+    """Test the Witten-Bell distribution raises the correct errors."""
 
 
 def test_cb_dist_nolog_noobs() -> None:
-    """
-    Test the Certainty Degree distribution without logprob and without unobserved states score.
-    """
+    """Test the Certainty Degree distribution without logprob and without unobserved states score."""
 
     scorer1 = CertaintyDegree(TEST_OBS1, logprob=False)
     assert scorer1("A") == pytest.approx(0.06586524529838218)
@@ -609,9 +539,7 @@ def test_cb_dist_nolog_noobs() -> None:
 
 
 def test_cb_dist_log_noobs() -> None:
-    """
-    Test the Certainty Degree distribution with logprob and without unobserved states score.
-    """
+    """Test the Certainty Degree distribution with logprob and without unobserved states score."""
 
     scorer1 = CertaintyDegree(TEST_OBS1)
     assert scorer1("A") == pytest.approx(-2.7201443620473227)
@@ -625,9 +553,7 @@ def test_cb_dist_log_noobs() -> None:
 
 
 def test_cb_dist_nolog_obs() -> None:
-    """
-    Test the Certainty Degree distribution without logprob and with unobserved states score.
-    """
+    """Test the Certainty Degree distribution without logprob and with unobserved states score."""
 
     scorer1 = CertaintyDegree(TEST_OBS1, logprob=False)
     assert scorer1("A") == pytest.approx(0.06586524529838218)
@@ -641,9 +567,7 @@ def test_cb_dist_nolog_obs() -> None:
 
 
 def test_cb_dist_log_obs() -> None:
-    """
-    Test the Certainty Degree distribution with logprob and with unobserved states score.
-    """
+    """Test the Certainty Degree distribution with logprob and with unobserved states score."""
 
     scorer1 = CertaintyDegree(TEST_OBS1)
     assert scorer1("A") == pytest.approx(-2.7201443620473227)
@@ -657,15 +581,11 @@ def test_cb_dist_log_obs() -> None:
 
 
 def test_cb_raises() -> None:
-    """
-    Test the Certainty Degree distribution raises the correct errors.
-    """
+    """Test the Certainty Degree distribution raises the correct errors."""
 
 
 def test_sgt_dist_nolog_noobs() -> None:
-    """
-    Test the Simple Good-Turing distribution without logprob and without unobserved states score.
-    """
+    """Test the Simple Good-Turing distribution without logprob and without unobserved states score."""
 
     # The second distribution does not have enough data for confident results,
     # but it has enough to stress-test the method
@@ -676,9 +596,7 @@ def test_sgt_dist_nolog_noobs() -> None:
 
 
 def test_sgt_dist_log_noobs() -> None:
-    """
-    Test the Simple Good-Turing distribution with logprob and without unobserved states score.
-    """
+    """Test the Simple Good-Turing distribution with logprob and without unobserved states score."""
 
     # The second distribution does not have enough data for confident results,
     # but it has enough to stress-test the method
@@ -689,9 +607,7 @@ def test_sgt_dist_log_noobs() -> None:
 
 
 def test_sgt_dist_nolog_obs() -> None:
-    """
-    Test the Simple Good-Turing distribution without logprob and with unobserved states score.
-    """
+    """Test the Simple Good-Turing distribution without logprob and with unobserved states score."""
 
     # The second distribution does not have enough data for confident results,
     # but it has enough to stress-test the method
@@ -702,9 +618,7 @@ def test_sgt_dist_nolog_obs() -> None:
 
 
 def test_sgt_dist_log_obs() -> None:
-    """
-    Test the Simple Good-Turing distribution with logprob and with unobserved states score.
-    """
+    """Test the Simple Good-Turing distribution with logprob and with unobserved states score."""
 
     # The second distribution does not have enough data for confident results,
     # but it has enough to stress-test the method
@@ -715,9 +629,7 @@ def test_sgt_dist_log_obs() -> None:
 
 
 def test_sgt_raises() -> None:
-    """
-    Test the Simple Good-Turing distribution raises the correct errors.
-    """
+    """Test the Simple Good-Turing distribution raises the correct errors."""
 
     with pytest.raises(RuntimeWarning):
         SimpleGoodTuring(TEST_OBS1)

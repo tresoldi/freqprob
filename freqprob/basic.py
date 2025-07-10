@@ -17,7 +17,7 @@ from .base import FrequencyDistribution, Probability, ScoringMethod, ScoringMeth
 class UniformConfig(ScoringMethodConfig):
     """Configuration for Uniform distribution.
 
-    Attributes
+    Attributes:
     ----------
     unobs_prob : Probability
         Reserved probability mass for unobserved elements (default: 0.0)
@@ -34,7 +34,7 @@ class UniformConfig(ScoringMethodConfig):
 class RandomConfig(ScoringMethodConfig):
     """Configuration for Random distribution.
 
-    Attributes
+    Attributes:
     ----------
     unobs_prob : Probability
         Reserved probability mass for unobserved elements (default: 0.0)
@@ -54,7 +54,7 @@ class RandomConfig(ScoringMethodConfig):
 class MLEConfig(ScoringMethodConfig):
     """Configuration for Maximum Likelihood Estimation.
 
-    Attributes
+    Attributes:
     ----------
     unobs_prob : Probability
         Reserved probability mass for unobserved elements (default: 0.0)
@@ -92,7 +92,7 @@ class Uniform(ScoringMethod):
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
-    Examples
+    Examples:
     --------
     >>> freqdist = {'apple': 10, 'banana': 1}  # counts ignored
     >>> uniform = Uniform(freqdist, unobs_prob=0.1, logprob=False)
@@ -110,7 +110,7 @@ class Uniform(ScoringMethod):
     >>> uniform_log('banana')
     -0.6931471805599453
 
-    Notes
+    Notes:
     -----
     This method completely ignores frequency information, making it
     useful as a non-informative prior or baseline. For methods that
@@ -178,7 +178,7 @@ class Random(ScoringMethod):
     seed : Optional[int], default=None
         Random seed for reproducible results
 
-    Examples
+    Examples:
     --------
     >>> freqdist = {'apple': 5, 'banana': 2, 'cherry': 8}
     >>> random_dist = Random(freqdist, seed=42, logprob=False)
@@ -193,7 +193,7 @@ class Random(ScoringMethod):
     >>> random1('apple') == random2('apple')
     True
 
-    Notes
+    Notes:
     -----
     This method is primarily useful for:
     - Testing and debugging other components
@@ -284,7 +284,7 @@ class MLE(ScoringMethod):
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
-    Examples
+    Examples:
     --------
     Basic MLE without unobserved mass:
     >>> freqdist = {'apple': 6, 'banana': 3, 'cherry': 1}
@@ -320,7 +320,7 @@ class MLE(ScoringMethod):
     - Prone to overfitting on small datasets
     - Forms the basis for many smoothing methods
 
-    Notes
+    Notes:
     -----
     MLE is the foundation for most other smoothing methods. While simple,
     it can be problematic for sparse data due to zero probabilities for
