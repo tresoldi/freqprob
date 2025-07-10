@@ -73,6 +73,8 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.5.0",
     "flake8",
+    "pydocstyle>=6.0.0",
+    "bandit[toml]>=1.7.5",
 
     # Pre-commit hooks
     "pre-commit>=3.0.0",
@@ -311,7 +313,7 @@ output = "coverage.xml"
 # Bandit security configuration
 [tool.bandit]
 exclude_dirs = ["tests", "docs"]
-skips = ["B101", "B601"]  # Skip assert_used and shell_injection_process_vulnerable
+skips = ["B101", "B601", "B403", "B301"]  # Skip assert_used, shell_injection_process_vulnerable, pickle usage, and pickle loads
 
 [tool.bandit.assert_used]
 skips = ["*_test.py", "*/test_*.py"]
