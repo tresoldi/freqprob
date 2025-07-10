@@ -258,7 +258,6 @@ class MemoryProfiler:
         Dict[str, Any]
             Memory usage summary
         """
-
         if not self._snapshots:
             return {"error": "No snapshots available"}
 
@@ -468,7 +467,6 @@ class DistributionMemoryAnalyzer:
         Dict[str, Any]
             Benchmark results
         """
-
         if methods_to_test is None:
             methods_to_test = ["MLE", "Laplace", "StreamingMLE"]
 
@@ -604,7 +602,6 @@ class MemoryMonitor:
         Dict[str, Any]
             Monitoring report
         """
-
         if not self._snapshots:
             return {"error": "No monitoring data available"}
 
@@ -626,7 +623,6 @@ class MemoryMonitor:
 
     def _calculate_memory_trend(self) -> str:
         """Calculate overall memory trend."""
-
         if len(self._snapshots) < 2:
             return "insufficient_data"
 

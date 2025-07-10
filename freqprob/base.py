@@ -65,14 +65,12 @@ class ScoringMethodConfig:
     def __post_init__(self) -> None:
         """Validate configuration parameters after initialization.
 
-
         Raises
         ------
         ValueError
             If unobs_prob is not in [0.0, 1.0], gamma is negative,
             or bins is not positive
         """
-
         if self.unobs_prob is not None and not 0.0 <= self.unobs_prob <= 1.0:
             raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
 
@@ -177,7 +175,6 @@ class ScoringMethod(ABC):
     def __str__(self) -> str:
         """Return a string representation of the smoothing method.
 
-
         Returns
         -------
         str
@@ -193,7 +190,6 @@ class ScoringMethod(ABC):
         >>> str(MLE({'a': 1}, logprob=True))
         'MLE log-scorer, 1 elements.'
         """
-
         if self.name is None:
             raise ValueError("The smoothing method has not been (properly) initialized.")
 
