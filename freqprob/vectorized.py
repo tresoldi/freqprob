@@ -23,7 +23,7 @@ class VectorizedScorer:
     scorer : ScoringMethod
         The underlying scoring method to wrap
 
-    Examples
+    Examples:
     --------
     >>> from freqprob import MLE
     >>> scorer = MLE({'a': 3, 'b': 2, 'c': 1}, logprob=False)
@@ -74,12 +74,12 @@ class VectorizedScorer:
         elements : Union[List[Element], np.ndarray]
             Elements to score
 
-        Returns
+        Returns:
         -------
         np.ndarray
             Array of scores for the elements
 
-        Examples
+        Examples:
         --------
         >>> scorer = MLE({'a': 3, 'b': 2}, logprob=False)
         >>> vectorized = VectorizedScorer(scorer)
@@ -111,7 +111,7 @@ class VectorizedScorer:
         element_batches : List[List[Element]]
             List of element batches to score
 
-        Returns
+        Returns:
         -------
         List[np.ndarray]
             List of score arrays for each batch
@@ -128,7 +128,7 @@ class VectorizedScorer:
         elements_2d : List[List[Element]]
             2D list of elements to score
 
-        Returns
+        Returns:
         -------
         np.ndarray
             2D array of scores with shape (len(elements_2d), max_row_length)
@@ -157,7 +157,7 @@ class VectorizedScorer:
         k : int
             Number of top elements to return
 
-        Returns
+        Returns:
         -------
         Tuple[List[Element], np.ndarray]
             Tuple of (elements, scores) for the top-k elements
@@ -188,7 +188,7 @@ class VectorizedScorer:
         percentiles : List[float]
             Percentiles to compute (0-100)
 
-        Returns
+        Returns:
         -------
         np.ndarray
             Percentile ranks for each element
@@ -217,7 +217,7 @@ def create_vectorized_batch_scorer(scorers: dict[str, ScoringMethod]) -> "BatchS
     scorers : Dict[str, ScoringMethod]
         Dictionary mapping scorer names to scoring methods
 
-    Returns
+    Returns:
     -------
     BatchScorer
         Batch scorer instance
@@ -236,7 +236,7 @@ class BatchScorer:
     scorers : Dict[str, ScoringMethod]
         Dictionary mapping scorer names to scoring methods
 
-    Examples
+    Examples:
     --------
     >>> from freqprob import MLE, Laplace
     >>> scorers = {
@@ -272,7 +272,7 @@ class BatchScorer:
         elements : List[Element]
             Elements to score
 
-        Returns
+        Returns:
         -------
         Dict[str, np.ndarray]
             Dictionary mapping scorer names to score arrays
@@ -290,7 +290,7 @@ class BatchScorer:
         elements : List[Element]
             Elements to score
 
-        Returns
+        Returns:
         -------
         Dict[str, Any]
             Dictionary with scores and comparison statistics
@@ -327,7 +327,7 @@ class BatchScorer:
         num_iterations : int, default=100
             Number of iterations for timing
 
-        Returns
+        Returns:
         -------
         Dict[str, float]
             Dictionary mapping method names to average execution times
@@ -359,7 +359,7 @@ def elements_to_numpy(elements: Iterable[str | int | float]) -> np.ndarray[Any, 
     elements : Iterable[Union[str, int, float]]
         Elements to convert
 
-    Returns
+    Returns:
     -------
     np.ndarray
         Numpy array of elements
@@ -387,7 +387,7 @@ def scores_to_probabilities(log_scores: np.ndarray[Any, Any]) -> np.ndarray[Any,
     log_scores : np.ndarray
         Array of log scores
 
-    Returns
+    Returns:
     -------
     np.ndarray
         Array of probabilities
@@ -409,7 +409,7 @@ def normalize_scores(scores: np.ndarray[Any, Any], method: str = "softmax") -> n
     method : str, default='softmax'
         Normalization method ('softmax', 'minmax', 'zscore')
 
-    Returns
+    Returns:
     -------
     np.ndarray
         Normalized scores

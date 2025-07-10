@@ -37,7 +37,7 @@ class ProfiledFunction(Protocol):
 class MemorySnapshot:
     """Memory usage snapshot.
 
-    Attributes
+    Attributes:
     ----------
     timestamp : float
         Time when snapshot was taken
@@ -63,7 +63,7 @@ class MemorySnapshot:
 class PerformanceMetrics:
     """Performance measurement results.
 
-    Attributes
+    Attributes:
     ----------
     operation_name : str
         Name of the operation
@@ -108,7 +108,7 @@ class MemoryProfiler:
     snapshot_interval : float, default=1.0
         Interval in seconds for automatic snapshots
 
-    Examples
+    Examples:
     --------
     >>> profiler = MemoryProfiler()
     >>> with profiler.profile_operation("test_operation"):
@@ -133,7 +133,7 @@ class MemoryProfiler:
     def take_snapshot(self) -> MemorySnapshot:
         """Take a memory usage snapshot.
 
-        Returns
+        Returns:
         -------
         MemorySnapshot
             Current memory usage snapshot
@@ -172,7 +172,7 @@ class MemoryProfiler:
         operation_name : str
             Name of the operation being profiled
 
-        Yields
+        Yields:
         ------
         None
         """
@@ -211,7 +211,7 @@ class MemoryProfiler:
     def get_latest_metrics(self) -> PerformanceMetrics | None:
         """Get the latest performance metrics.
 
-        Returns
+        Returns:
         -------
         Optional[PerformanceMetrics]
             Latest metrics or None if no operations have been profiled
@@ -221,7 +221,7 @@ class MemoryProfiler:
     def get_all_metrics(self) -> list[PerformanceMetrics]:
         """Get all performance metrics.
 
-        Returns
+        Returns:
         -------
         List[PerformanceMetrics]
             All recorded metrics
@@ -231,7 +231,7 @@ class MemoryProfiler:
     def get_snapshots(self) -> list[MemorySnapshot]:
         """Get all memory snapshots.
 
-        Returns
+        Returns:
         -------
         List[MemorySnapshot]
             All recorded snapshots
@@ -247,7 +247,7 @@ class MemoryProfiler:
     def get_memory_summary(self) -> dict[str, Any]:
         """Get a summary of memory usage patterns.
 
-        Returns
+        Returns:
         -------
         Dict[str, Any]
             Memory usage summary
@@ -290,12 +290,12 @@ def profile_memory_usage(
     operation_name : str, optional
         Name for the operation (defaults to function name)
 
-    Returns
+    Returns:
     -------
     function
         Decorated function
 
-    Examples
+    Examples:
     --------
     >>> @profile_memory_usage("test_function")
     ... def my_function():
@@ -334,7 +334,7 @@ class DistributionMemoryAnalyzer:
     This class helps analyze and compare memory usage between regular dictionaries,
     compressed distributions, sparse distributions, and other representations.
 
-    Examples
+    Examples:
     --------
     >>> analyzer = DistributionMemoryAnalyzer()
     >>> freqdist = {'word1': 1000, 'word2': 500, 'word3': 1}
@@ -354,7 +354,7 @@ class DistributionMemoryAnalyzer:
         freqdist : FrequencyDistribution
             Frequency distribution to measure
 
-        Returns
+        Returns:
         -------
         Dict[str, float]
             Memory usage measurements in MB
@@ -381,7 +381,7 @@ class DistributionMemoryAnalyzer:
         freqdist : FrequencyDistribution
             Original frequency distribution
 
-        Returns
+        Returns:
         -------
         Dict[str, Any]
             Comparison results
@@ -451,7 +451,7 @@ class DistributionMemoryAnalyzer:
         methods_to_test : Optional[List[str]]
             Scoring methods to test (defaults to common methods)
 
-        Returns
+        Returns:
         -------
         Dict[str, Any]
             Benchmark results
@@ -521,7 +521,7 @@ class MemoryMonitor:
     monitoring_interval : float, default=5.0
         Monitoring interval in seconds
 
-    Examples
+    Examples:
     --------
     >>> monitor = MemoryMonitor(memory_threshold_mb=500.0)
     >>> monitor.start_monitoring()
@@ -556,7 +556,7 @@ class MemoryMonitor:
     def check_memory(self) -> dict[str, Any] | None:
         """Check current memory usage and trigger alerts if needed.
 
-        Returns
+        Returns:
         -------
         Optional[Dict[str, Any]]
             Alert information if threshold exceeded, None otherwise
@@ -583,7 +583,7 @@ class MemoryMonitor:
     def get_monitoring_report(self) -> dict[str, Any]:
         """Get a comprehensive monitoring report.
 
-        Returns
+        Returns:
         -------
         Dict[str, Any]
             Monitoring report
@@ -636,7 +636,7 @@ def get_object_memory_usage(obj: Any) -> dict[str, int | float | str]:
     obj : Any
         Object to analyze
 
-    Returns
+    Returns:
     -------
     Dict[str, int | float | str]
         Memory usage breakdown
@@ -671,7 +671,7 @@ def get_object_memory_usage(obj: Any) -> dict[str, int | float | str]:
 def force_garbage_collection() -> dict[str, int]:
     """Force garbage collection and return statistics.
 
-    Returns
+    Returns:
     -------
     Dict[str, int]
         Garbage collection statistics

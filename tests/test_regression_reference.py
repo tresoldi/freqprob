@@ -1,5 +1,4 @@
-"""
-Regression tests against reference implementations.
+"""Regression tests against reference implementations.
 
 This module tests FreqProb implementations against established reference
 implementations from NLTK, scipy, and other authoritative sources to ensure

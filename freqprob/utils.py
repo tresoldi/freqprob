@@ -21,12 +21,12 @@ def generate_ngrams(text: str | list[str], n: int) -> list[tuple[str, ...]]:
     n : int
         Size of n-grams to generate
 
-    Returns
+    Returns:
     -------
     List[Tuple[str, ...]]
         List of n-gram tuples
 
-    Examples
+    Examples:
     --------
     >>> generate_ngrams("hello world", 2)
     [('h', 'e'), ('e', 'l'), ('l', 'l'), ('l', 'o'), ('o', ' '), (' ', 'w'), ('w', 'o'), ('o', 'r'), ('r', 'l'), ('l', 'd')]
@@ -55,12 +55,12 @@ def word_frequency(text: str | list[str], normalize: bool = False) -> dict[str, 
     normalize : bool, default=False
         If True, return relative frequencies instead of counts
 
-    Returns
+    Returns:
     -------
     Dict[str, Union[int, float]]
         Dictionary mapping words to their frequencies
 
-    Examples
+    Examples:
     --------
     >>> word_frequency("hello world hello")
     {'hello': 2, 'world': 1}
@@ -93,12 +93,12 @@ def ngram_frequency(
     normalize : bool, default=False
         If True, return relative frequencies instead of counts
 
-    Returns
+    Returns:
     -------
     Dict[Tuple[str, ...], Union[int, float]]
         Dictionary mapping n-grams to their frequencies
 
-    Examples
+    Examples:
     --------
     >>> ngram_frequency("hello world", 2)
     {('h', 'e'): 1, ('e', 'l'): 1, ('l', 'l'): 1, ('l', 'o'): 1, ('o', ' '): 1, (' ', 'w'): 1, ('w', 'o'): 1, ('o', 'r'): 1, ('r', 'l'): 1, ('l', 'd'): 1}
@@ -126,12 +126,12 @@ def perplexity(model: ScoringMethod, test_data: Iterable[Element]) -> float:
     test_data : Iterable[Element]
         Test data elements
 
-    Returns
+    Returns:
     -------
     float
         Perplexity value
 
-    Examples
+    Examples:
     --------
     >>> from freqprob import MLE
     >>> model = MLE({'a': 2, 'b': 1}, logprob=True)
@@ -160,12 +160,12 @@ def cross_entropy(model: ScoringMethod, test_data: Iterable[Element]) -> float:
     test_data : Iterable[Element]
         Test data elements
 
-    Returns
+    Returns:
     -------
     float
         Cross-entropy value
 
-    Examples
+    Examples:
     --------
     >>> from freqprob import MLE
     >>> model = MLE({'a': 2, 'b': 1}, logprob=True)
@@ -196,12 +196,12 @@ def kl_divergence(
     test_data : Iterable[Element]
         Test data elements
 
-    Returns
+    Returns:
     -------
     float
         KL divergence value
 
-    Examples
+    Examples:
     --------
     >>> from freqprob import MLE, Laplace
     >>> p_model = MLE({'a': 2, 'b': 1}, logprob=True)
@@ -239,12 +239,12 @@ def model_comparison(
     test_data : Iterable[Element]
         Test data elements
 
-    Returns
+    Returns:
     -------
     Dict[str, Dict[str, float]]
         Dictionary with model names as keys and metrics as values
 
-    Examples
+    Examples:
     --------
     >>> from freqprob import MLE, Laplace
     >>> models = {

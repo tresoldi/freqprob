@@ -20,20 +20,7 @@ repos:
       - id: debug-statements
       - id: check-docstring-first
 
-  # Python import sorting
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        name: isort (python)
-        args: ["--profile", "black", "--filter-files"]
 
-  # Python code formatting
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
-    hooks:
-      - id: black
-        language_version: python3
 
   # Python linting with Ruff (replaces flake8, pycodestyle, etc.)
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -65,23 +52,6 @@ repos:
         args: ["-c", "pyproject.toml"]
         additional_dependencies: ["bandit[toml]"]
 
-  # Jupyter notebook cleaning
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.7.1
-    hooks:
-      - id: nbqa-black
-        additional_dependencies: [black==23.12.1]
-      - id: nbqa-isort
-        additional_dependencies: [isort==5.13.2]
-      - id: nbqa-ruff
-        additional_dependencies: [ruff==0.12.2]
-        args: [--ignore=E402]
-      - id: nbqa
-        name: nbqa-ruff-format
-        entry: nbqa ruff --select I --fix
-        language: python
-        types_or: [jupyter]
-        additional_dependencies: [ruff==0.12.2]
 
   # Check for common security issues
   - repo: https://github.com/Yelp/detect-secrets
@@ -91,13 +61,6 @@ repos:
         args: ['--baseline', '.secrets.baseline']
         exclude: package.lock.json
 
-  # Documentation checks
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.3.0
-    hooks:
-      - id: pydocstyle
-        args: [--convention=google, --add-ignore=D202]
-        additional_dependencies: [tomli]
 
 # Configuration for specific repositories
 ci:

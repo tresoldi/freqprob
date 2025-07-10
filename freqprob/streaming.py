@@ -33,7 +33,7 @@ class StreamingFrequencyDistribution:
     compression_threshold : int, default=10000
         Threshold for triggering compression operations
 
-    Examples
+    Examples:
     --------
     >>> stream_dist = StreamingFrequencyDistribution(max_vocabulary_size=1000)
     >>> stream_dist.update('word1')
@@ -227,7 +227,7 @@ class StreamingFrequencyDistribution:
         element : Element
             Element to query
 
-        Returns
+        Returns:
         -------
         float
             Count for the element
@@ -243,7 +243,7 @@ class StreamingFrequencyDistribution:
         element : Element
             Element to query
 
-        Returns
+        Returns:
         -------
         float
             Relative frequency (count / total_count)
@@ -299,7 +299,7 @@ class StreamingFrequencyDistribution:
     def to_dict(self) -> dict[Element, int]:
         """Convert to regular dictionary with integer counts.
 
-        Returns
+        Returns:
         -------
         Dict[Element, int]
             Dictionary representation
@@ -310,7 +310,7 @@ class StreamingFrequencyDistribution:
     def get_statistics(self) -> dict[str, Any]:
         """Get statistics about the streaming distribution.
 
-        Returns
+        Returns:
         -------
         Dict[str, Any]
             Statistics dictionary
@@ -383,7 +383,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
     logprob : bool, default=True
         Whether to return log-probabilities
 
-    Examples
+    Examples:
     --------
     >>> streaming_mle = StreamingMLE(max_vocabulary_size=1000, logprob=False)
     >>> streaming_mle.update_single('word1', 5)
@@ -542,7 +542,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         filepath : str
             Path to load the state from
 
-        Returns
+        Returns:
         -------
         StreamingMLE
             Loaded streaming MLE instance
@@ -649,7 +649,7 @@ class StreamingDataProcessor:
     auto_save_interval : Optional[int]
         Interval for automatic state saving (None to disable)
 
-    Examples
+    Examples:
     --------
     >>> methods = {
     ...     'mle': StreamingMLE(max_vocabulary_size=10000),
@@ -736,7 +736,7 @@ class StreamingDataProcessor:
         element : Element
             Element to score
 
-        Returns
+        Returns:
         -------
         float
             Score for the element
@@ -751,7 +751,7 @@ class StreamingDataProcessor:
     def get_statistics(self) -> dict[str, Any]:
         """Get statistics for all scoring methods.
 
-        Returns
+        Returns:
         -------
         Dict[str, Any]
             Statistics for each method

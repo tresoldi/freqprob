@@ -16,7 +16,7 @@ from .base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 class LidstoneConfig(ScoringMethodConfig):
     """Configuration for Lidstone smoothing.
 
-    Attributes
+    Attributes:
     ----------
     gamma : float
         Additive smoothing parameter (gamma ≥ 0, default: 1.0)
@@ -36,7 +36,7 @@ class LidstoneConfig(ScoringMethodConfig):
 class LaplaceConfig(ScoringMethodConfig):
     """Configuration for Laplace smoothing (Lidstone with gamma=1).
 
-    Attributes
+    Attributes:
     ----------
     bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
@@ -53,7 +53,7 @@ class LaplaceConfig(ScoringMethodConfig):
 class ELEConfig(ScoringMethodConfig):
     """Configuration for Expected Likelihood Estimation (Lidstone with gamma=0.5).
 
-    Attributes
+    Attributes:
     ----------
     bins : int | None
         Total number of possible bins/elements (default: vocabulary size)
@@ -98,7 +98,7 @@ class Lidstone(ScoringMethod):
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
-    Examples
+    Examples:
     --------
     Basic Lidstone smoothing:
     >>> freqdist = {'apple': 3, 'banana': 1}
@@ -138,7 +138,7 @@ class Lidstone(ScoringMethod):
     - Bayesian interpretation as Dirichlet prior
     - Simple and computationally efficient
 
-    Notes
+    Notes:
     -----
     The choice of gamma represents a bias-variance tradeoff:
     - Small gamma: Low bias but high variance (closer to MLE)
@@ -221,7 +221,7 @@ class Laplace(Lidstone):
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
-    Examples
+    Examples:
     --------
     >>> freqdist = {'red': 3, 'blue': 2, 'green': 1}
     >>> laplace = Laplace(freqdist, logprob=False)
@@ -232,7 +232,7 @@ class Laplace(Lidstone):
     >>> laplace('yellow')  # 1/(6+3) = 1/9 ≈ 0.111
     0.1111111111111111
 
-    Notes
+    Notes:
     -----
     Laplace smoothing is widely used because:
     - Simple and intuitive (add one to everything)
@@ -275,7 +275,7 @@ class ELE(Lidstone):
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
-    Examples
+    Examples:
     --------
     >>> freqdist = {'cat': 4, 'dog': 2}
     >>> ele = ELE(freqdist, logprob=False)
@@ -286,7 +286,7 @@ class ELE(Lidstone):
     >>> ele('bird')    # 0.5/(6+0.5*2) = 0.5/7 ≈ 0.071
     0.07142857142857142
 
-    Notes
+    Notes:
     -----
     ELE is particularly useful because:
     - Jeffreys prior is non-informative in the Bayesian sense

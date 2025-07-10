@@ -1,6 +1,4 @@
-"""
-Test the utility functions for NLP tasks and model comparison.
-"""
+"""Test the utility functions for NLP tasks and model comparison."""
 
 import pytest
 

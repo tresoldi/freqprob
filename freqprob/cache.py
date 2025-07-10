@@ -20,7 +20,7 @@ class ComputationCache:
     This cache stores the results of computationally intensive operations
     to avoid redundant calculations when the same parameters are used.
 
-    Attributes
+    Attributes:
     ----------
     _cache : Dict[str, Any]
         Internal cache storage mapping cache keys to computed results
@@ -49,7 +49,7 @@ class ComputationCache:
         **kwargs
             Additional parameters to include in the hash
 
-        Returns
+        Returns:
         -------
         str
             Unique cache key for the parameters
@@ -72,7 +72,7 @@ class ComputationCache:
         **kwargs
             Additional parameters
 
-        Returns
+        Returns:
         -------
         Optional[Any]
             Cached result if available, None otherwise
@@ -126,7 +126,7 @@ def cached_sgt_computation(
     func : Callable
         Function to cache (should be _compute_probabilities method)
 
-    Returns
+    Returns:
     -------
     Callable
         Wrapped function with caching
@@ -171,7 +171,7 @@ def cached_computation(
     cache_instance : ComputationCache, optional
         Cache instance to use. If None, uses global general cache.
 
-    Returns
+    Returns:
     -------
     Callable
         Decorator function
@@ -222,7 +222,7 @@ def clear_all_caches() -> None:
 def get_cache_stats() -> dict[str, int]:
     """Get statistics about cache usage.
 
-    Returns
+    Returns:
     -------
     Dict[str, int]
         Dictionary with cache statistics

@@ -1,6 +1,4 @@
-"""
-Test memory management features: streaming, compression, and profiling.
-"""
+"""Test memory management features: streaming, compression, and profiling."""
 
 import os
 import tempfile

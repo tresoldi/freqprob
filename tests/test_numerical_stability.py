@@ -1,5 +1,4 @@
-"""
-Numerical stability tests for FreqProb smoothing methods.
+"""Numerical stability tests for FreqProb smoothing methods.
 
 This module tests the numerical stability of all smoothing methods under
 extreme conditions, edge cases, and potential overflow/underflow scenarios.
