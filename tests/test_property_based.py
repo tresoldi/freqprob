@@ -442,9 +442,9 @@ class FreqProbStateMachine(RuleBasedStateMachine):
         try:
             self.methods["mle"] = freqprob.MLE(self.freq_dist, logprob=False)  # type: ignore[arg-type]
             self.methods["laplace"] = freqprob.Laplace(
-                self.freq_dist,
+                self.freq_dist,  # type: ignore[arg-type]
                 bins=len(self.freq_dist) * 2,
-                logprob=False,  # type: ignore[arg-type]
+                logprob=False,
             )
         except Exception:
             # Some operations might fail, which is acceptable
