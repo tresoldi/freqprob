@@ -591,7 +591,7 @@ def test_sgt_dist_nolog_noobs() -> None:
     # but it has enough to stress-test the method
     with pytest.raises(RuntimeWarning):
         scorer = SimpleGoodTuring(TEST_OBS2, logprob=False, allow_fail=False)
-    
+
     # Test with allow_fail=True to demonstrate SGT can handle poor data gracefully
     scorer = SimpleGoodTuring(TEST_OBS2, logprob=False, allow_fail=True)
     # Just verify it returns reasonable probabilities
@@ -607,7 +607,7 @@ def test_sgt_dist_log_noobs() -> None:
     # but it has enough to stress-test the method
     with pytest.raises(RuntimeWarning):
         scorer = SimpleGoodTuring(TEST_OBS2, allow_fail=False)
-    
+
     # Test with allow_fail=True to demonstrate SGT can handle poor data gracefully
     scorer = SimpleGoodTuring(TEST_OBS2, allow_fail=True)
     # Just verify it returns reasonable log probabilities (negative values)
@@ -623,7 +623,7 @@ def test_sgt_dist_nolog_obs() -> None:
     # but it has enough to stress-test the method
     with pytest.raises(RuntimeWarning):
         scorer = SimpleGoodTuring(TEST_OBS2, logprob=False, allow_fail=False)
-    
+
     # Test with allow_fail=True to demonstrate SGT can handle poor data gracefully
     scorer = SimpleGoodTuring(TEST_OBS2, logprob=False, allow_fail=True)
     # Just verify it returns reasonable probabilities
@@ -639,7 +639,7 @@ def test_sgt_dist_log_obs() -> None:
     # but it has enough to stress-test the method
     with pytest.raises(RuntimeWarning):
         scorer = SimpleGoodTuring(TEST_OBS2, allow_fail=False)
-    
+
     # Test with allow_fail=True to demonstrate SGT can handle poor data gracefully
     scorer = SimpleGoodTuring(TEST_OBS2, allow_fail=True)
     # Just verify it returns reasonable log probabilities (negative values)

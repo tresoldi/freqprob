@@ -220,19 +220,29 @@ class TestPropertyBasedSmoothing:
     @settings(max_examples=20, deadline=10000)
     def test_log_linear_consistency(self, freq_dist: dict[str, int]) -> None:
         """Test consistency between log and linear probability representations."""
-        methods = [
-            lambda fd: freqprob.MLE(fd, logprob=False),
-            lambda fd: freqprob.Laplace(fd, bins=len(fd) * 2, logprob=False),
-            lambda fd: freqprob.ELE(fd, bins=len(fd) * 2, logprob=False),
-        ]
-        
-        log_methods = [
-            lambda fd: freqprob.MLE(fd, logprob=True),
-            lambda fd: freqprob.Laplace(fd, bins=len(fd) * 2, logprob=True),
-            lambda fd: freqprob.ELE(fd, bins=len(fd) * 2, logprob=True),
-        ]
 
-        for method_factory, log_method_factory in zip(methods, log_methods):
+        def create_mle_linear(fd: dict[str, int]) -> freqprob.MLE:
+            return freqprob.MLE(fd, logprob=False)  # type: ignore[arg-type]
+
+        def create_laplace_linear(fd: dict[str, int]) -> freqprob.Laplace:
+            return freqprob.Laplace(fd, bins=len(fd) * 2, logprob=False)  # type: ignore[arg-type]
+
+        def create_ele_linear(fd: dict[str, int]) -> freqprob.ELE:
+            return freqprob.ELE(fd, bins=len(fd) * 2, logprob=False)  # type: ignore[arg-type]
+
+        def create_mle_log(fd: dict[str, int]) -> freqprob.MLE:
+            return freqprob.MLE(fd, logprob=True)  # type: ignore[arg-type]
+
+        def create_laplace_log(fd: dict[str, int]) -> freqprob.Laplace:
+            return freqprob.Laplace(fd, bins=len(fd) * 2, logprob=True)  # type: ignore[arg-type]
+
+        def create_ele_log(fd: dict[str, int]) -> freqprob.ELE:
+            return freqprob.ELE(fd, bins=len(fd) * 2, logprob=True)  # type: ignore[arg-type]
+
+        methods = [create_mle_linear, create_laplace_linear, create_ele_linear]
+        log_methods = [create_mle_log, create_laplace_log, create_ele_log]
+
+        for method_factory, log_method_factory in zip(methods, log_methods, strict=False):
             linear_method = method_factory(freq_dist)
             log_method = log_method_factory(freq_dist)
 
@@ -352,8 +362,12 @@ class TestPropertyBasedUtilities:
 
             # Property 3: N-grams are consecutive substrings
             if ngrams:
-                assert ngrams[0][0] == tokens[0], f"First {n}-gram doesn't start with first token: {ngrams[0]}"
-                assert ngrams[-1][-1] == tokens[-1], f"Last {n}-gram doesn't end with last token: {ngrams[-1]}"
+                assert ngrams[0][0] == tokens[0], (
+                    f"First {n}-gram doesn't start with first token: {ngrams[0]}"
+                )
+                assert ngrams[-1][-1] == tokens[-1], (
+                    f"Last {n}-gram doesn't end with last token: {ngrams[-1]}"
+                )
 
     @given(st.lists(st.text(min_size=1, max_size=10), min_size=1, max_size=50))
     @settings(max_examples=30, deadline=5000)

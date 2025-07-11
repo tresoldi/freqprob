@@ -297,7 +297,9 @@ class TestStatisticalCorrectness:
         mle_perplexity_unknown = freqprob.perplexity(mle, test_with_unknown)
         laplace_perplexity_unknown = freqprob.perplexity(laplace, test_with_unknown)
 
-        assert mle_perplexity_unknown > 50  # MLE should have very high perplexity with unknown words
+        assert (
+            mle_perplexity_unknown > 50
+        )  # MLE should have very high perplexity with unknown words
         assert not math.isinf(laplace_perplexity_unknown)
 
     def test_cross_entropy_properties(self) -> None:

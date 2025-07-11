@@ -24,7 +24,7 @@ class TestNumericalStability:
         # Methods should handle empty distributions gracefully
         mle = freqprob.MLE(empty_dist)
         assert mle("test") == 1e-10  # Default unobserved value
-        
+
         laplace = freqprob.Laplace(empty_dist, bins=100, logprob=False)
         assert laplace("test") > 0  # Should give positive probability
 
