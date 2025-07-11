@@ -366,9 +366,8 @@ build = "mkdocs build --clean --strict"
 serve = "mkdocs serve --dev-addr localhost:8000"
 notebooks = "jupyter notebook docs/"
 test-notebooks = [
-    "cd docs",
-    "jupyter nbconvert --to notebook --execute tutorial_1_basic_smoothing.ipynb --output test_tutorial_1.ipynb",
-    "jupyter nbconvert --to notebook --execute tutorial_2_advanced_methods.ipynb --output test_tutorial_2.ipynb",
-    "jupyter nbconvert --to notebook --execute tutorial_3_efficiency_memory.ipynb --output test_tutorial_3.ipynb",
-    "jupyter nbconvert --to notebook --execute tutorial_4_real_world_applications.ipynb --output test_tutorial_4.ipynb",
+    "cd docs && jupyter nbconvert --to notebook --execute tutorial_1_basic_smoothing.ipynb --output test_tutorial_1.ipynb",
+    "cd docs && jupyter nbconvert --to notebook --execute tutorial_2_advanced_methods.ipynb --output test_tutorial_2.ipynb",
+    "cd docs && jupyter nbconvert --to notebook --execute tutorial_3_efficiency_memory.ipynb --output test_tutorial_3.ipynb",
+    "cd docs && jupyter nbconvert --to notebook --execute tutorial_4_real_world_applications.ipynb --output test_tutorial_4.ipynb",
 ]
