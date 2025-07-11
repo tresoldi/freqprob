@@ -199,20 +199,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install hatch
 
-      - name: Install package with notebook dependencies
+      - name: Create docs environment
         run: |
-          hatch env create
-          pip install jupyter matplotlib seaborn
+          hatch env create docs
 
       - name: Test notebook execution
         run: |
-          cd docs
-          for notebook in *.ipynb; do
-            echo "Testing $notebook"
-            jupyter nbconvert --to notebook --execute "$notebook" --output "test_$notebook"
-          done
+          hatch run docs:test-notebooks
 
       - name: Test benchmark script
         run: |
-          cd docs
-          hatch run python benchmarks.py --quick --output test_results --format json
+          cd docs && hatch run docs:python benchmarks.py --quick --output test_results --format json
