@@ -669,11 +669,13 @@ class TestMemoryManagementIntegration:
         assert "original" in comparison
         assert "compressed" in comparison
         assert "sparse" in comparison
-        
+
         # Verify that at least some methods have reasonable compression ratios
         # (Note: Small datasets may not show memory savings due to overhead)
         savings = comparison["memory_savings"]
-        assert all(isinstance(savings[method]["compression_ratio"], (int, float)) for method in savings)
+        assert all(
+            isinstance(savings[method]["compression_ratio"], int | float) for method in savings
+        )
         assert all(savings[method]["compression_ratio"] > 0 for method in savings)
 
         # Create streaming processor for efficient updates
