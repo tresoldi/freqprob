@@ -528,7 +528,20 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         filepath : str
             Path to save the state
         """
-        state = {"stream_dist": self._stream_dist, "config": self.config, "name": self.name}
+        # Create a copy of stream_dist without the lock
+        stream_dist_data = {
+            "_counts": dict(self._stream_dist._counts),
+            "_total_count": self._stream_dist._total_count,
+            "_update_count": self._stream_dist._update_count,
+            "_max_vocab_size": self._stream_dist._max_vocab_size,
+            "_min_count_threshold": self._stream_dist._min_count_threshold,
+            "_decay_factor": self._stream_dist._decay_factor,
+            "_compression_threshold": self._stream_dist._compression_threshold,
+            "_creation_order": dict(self._stream_dist._creation_order),
+            "_last_access": dict(self._stream_dist._last_access),
+        }
+        
+        state = {"stream_dist_data": stream_dist_data, "config": self.config, "name": self.name}
 
         with open(filepath, "wb") as f:
             pickle.dump(state, f)
@@ -553,7 +566,23 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         instance = cls.__new__(cls)
         instance.config = state["config"]
         instance.name = state["name"]
-        instance._stream_dist = state["stream_dist"]
+        
+        # Reconstruct the streaming distribution
+        stream_dist_data = state["stream_dist_data"]
+        instance._stream_dist = StreamingFrequencyDistribution(
+            max_vocabulary_size=stream_dist_data["_max_vocab_size"],
+            min_count_threshold=stream_dist_data["_min_count_threshold"],
+            decay_factor=stream_dist_data["_decay_factor"],
+            compression_threshold=stream_dist_data["_compression_threshold"],
+        )
+        
+        # Restore the state
+        instance._stream_dist._counts = stream_dist_data["_counts"]
+        instance._stream_dist._total_count = stream_dist_data["_total_count"]
+        instance._stream_dist._update_count = stream_dist_data["_update_count"]
+        instance._stream_dist._creation_order = stream_dist_data["_creation_order"]
+        instance._stream_dist._last_access = stream_dist_data["_last_access"]
+        
         instance._prob = {}
         instance._unobs = 0.0
         instance.logprob = state["config"].logprob

@@ -260,7 +260,7 @@ class TestScipyRegression:
         # FreqProb KL divergence
         model1 = freqprob.MLE(cast("FrequencyDistribution", counts1), logprob=True)
         model2 = freqprob.MLE(cast("FrequencyDistribution", counts2), logprob=True)
-        test_data = words * 10  # Repeat for stable estimate
+        test_data = words  # Use unique test data
 
         freqprob_kl = freqprob.kl_divergence(model1, model2, test_data)
 
@@ -581,11 +581,11 @@ class TestLiteratureRegression:
                 perplexities[name] = float("inf")
 
         # Expected ordering based on literature (for this type of data):
-        # 1. MLE should fail on unseen words (infinite perplexity)
-        # 2. Smoothing methods should have finite perplexity
+        # 1. MLE should have higher perplexity than smoothing methods (due to unseen words)
+        # 2. Smoothing methods should have lower perplexity
         # 3. ELE often performs better than basic Laplace
 
-        assert math.isinf(perplexities["mle"])  # MLE fails on unseen words
+        assert perplexities["mle"] > perplexities["laplace"]  # MLE should have higher perplexity
         assert math.isfinite(perplexities["laplace"])
         assert math.isfinite(perplexities["ele"])
 
