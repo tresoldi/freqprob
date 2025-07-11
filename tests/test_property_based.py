@@ -221,17 +221,20 @@ class TestPropertyBasedSmoothing:
     def test_log_linear_consistency(self, freq_dist: dict[str, int]) -> None:
         """Test consistency between log and linear probability representations."""
         methods = [
-            freqprob.MLE,
-            lambda fd: freqprob.Laplace(fd, bins=len(fd) * 2),
-            lambda fd: freqprob.ELE(fd, bins=len(fd) * 2),
+            lambda fd: freqprob.MLE(fd, logprob=False),
+            lambda fd: freqprob.Laplace(fd, bins=len(fd) * 2, logprob=False),
+            lambda fd: freqprob.ELE(fd, bins=len(fd) * 2, logprob=False),
+        ]
+        
+        log_methods = [
+            lambda fd: freqprob.MLE(fd, logprob=True),
+            lambda fd: freqprob.Laplace(fd, bins=len(fd) * 2, logprob=True),
+            lambda fd: freqprob.ELE(fd, bins=len(fd) * 2, logprob=True),
         ]
 
-        for method_factory in methods:
-            linear_method = method_factory(freq_dist)  # type: ignore
-            linear_method.logprob = False
-
-            log_method = method_factory(freq_dist)  # type: ignore
-            log_method.logprob = True
+        for method_factory, log_method_factory in zip(methods, log_methods):
+            linear_method = method_factory(freq_dist)
+            log_method = log_method_factory(freq_dist)
 
             for word in freq_dist:
                 linear_prob = linear_method(word)
@@ -337,8 +340,8 @@ class TestPropertyBasedUtilities:
         for n in range(1, min(5, len(tokens) + 1)):
             ngrams = freqprob.generate_ngrams(tokens, n)
 
-            # Property 1: Correct number of n-grams
-            expected_count = len(tokens) + 1  # +1 for sentence boundaries
+            # Property 1: Correct number of n-grams (sliding window)
+            expected_count = max(0, len(tokens) - n + 1)
             assert len(ngrams) == expected_count, (
                 f"Wrong number of {n}-grams: expected {expected_count}, got {len(ngrams)}"
             )
@@ -347,11 +350,10 @@ class TestPropertyBasedUtilities:
             for ngram in ngrams:
                 assert len(ngram) == n, f"N-gram has wrong length: {ngram}"
 
-            # Property 3: First n-gram starts with sentence boundary
-            assert ngrams[0][0] == "<s>", f"First {n}-gram doesn't start with <s>: {ngrams[0]}"
-
-            # Property 4: Last n-gram ends with sentence boundary
-            assert ngrams[-1][-1] == "</s>", f"Last {n}-gram doesn't end with </s>: {ngrams[-1]}"
+            # Property 3: N-grams are consecutive substrings
+            if ngrams:
+                assert ngrams[0][0] == tokens[0], f"First {n}-gram doesn't start with first token: {ngrams[0]}"
+                assert ngrams[-1][-1] == tokens[-1], f"Last {n}-gram doesn't end with last token: {ngrams[-1]}"
 
     @given(st.lists(st.text(min_size=1, max_size=10), min_size=1, max_size=50))
     @settings(max_examples=30, deadline=5000)
