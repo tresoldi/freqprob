@@ -238,29 +238,21 @@ See our [Development Guide](https://github.com/tresoldi/freqprob/blob/main/docs/
 
 ## 📜 License
 
-FreqProb is released under the [MIT License](LICENSE). See the license file for details.
+FreqProb is released under the [GNU General Public License v3.0](LICENSE). See the license file for details.
 
 ## 🎓 Citation
 
 If you use FreqProb in academic research, please cite:
 
 ```bibtex
-@software{tresoldi_freqprob_2024,
+@software{tresoldi_freqprob_2025,
   author = {Tresoldi, Tiago},
   title = {FreqProb: A Python library for probability smoothing and frequency-based language modeling},
   url = {https://github.com/tresoldi/freqprob},
   version = {0.2.0},
-  year = {2024}
+  publisher = {Department of Linguistics and Philology, Uppsala University},
+  address = {Uppsala},
+  year = {2025}
 }
 ```
 
-## 🔗 Related Projects
-
-- **[NLTK](https://www.nltk.org/)**: Natural Language Toolkit with probability distributions
-- **[scikit-learn](https://scikit-learn.org/)**: Machine learning library with text processing
-- **[spaCy](https://spacy.io/)**: Industrial-strength NLP library
-- **[Gensim](https://radimrehurek.com/gensim/)**: Topic modeling and document similarity
-
----
-
-**FreqProb**: Making probability smoothing simple, fast, and reliable. 🚀
