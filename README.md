@@ -255,4 +255,3 @@ If you use FreqProb in academic research, please cite:
   year = {2025}
 }
 ```
-
