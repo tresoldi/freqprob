@@ -14,7 +14,12 @@ from dataclasses import dataclass
 from functools import wraps
 from typing import Any, Protocol, cast
 
-import psutil
+try:
+    import psutil
+
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 from .base import FrequencyDistribution, ScoringMethod
 
@@ -123,7 +128,7 @@ class MemoryProfiler:
         self.enable_tracemalloc = enable_tracemalloc
 
         self.snapshot_interval = snapshot_interval
-        self._process = psutil.Process()
+        self._process = psutil.Process() if HAS_PSUTIL else None
         self._snapshots: list[MemorySnapshot] = []
         self._metrics: list[PerformanceMetrics] = []
 
@@ -139,9 +144,13 @@ class MemoryProfiler:
             Current memory usage snapshot
         """
         # Get process memory info
-        memory_info = self._process.memory_info()
-        rss_mb = memory_info.rss / 1024 / 1024
-        vms_mb = memory_info.vms / 1024 / 1024
+        if self._process is not None:
+            memory_info = self._process.memory_info()
+            rss_mb = memory_info.rss / 1024 / 1024
+            vms_mb = memory_info.vms / 1024 / 1024
+        else:
+            rss_mb = 0.0
+            vms_mb = 0.0
 
         # Get Python object memory usage
         python_objects_mb = 0.0
@@ -535,7 +544,7 @@ class MemoryMonitor:
         self.memory_threshold_mb = memory_threshold_mb
 
         self.monitoring_interval = monitoring_interval
-        self._process = psutil.Process()
+        self._process = psutil.Process() if HAS_PSUTIL else None
         self._monitoring = False
         self._snapshots: list[MemorySnapshot] = []
         self._alerts: list[dict[str, Any]] = []
