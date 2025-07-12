@@ -17,7 +17,7 @@ from freqprob import (
     create_compressed_distribution,
     create_sparse_distribution,
 )
-from freqprob.profiling import get_object_memory_usage, profile_memory_usage
+from freqprob.profiling import HAS_PSUTIL, get_object_memory_usage, profile_memory_usage
 
 # mypy: disable-error-code=arg-type
 
@@ -477,7 +477,10 @@ class TestMemoryProfiling:
 
         # Take initial snapshot
         snapshot1 = profiler.take_snapshot()
-        assert snapshot1.rss_mb > 0
+        if HAS_PSUTIL:
+            assert snapshot1.rss_mb > 0
+        else:
+            assert snapshot1.rss_mb == 0.0  # When psutil not available
         assert snapshot1.timestamp > 0
 
         # Profile an operation
