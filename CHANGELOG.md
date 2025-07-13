@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-01-13
+
 ### Added
 - Complete project modernization with current best practices
 - Modern build system using `pyproject.toml` and Hatch
