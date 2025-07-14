@@ -240,25 +240,83 @@ Summary and detailed reports are generated for each run.
 > **Note:** The previous shell script (`run_benchmarks.sh`) is now replaced by this Python-based workflow for better cross-platform support and integration.
 ```
 
-## 🤝 Contributing
+git clone https://github.com/tresoldi/freqprob.git
+cd freqprob
+pip install hatch
+hatch run test  # Run test suite
+
+## 🤝 Contributing & Developer Guide
 
 We welcome contributions! FreqProb uses modern development practices:
 
 - **Hatch** for project management and virtual environments
-- **Ruff** and **Black** for code formatting and linting  
+- **Ruff** and **Black** for code formatting and linting
 - **Pre-commit hooks** for automated quality checks
 - **GitHub Actions** for CI/CD with comprehensive testing
 - **Property-based testing** for mathematical correctness
 
+### 🚀 Development Setup
+
 ```bash
-# Development setup
 git clone https://github.com/tresoldi/freqprob.git
 cd freqprob
 pip install hatch
 hatch run test  # Run test suite
 ```
 
-See our [Development Guide](https://github.com/tresoldi/freqprob/blob/main/docs/development.md) for detailed instructions.
+### 🧹 Running Pre-commit Hooks
+
+Run all pre-commit hooks on all files:
+```bash
+hatch run lint:all
+pre-commit run --all-files
+```
+Or only on staged files:
+```bash
+pre-commit run
+```
+To update hooks:
+```bash
+pre-commit autoupdate
+```
+To install hooks (for automatic checks on commit):
+```bash
+pre-commit install
+```
+
+### 🧪 Running the Full CI Suite Locally (GitHub Actions Equivalent)
+
+To mimic the checks run in GitHub Actions, use:
+```bash
+hatch run lint:all   # Linting, formatting, type and security checks
+hatch run test-cov   # Full test suite with coverage
+hatch run bench-all --quick  # Quick performance benchmarks
+hatch run docs:build # Build documentation
+```
+You can also run these individually as needed. This will catch most issues before pushing or opening a pull request.
+
+### 🚀 Making a Release
+
+1. Bump the version (using Hatch):
+   ```bash
+   hatch version patch   # or minor/major
+   git add pyproject.toml freqprob/__init__.py
+   git commit -m "release: bump version to x.y.z"
+   git push
+   ```
+2. Tag the release:
+   ```bash
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+   This triggers the release workflow on GitHub Actions, which will:
+   - Run the full test suite
+   - Build and publish the package to PyPI
+   - Create a GitHub release
+
+### 📝 More Developer Information
+
+See our [Development Guide](https://github.com/tresoldi/freqprob/blob/main/docs/development.md) for detailed instructions, including troubleshooting, documentation, and advanced workflows.
 
 ## 📜 License
 
