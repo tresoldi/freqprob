@@ -429,6 +429,6 @@ release-check = [
 ]
 # Version management
 version-patch = "hatch version patch"
-version-minor = "hatch version minor"  
+version-minor = "hatch version minor"
 version-major = "hatch version major"
 version-show = "hatch version"

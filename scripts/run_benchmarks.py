@@ -10,14 +10,14 @@ import subprocess
 import sys
 
 
-def check_python():
+def check_python() -> None:
     """Check if Python 3 is available."""
     if not shutil.which("python3"):
         print("Error: Python 3 is required but not found", file=sys.stderr)
         sys.exit(1)
 
 
-def check_freqprob():
+def check_freqprob() -> None:
     """Check if FreqProb is available."""
     try:
         import freqprob  # noqa: F401
@@ -27,7 +27,7 @@ def check_freqprob():
         sys.exit(1)
 
 
-def run_benchmark(name, args, output_dir):
+def run_benchmark(name: str, args: list[str], output_dir: str) -> None:
     """Run a specific benchmark configuration."""
     output_subdir = os.path.join(output_dir, name)
     os.makedirs(output_subdir, exist_ok=True)
@@ -48,7 +48,7 @@ def run_benchmark(name, args, output_dir):
     print()
 
 
-def main():
+def main() -> None:
     """Main benchmark runner function."""
     parser = argparse.ArgumentParser(description="FreqProb Benchmark Runner (Python)")
     parser.add_argument(

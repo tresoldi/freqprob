@@ -204,7 +204,7 @@ class PerformanceProfiler:
                 iterations=len(test_batch),
                 batch_size=batch_size,
             ):
-                _ = vectorized.score_batch(test_batch)
+                _ = vectorized.score_batch(test_batch)  # type: ignore[arg-type]
 
             results.append(self.results[-1])
 
