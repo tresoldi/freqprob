@@ -115,7 +115,12 @@ def test_ngram_frequency() -> None:
 
     # Test normalized frequencies
     freq_norm = ngram_frequency(text, 2, normalize=True)
-    expected_norm = {("h", "e"): 0.25, ("e", "l"): 0.25, ("l", "l"): 0.25, ("l", "o"): 0.25}
+    expected_norm = {
+        ("h", "e"): 0.25,
+        ("e", "l"): 0.25,
+        ("l", "l"): 0.25,
+        ("l", "o"): 0.25,
+    }
     assert freq_norm == expected_norm
 
 

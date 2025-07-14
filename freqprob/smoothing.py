@@ -147,7 +147,10 @@ class KneserNey(ScoringMethod):
     __slots__ = ()
 
     def __init__(
-        self, freqdist: FrequencyDistribution, discount: float = 0.75, logprob: bool = True
+        self,
+        freqdist: FrequencyDistribution,
+        discount: float = 0.75,
+        logprob: bool = True,
     ) -> None:
         """Initialize Kneser-Ney smoothing."""
         if not 0 < discount < 1:

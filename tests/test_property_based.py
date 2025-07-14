@@ -33,7 +33,11 @@ except ImportError:
 # Hypothesis strategies for generating test data
 @st.composite
 def frequency_distribution(
-    draw: Any, min_vocab: int = 1, max_vocab: int = 100, min_count: int = 1, max_count: int = 1000
+    draw: Any,
+    min_vocab: int = 1,
+    max_vocab: int = 100,
+    min_count: int = 1,
+    max_count: int = 1000,
 ) -> dict[str, int]:
     """Generate a valid frequency distribution."""
     vocab_size = draw(st.integers(min_value=min_vocab, max_value=max_vocab))
@@ -428,7 +432,7 @@ class TestPropertyBasedVectorized:
         individual_scores = [mle(word) for word in test_words]
 
         # Batch scores
-        batch_scores = vectorized.score_batch(test_words)  # type: ignore[arg-type]
+        batch_scores = vectorized.score_batch(test_words)
 
         # Should be identical
         assert len(individual_scores) == len(batch_scores)
@@ -448,7 +452,10 @@ class FreqProbStateMachine(RuleBasedStateMachine):
         self.freq_dist: dict[str, int] = {"initial": 1}  # Start with minimal distribution
         self.methods: dict[str, Any] = {}
 
-    @rule(word=st.text(min_size=1, max_size=10), count=st.integers(min_value=1, max_value=100))
+    @rule(
+        word=st.text(min_size=1, max_size=10),
+        count=st.integers(min_value=1, max_value=100),
+    )
     def add_word(self, word: str, count: int) -> None:
         """Add or update a word in the frequency distribution."""
         self.freq_dist[word] = self.freq_dist.get(word, 0) + count

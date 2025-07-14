@@ -153,7 +153,11 @@ class PerformanceProfiler:
                 self.results.append(metrics)
 
     def profile_method_creation(
-        self, method_class: type, freq_dist: dict[str, int], iterations: int = 10, **kwargs: Any
+        self,
+        method_class: type,
+        freq_dist: dict[str, int],
+        iterations: int = 10,
+        **kwargs: Any,
     ) -> PerformanceMetrics:
         """Profile the creation time of a smoothing method."""
         with self.profile_operation(
@@ -200,14 +204,18 @@ class PerformanceProfiler:
                 iterations=len(test_batch),
                 batch_size=batch_size,
             ):
-                _ = vectorized.score_batch(test_batch)  # type: ignore[arg-type]
+                _ = vectorized.score_batch(test_batch)
 
             results.append(self.results[-1])
 
         return results
 
     def profile_memory_scaling(
-        self, method_class: type, base_dist: dict[str, int], scale_factors: list[int], **kwargs: Any
+        self,
+        method_class: type,
+        base_dist: dict[str, int],
+        scale_factors: list[int],
+        **kwargs: Any,
     ) -> list[PerformanceMetrics]:
         """Profile memory usage scaling with dataset size."""
         results = []
@@ -271,7 +279,11 @@ class PerformanceProfiler:
         if not self.results:
             return {}
 
-        summary = {"total_operations": len(self.results), "by_operation": {}, "overall_stats": {}}
+        summary = {
+            "total_operations": len(self.results),
+            "by_operation": {},
+            "overall_stats": {},
+        }
 
         # Group by operation name
         by_operation: dict[str, list[PerformanceMetrics]] = {}
@@ -386,7 +398,10 @@ class ValidationSuite:
         self.results: list[ValidationResult] = []
 
     def validate_numerical_stability(
-        self, method_class: type, test_distributions: list[dict[str, int]], **kwargs: Any
+        self,
+        method_class: type,
+        test_distributions: list[dict[str, int]],
+        **kwargs: Any,
     ) -> list[ValidationResult]:
         """Validate numerical stability across different distributions."""
         results = []
@@ -413,8 +428,11 @@ class ValidationSuite:
                     ValidationResult(
                         test_name=test_name,
                         passed=True,
-                        metrics=self.profiler.results[-1] if self.profiler.results else None,
-                        details={"distribution_size": len(dist), "total_count": sum(dist.values())},
+                        metrics=(self.profiler.results[-1] if self.profiler.results else None),
+                        details={
+                            "distribution_size": len(dist),
+                            "total_count": sum(dist.values()),
+                        },
                     )
                 )
 
@@ -424,7 +442,10 @@ class ValidationSuite:
                         test_name=test_name,
                         passed=False,
                         error_message=str(e),
-                        details={"distribution_size": len(dist), "total_count": sum(dist.values())},
+                        details={
+                            "distribution_size": len(dist),
+                            "total_count": sum(dist.values()),
+                        },
                     )
                 )
 
@@ -557,7 +578,10 @@ class ValidationSuite:
                 test_name=test_name,
                 passed=True,
                 metrics=metrics,
-                details={"num_threads": num_threads, "test_words_count": len(test_words)},
+                details={
+                    "num_threads": num_threads,
+                    "test_words_count": len(test_words),
+                },
             )
 
         except Exception as e:
@@ -565,14 +589,20 @@ class ValidationSuite:
                 test_name=test_name,
                 passed=False,
                 error_message=str(e),
-                details={"num_threads": num_threads, "test_words_count": len(test_words)},
+                details={
+                    "num_threads": num_threads,
+                    "test_words_count": len(test_words),
+                },
             )
 
         self.results.append(result)
         return result
 
     def run_comprehensive_validation(
-        self, method_classes: list[type], test_distributions: list[dict[str, int]], **kwargs: Any
+        self,
+        method_classes: list[type],
+        test_distributions: list[dict[str, int]],
+        **kwargs: Any,
     ) -> dict[str, list[ValidationResult]]:
         """Run comprehensive validation across all methods and test cases."""
         all_results = {}
@@ -742,7 +772,9 @@ class BenchmarkSuite:
         return results
 
     def compare_methods(
-        self, method_configs: list[tuple[type, dict[str, Any]]], test_distribution: dict[str, int]
+        self,
+        method_configs: list[tuple[type, dict[str, Any]]],
+        test_distribution: dict[str, int],
     ) -> dict[str, PerformanceMetrics]:
         """Compare multiple methods on the same distribution."""
         results = {}

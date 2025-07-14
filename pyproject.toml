@@ -213,6 +213,7 @@ show_error_codes = true
 
 [[tool.mypy.overrides]]
 module = [
+    "numpy.*",
     "scipy.*",
     "psutil.*",
     "matplotlib.*",
@@ -346,8 +347,6 @@ precommit-install = "pre-commit install"
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
-    "black>=23.0.0",
-    "isort>=5.12.0",
     "ruff>=0.1.0",
     "mypy>=1.5.0",
     "bandit[toml]>=1.7.5",
@@ -357,13 +356,11 @@ dependencies = [
 typing = "mypy --install-types --non-interactive {args:freqprob tests}"
 style = [
     "ruff check {args:.}",
-    "black --check --diff {args:.}",
-    "isort --check-only --diff {args:.}",
+    "ruff format --check {args:.}",
 ]
 format = [
-    "isort {args:.}",
-    "black {args:.}",
     "ruff check --fix {args:.}",
+    "ruff format {args:.}",
 ]
 security = "bandit -r freqprob/"
 all = [

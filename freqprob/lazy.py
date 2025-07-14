@@ -22,7 +22,10 @@ class LazyProbabilityComputer(ABC):
 
     @abstractmethod
     def compute_probability(
-        self, element: Element, freqdist: FrequencyDistribution, config: ScoringMethodConfig
+        self,
+        element: Element,
+        freqdist: FrequencyDistribution,
+        config: ScoringMethodConfig,
     ) -> float:
         """Compute probability for a single element on demand.
 
@@ -70,7 +73,10 @@ class LazyMLEComputer(LazyProbabilityComputer):
         self._unobs_prob: float | None = None
 
     def compute_probability(
-        self, element: Element, freqdist: FrequencyDistribution, config: ScoringMethodConfig
+        self,
+        element: Element,
+        freqdist: FrequencyDistribution,
+        config: ScoringMethodConfig,
     ) -> float:
         """Compute MLE probability for element."""
         if self._total_count is None:
@@ -109,7 +115,10 @@ class LazyLaplaceComputer(LazyProbabilityComputer):
         self._vocab_size: int | None = None
 
     def compute_probability(
-        self, element: Element, freqdist: FrequencyDistribution, config: ScoringMethodConfig
+        self,
+        element: Element,
+        freqdist: FrequencyDistribution,
+        config: ScoringMethodConfig,
     ) -> float:
         """Compute Laplace probability for element."""
         if self._total_count is None:
@@ -163,7 +172,10 @@ class LazyScoringMethod(ScoringMethod):
     """
 
     def __init__(
-        self, lazy_computer: LazyProbabilityComputer, config: ScoringMethodConfig, name: str
+        self,
+        lazy_computer: LazyProbabilityComputer,
+        config: ScoringMethodConfig,
+        name: str,
     ):
         """Initialize lazy scoring method.
 
@@ -412,7 +424,9 @@ class LazyBatchScorer:
 
 
 def create_lazy_mle(
-    freqdist: FrequencyDistribution, unobs_prob: float | None = None, logprob: bool = True
+    freqdist: FrequencyDistribution,
+    unobs_prob: float | None = None,
+    logprob: bool = True,
 ) -> LazyScoringMethod:
     """Create a lazy MLE scorer.
 

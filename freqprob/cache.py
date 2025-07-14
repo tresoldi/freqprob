@@ -162,7 +162,8 @@ def cached_sgt_computation(
 def cached_computation(
     cache_instance: ComputationCache | None = None,
 ) -> Callable[
-    [Callable[[Any, FrequencyDistribution], None]], Callable[[Any, FrequencyDistribution], None]
+    [Callable[[Any, FrequencyDistribution], None]],
+    Callable[[Any, FrequencyDistribution], None],
 ]:
     """Cache expensive computations.
 
@@ -227,7 +228,10 @@ def get_cache_stats() -> dict[str, int]:
     Dict[str, int]
         Dictionary with cache statistics
     """
-    return {"sgt_cache_size": _sgt_cache.size(), "general_cache_size": _general_cache.size()}
+    return {
+        "sgt_cache_size": _sgt_cache.size(),
+        "general_cache_size": _general_cache.size(),
+    }
 
 
 class MemoizedProperty:

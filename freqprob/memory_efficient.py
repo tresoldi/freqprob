@@ -302,7 +302,8 @@ class CompressedFrequencyDistribution:
         data = pickle.loads(serialized)
 
         instance = cls(
-            quantization_levels=data["quantization_levels"], use_compression=use_compression
+            quantization_levels=data["quantization_levels"],
+            use_compression=use_compression,
         )
 
         instance._element_to_id = data["element_to_id"]
@@ -684,7 +685,10 @@ class QuantizedProbabilityTable:
         for k, v in self._quantized_probs.items():
             quantized_probs_size += sys.getsizeof(k) + sys.getsizeof(v)
 
-        return {"quantized_probabilities": quantized_probs_size, "total": quantized_probs_size}
+        return {
+            "quantized_probabilities": quantized_probs_size,
+            "total": quantized_probs_size,
+        }
 
     def get_quantization_error_stats(
         self, original_probs: dict[Element, float]

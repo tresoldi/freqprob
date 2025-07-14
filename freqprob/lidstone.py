@@ -244,7 +244,10 @@ class Laplace(Lidstone):
     __slots__ = ()
 
     def __init__(
-        self, freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
+        self,
+        freqdist: FrequencyDistribution,
+        bins: int | None = None,
+        logprob: bool = True,
     ) -> None:
         """Initialize Laplace smoothing."""
         # Call parent with gamma=1.0 for Laplace smoothing
@@ -298,7 +301,10 @@ class ELE(Lidstone):
     __slots__ = ()
 
     def __init__(
-        self, freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
+        self,
+        freqdist: FrequencyDistribution,
+        bins: int | None = None,
+        logprob: bool = True,
     ) -> None:
         """Initialize Expected Likelihood Estimation."""
         # Call parent with gamma=0.5 for ELE

@@ -370,7 +370,10 @@ class PerformanceBenchmark:
                         metric="memory_usage",
                         value=memory_delta,
                         unit="MB",
-                        metadata={"vocab_size": len(dataset), "total_count": sum(dataset.values())},
+                        metadata={
+                            "vocab_size": len(dataset),
+                            "total_count": sum(dataset.values()),
+                        },
                     )
                     self.results.append(result)
 
@@ -583,7 +586,14 @@ class PerformanceBenchmark:
             csv_file = output_path / "benchmark_results.csv"
             with open(csv_file, "w", newline="") as f:
                 if results_data:
-                    fieldnames = ["method", "dataset", "metric", "value", "unit", "timestamp"]
+                    fieldnames = [
+                        "method",
+                        "dataset",
+                        "metric",
+                        "value",
+                        "unit",
+                        "timestamp",
+                    ]
                     writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
                     writer.writeheader()
                     for result in results_data:
@@ -760,7 +770,10 @@ def main() -> None:
         "--output", default="benchmark_results", help="Output directory for results"
     )
     parser.add_argument(
-        "--format", choices=["json", "csv", "html", "all"], default="all", help="Output format"
+        "--format",
+        choices=["json", "csv", "html", "all"],
+        default="all",
+        help="Output format",
     )
     parser.add_argument(
         "--quick", action="store_true", help="Run quick benchmarks (fewer datasets)"

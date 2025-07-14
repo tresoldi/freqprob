@@ -395,7 +395,10 @@ class DistributionMemoryAnalyzer:
         Dict[str, Any]
             Comparison results
         """
-        from .memory_efficient import create_compressed_distribution, create_sparse_distribution
+        from .memory_efficient import (
+            create_compressed_distribution,
+            create_sparse_distribution,
+        )
 
         results: dict[str, Any] = {}
 
@@ -674,7 +677,11 @@ def get_object_memory_usage(obj: Any) -> dict[str, int | float | str]:
             "num_items": len(obj),
             "avg_item_size": (total_size - basic_size) / len(obj) if obj else 0,
         }
-    return {"basic_size": basic_size, "total_size": basic_size, "type": type(obj).__name__}
+    return {
+        "basic_size": basic_size,
+        "total_size": basic_size,
+        "type": type(obj).__name__,
+    }
 
 
 def force_garbage_collection() -> dict[str, int]:

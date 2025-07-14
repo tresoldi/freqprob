@@ -326,7 +326,7 @@ class StreamingFrequencyDistribution:
                 "most_frequent": (
                     max(self._counts.items(), key=lambda x: x[1]) if self._counts else None
                 ),
-                "average_count": self._total_count / len(self._counts) if self._counts else 0,
+                "average_count": (self._total_count / len(self._counts) if self._counts else 0),
             }
 
 
@@ -541,7 +541,11 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
             "_last_access": dict(self._stream_dist._last_access),
         }
 
-        state = {"stream_dist_data": stream_dist_data, "config": self.config, "name": self.name}
+        state = {
+            "stream_dist_data": stream_dist_data,
+            "config": self.config,
+            "name": self.name,
+        }
 
         with open(filepath, "wb") as f:
             pickle.dump(state, f)
