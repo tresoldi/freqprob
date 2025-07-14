@@ -20,12 +20,25 @@ cd freqprob
 # Install Hatch (modern Python project manager)
 pip install hatch
 
-# Create and activate development environment
-hatch env create
-
 # Install pre-commit hooks
-pip install pre-commit
-pre-commit install
+hatch run precommit-install
+```
+
+### Available Hatch Commands
+
+FreqProb uses Hatch environments to organize development tasks. Here are the main commands:
+
+```bash
+# Show available environments
+hatch env show
+
+# Run commands in default environment
+hatch run <command>
+
+# Run commands in specific environment
+hatch run lint:<command>
+hatch run docs:<command>
+hatch run ci:<command>
 ```
 
 ## Project Structure
@@ -78,7 +91,42 @@ git commit -m "feat: add your feature description"
 git push origin feature/your-feature-name
 ```
 
-### 2. Testing
+### 2. Essential Development Commands
+
+#### Quick Start Commands
+```bash
+# Install project locally in development mode
+hatch run install-dev
+
+# Run all tests
+hatch run test
+
+# Run tests with coverage
+hatch run test-cov
+
+# Run linting and formatting
+hatch run lint:all
+
+# Clean build artifacts
+hatch run clean
+```
+
+#### Build and Release Commands
+```bash
+# Build package for distribution
+hatch run build
+
+# Run full CI pipeline locally (mimics GitHub Actions)
+hatch run ci:ci-full
+
+# Quick CI check
+hatch run ci:ci-quick
+
+# Prepare for release (full check + build)
+hatch run ci:release-check
+```
+
+### 3. Testing
 
 We use pytest with comprehensive coverage requirements:
 
@@ -92,6 +140,12 @@ hatch run test-cov
 # Run tests in parallel (faster)
 hatch run test-fast
 
+# Run specific test suites
+hatch run test-numerical     # Numerical stability tests
+hatch run test-statistical   # Statistical correctness tests
+hatch run test-regression    # Regression tests
+hatch run test-property      # Property-based tests
+
 # Run specific test file
 hatch run test tests/test_basic.py
 
@@ -99,7 +153,7 @@ hatch run test tests/test_basic.py
 hatch run test -k "test_laplace"
 ```
 
-### 3. Code Quality
+### 4. Code Quality
 
 #### Formatting and Linting
 
@@ -132,14 +186,20 @@ Pre-commit hooks run automatically on `git commit` and include:
 - **various**: YAML/JSON validation, trailing whitespace, etc.
 
 ```bash
+# Install pre-commit hooks
+hatch run precommit-install
+
 # Run pre-commit on all files manually
-pre-commit run --all-files
+hatch run precommit
+
+# Run pre-commit on staged files only
+hatch run precommit-staged
 
 # Update pre-commit hook versions
-pre-commit autoupdate
+hatch run precommit-update
 ```
 
-### 4. Documentation
+### 5. Documentation
 
 #### Building Documentation
 
@@ -152,6 +212,9 @@ hatch run docs:build
 
 # Test Jupyter notebooks
 hatch run docs:test-notebooks
+
+# Launch Jupyter for editing notebooks
+hatch run docs:notebooks
 ```
 
 #### Writing Documentation
@@ -186,15 +249,20 @@ def example_function(param1: str, param2: int = 5) -> bool:
     """
 ```
 
-### 5. Performance Testing
+### 6. Performance Testing
 
 ```bash
 # Run quick benchmarks
 hatch run bench
 
 # Run comprehensive benchmarks
-cd docs
-python benchmarks.py --output results --format all
+hatch run bench-all
+
+# Run validation tests
+hatch run validate
+
+# Run quick validation
+hatch run validate-quick
 
 # Profile memory usage
 python -c "
@@ -214,21 +282,34 @@ print(profiler.get_latest_metrics())
 We use semantic versioning (MAJOR.MINOR.PATCH):
 
 ```bash
-# Trigger version bump workflow (requires repository access)
+# Check current version
+hatch run ci:version-show
+
+# Bump version using Hatch
+hatch run ci:version-patch  # 0.1.0 -> 0.1.1
+hatch run ci:version-minor  # 0.1.0 -> 0.2.0  
+hatch run ci:version-major  # 0.1.0 -> 1.0.0
+
+# Or trigger version bump workflow (requires repository access)
 gh workflow run version-bump.yml --ref main -f bump_type=patch
 gh workflow run version-bump.yml --ref main -f bump_type=minor  
 gh workflow run version-bump.yml --ref main -f bump_type=major
 ```
 
-Or manually:
+### 2. Pre-release Validation
+
 ```bash
-# Using hatch
-hatch version patch  # 0.1.0 -> 0.1.1
-hatch version minor  # 0.1.0 -> 0.2.0  
-hatch version major  # 0.1.0 -> 1.0.0
+# Run full release checks locally
+hatch run ci:release-check
+
+# This runs:
+# - Clean build artifacts
+# - Full CI pipeline
+# - Package build
+# - Package validation with twine
 ```
 
-### 2. Creating Releases
+### 3. Creating Releases
 
 ```bash
 # After version bump PR is merged, create and push a tag
@@ -243,6 +324,24 @@ git push origin v1.0.0
 ```
 
 ## Continuous Integration
+
+### Running GitHub Actions Locally
+
+You can run the equivalent of GitHub Actions locally using Hatch:
+
+```bash
+# Run full CI pipeline (equivalent to GitHub Actions)
+hatch run ci:ci-full
+
+# Run quick CI checks
+hatch run ci:ci-quick
+
+# Run individual components
+hatch run lint:all        # Linting and formatting
+hatch run test-cov        # Tests with coverage
+hatch run docs:build      # Documentation build
+hatch run bench --quick   # Quick benchmarks
+```
 
 ### GitHub Actions Workflows
 
@@ -358,8 +457,8 @@ print(f"Memory used: {metrics.memory_delta_mb:.2f} MB")
 
 2. **Pre-commit failures**: Update hooks and retry
    ```bash
-   pre-commit autoupdate
-   pre-commit run --all-files
+   hatch run precommit-update
+   hatch run precommit
    ```
 
 3. **Test failures**: Check for missing dependencies
@@ -371,6 +470,26 @@ print(f"Memory used: {metrics.memory_delta_mb:.2f} MB")
 4. **Type checking errors**: Install missing type stubs
    ```bash
    hatch run lint:typing  # Will install missing stubs
+   ```
+
+### Hatch Environment Issues
+
+1. **Environment creation failures**: Force recreate environments
+   ```bash
+   hatch env prune        # Remove all environments
+   hatch env create       # Recreate default environment
+   ```
+
+2. **Missing dependencies**: Check environment dependencies
+   ```bash
+   hatch dep show         # Show dependency tree
+   hatch env show         # Show environment info
+   ```
+
+3. **Script not found**: Ensure you're using the correct environment
+   ```bash
+   hatch env show         # List available environments
+   hatch run lint:all     # Use environment:script syntax
    ```
 
 ### Getting Help
