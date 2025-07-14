@@ -209,11 +209,35 @@ is_valid = freqprob.quick_validate_method(
     freqprob.Laplace, test_distribution, bins=1000
 )
 
-# Performance benchmarking
-results = freqprob.compare_method_performance([
-    (freqprob.Laplace, {'bins': 1000}),
-    (freqprob.ELE, {'bins': 1000}),
-], test_distribution)
+## 🏁 Performance Benchmarking
+
+FreqProb provides a comprehensive benchmarking suite to evaluate the speed, memory usage, and accuracy of all smoothing methods. You can run benchmarks using Hatch or directly with Python:
+
+### Using Hatch (recommended)
+
+```bash
+hatch run bench-all
+```
+
+#### Options:
+- `--quick` : Run a fast subset of benchmarks (suitable for CI/testing)
+- `--plots` : Attempt to generate plots (requires matplotlib)
+
+Example:
+```bash
+hatch run bench-all --quick --plots
+```
+
+### Direct Python invocation
+
+```bash
+python scripts/run_benchmarks.py --quick --plots
+```
+
+Results are saved in a timestamped directory (e.g., `benchmark_results_YYYYMMDD_HHMMSS`).
+Summary and detailed reports are generated for each run.
+
+> **Note:** The previous shell script (`run_benchmarks.sh`) is now replaced by this Python-based workflow for better cross-platform support and integration.
 ```
 
 ## 🤝 Contributing
