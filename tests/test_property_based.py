@@ -432,7 +432,7 @@ class TestPropertyBasedVectorized:
         individual_scores = [mle(word) for word in test_words]
 
         # Batch scores
-        batch_scores = vectorized.score_batch(test_words)
+        batch_scores = vectorized.score_batch(test_words)  # type: ignore[arg-type]
 
         # Should be identical
         assert len(individual_scores) == len(batch_scores)
