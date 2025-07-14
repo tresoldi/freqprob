@@ -1,7 +1,7 @@
 """FreqProb: frequency-based probability estimation library."""
 
 # Version of the freqprob package
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Tiago Tresoldi"
 __email__ = "tiago.tresoldi@lingfil.uu.se"
 

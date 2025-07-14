@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-01-14
+
+### Fixed
+- Windows timing precision issue in MemoryProfiler for cross-platform compatibility
+- Type import organization in test files following Python best practices  
+- Pre-commit hook issues with proper TYPE_CHECKING block usage
+
+### Improved
+- Documentation structure and organization
+- README.md streamlined and focused on quick start
+- Enhanced performance comparison guide with Hatch integration
+- Advanced features documentation in user guide
+- Cross-referencing between documentation files
+
+### Changed
+- Moved detailed benchmarking instructions to docs/performance_comparison.md
+- Moved advanced features examples to docs/user_guide.md
+- Updated performance comparison table for quick reference
+
 ## [0.2.0] - 2025-01-13
 
 ### Added
