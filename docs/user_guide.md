@@ -919,4 +919,115 @@ predicted_topic, confidence = detector.classify_text(new_text)
 print(f"Predicted topic: {predicted_topic} (confidence: {confidence:.2f})")
 ```
 
+## Advanced Features
+
+### Memory Optimization
+
+FreqProb provides several memory optimization techniques for large-scale applications:
+
+**Compressed Storage:**
+```python
+# Compressed storage for large vocabularies
+large_dist = {f'word_{i}': count for i, count in enumerate(counts)}
+compressed = freqprob.create_compressed_distribution(large_dist)
+
+# Significant memory reduction with minimal accuracy loss
+memory_usage = compressed.get_memory_usage()
+print(f"Memory usage: {memory_usage['total'] / 1024 / 1024:.2f} MB")
+```
+
+**Sparse Representation:**
+```python
+# Sparse representation for sparse data
+sparse_dist = freqprob.create_sparse_distribution(sparse_counts)
+
+# Efficient storage for distributions with many zeros
+print(f"Compression ratio: {sparse_dist.get_compression_ratio():.2f}")
+```
+
+### Performance Profiling
+
+Built-in performance analysis tools help optimize your applications:
+
+```python
+# Built-in performance analysis
+profiler = freqprob.PerformanceProfiler()
+with profiler.profile_operation("model_creation"):
+    model = freqprob.SimpleGoodTuring(large_distribution)
+
+metrics = profiler.get_latest_metrics()
+print(f"Memory used: {metrics.memory_delta_mb:.2f} MB")
+print(f"Execution time: {metrics.execution_time:.4f} seconds")
+
+# Export detailed profiling report
+profiler.export_results("performance_report.json")
+```
+
+### Validation & Testing
+
+Validate implementation correctness and performance:
+
+```python
+# Validate implementation correctness
+is_valid = freqprob.quick_validate_method(
+    freqprob.Laplace, test_distribution, bins=1000
+)
+
+# Comprehensive validation suite
+validator = freqprob.ValidationSuite()
+results = validator.run_comprehensive_validation(
+    method_classes=[freqprob.MLE, freqprob.Laplace, freqprob.ELE],
+    test_distributions=[test_dist1, test_dist2]
+)
+
+# Performance benchmarking
+performance_metrics = freqprob.profile_method_performance(
+    freqprob.KneserNey, test_distribution
+)
+print(f"Creation time: {performance_metrics.duration_seconds:.4f}s")
+```
+
+### High-Performance Operations
+
+**Vectorized Processing:**
+```python
+# Vectorized batch processing
+vectorized = freqprob.VectorizedScorer(laplace)
+words = ['cat', 'dog', 'bird', 'fish'] * 1000
+scores = vectorized.score_batch(words)  # Fast batch scoring
+
+# Performance comparison
+import time
+start = time.time()
+individual_scores = [laplace(word) for word in words]
+individual_time = time.time() - start
+
+start = time.time()
+batch_scores = vectorized.score_batch(words)
+batch_time = time.time() - start
+
+print(f"Individual: {individual_time:.4f}s")
+print(f"Vectorized: {batch_time:.4f}s")
+print(f"Speedup: {individual_time/batch_time:.2f}x")
+```
+
+**Model Comparison:**
+```python
+# Compare multiple models efficiently
+models = {
+    'laplace': freqprob.Laplace(word_counts, bins=10000),
+    'kneser_ney': freqprob.KneserNey(bigrams),
+    'simple_gt': freqprob.SimpleGoodTuring(word_counts)
+}
+
+# Comprehensive model evaluation
+test_data = ['cat', 'dog', 'bird'] * 100
+comparison = freqprob.model_comparison(models, test_data)
+
+for model_name, metrics in comparison.items():
+    print(f"{model_name}:")
+    print(f"  Perplexity: {metrics['perplexity']:.2f}")
+    print(f"  Cross-entropy: {metrics['cross_entropy']:.4f}")
+```
+
 This comprehensive user guide provides both theoretical understanding and practical implementation guidance for using FreqProb effectively across a wide range of applications.

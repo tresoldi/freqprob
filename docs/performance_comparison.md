@@ -26,6 +26,17 @@ FreqProb implements various smoothing techniques, each with different computatio
 
 ## Performance Results
 
+### Quick Reference Table
+
+| Method | Creation Time | Memory Usage | Query Speed | Best For |
+|--------|---------------|--------------|-------------|----------|
+| MLE | Fastest | Minimal | Fastest | Large datasets, no smoothing needed |
+| Laplace | Very Fast | Low | Very Fast | General purpose, reliable baseline |
+| Kneser-Ney | Moderate | Medium | Fast | N-gram language models |
+| Simple Good-Turing | Slow | Medium | Fast | High accuracy, sufficient data |
+
+*Benchmarks on 10K vocabulary, modern hardware. See detailed results below for comprehensive analysis.*
+
 ### Model Creation Time
 
 Creation time measures how long it takes to initialize and train each smoothing method.
@@ -220,9 +231,34 @@ Laplace ●     │     ● Interpolated
 3. **Apply compression**: When memory is more critical than speed
 4. **Monitor usage**: Profile to identify bottlenecks
 
-## Benchmark Script Usage
+## Running Benchmarks
 
-Run comprehensive benchmarks:
+FreqProb provides a comprehensive benchmarking suite to evaluate the speed, memory usage, and accuracy of all smoothing methods. You can run benchmarks using Hatch or directly with Python:
+
+### Using Hatch (recommended)
+
+```bash
+hatch run bench-all
+```
+
+#### Options:
+- `--quick` : Run a fast subset of benchmarks (suitable for CI/testing)
+- `--plots` : Attempt to generate plots (requires matplotlib)
+
+Example:
+```bash
+hatch run bench-all --quick --plots
+```
+
+### Direct Python invocation
+
+```bash
+python scripts/run_benchmarks.py --quick --plots
+```
+
+### Legacy benchmark script (docs directory)
+
+For detailed analysis or custom benchmarks:
 ```bash
 cd docs/
 python benchmarks.py --output benchmark_results --format all
@@ -232,6 +268,13 @@ Quick benchmark for testing:
 ```bash
 python benchmarks.py --quick --output quick_results --format json
 ```
+
+### Results
+
+Results are saved in a timestamped directory (e.g., `benchmark_results_YYYYMMDD_HHMMSS`).
+Summary and detailed reports are generated for each run.
+
+> **Note:** The previous shell script (`run_benchmarks.sh`) is now replaced by this Python-based workflow for better cross-platform support and integration.
 
 ## Interpreting Results
 
