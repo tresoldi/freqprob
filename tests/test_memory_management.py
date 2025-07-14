@@ -485,9 +485,11 @@ class TestMemoryProfiling:
 
         # Profile an operation
         with profiler.profile_operation("test_operation"):
-            # Create some objects to use memory
-            large_list = [i**2 for i in range(10000)]
+            # Create some objects to use memory and perform computation
+            large_list = [i**2 for i in range(50000)]  # Larger list
+            sum_result = sum(large_list)  # Force computation
             del large_list
+            _ = sum_result  # Use the result
 
         # Check metrics were recorded
         metrics = profiler.get_latest_metrics()

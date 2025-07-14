@@ -176,6 +176,9 @@ class MemoryProfiler:
     def profile_operation(self, operation_name: str) -> Iterator[None]:
         """Context manager for profiling an operation.
 
+        Uses time.perf_counter() for high-precision timing measurements,
+        ensuring accurate execution time tracking even for fast operations.
+
         Parameters
         ----------
         operation_name : str
@@ -191,13 +194,13 @@ class MemoryProfiler:
 
         # Take before snapshot
         memory_before = self.take_snapshot()
-        start_time = time.time()
+        start_time = time.perf_counter()
 
         try:
             yield
         finally:
             # Take after snapshot
-            end_time = time.time()
+            end_time = time.perf_counter()
             memory_after = self.take_snapshot()
 
             # Get peak memory if available
