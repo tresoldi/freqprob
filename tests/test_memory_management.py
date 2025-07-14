@@ -2,6 +2,7 @@
 
 import os
 import tempfile
+from typing import TYPE_CHECKING
 
 from freqprob import (
     CompressedFrequencyDistribution,
@@ -18,6 +19,10 @@ from freqprob import (
     create_sparse_distribution,
 )
 from freqprob.profiling import HAS_PSUTIL, get_object_memory_usage, profile_memory_usage
+
+if TYPE_CHECKING:
+    from freqprob.base import Element
+    from freqprob.streaming import IncrementalScoringMethod
 
 # mypy: disable-error-code=arg-type
 
@@ -48,7 +53,7 @@ class TestStreamingFrequencyDistribution:
         """Test batch update functionality."""
         stream_dist = StreamingFrequencyDistribution()
 
-        elements = ["word1", "word2", "word1", "word3"]
+        elements: list[Element] = ["word1", "word2", "word1", "word3"]
         stream_dist.update_batch(elements)
 
         assert stream_dist.get_count("word1") == 2
@@ -57,9 +62,9 @@ class TestStreamingFrequencyDistribution:
         assert stream_dist.get_total_count() == 4
 
         # Test with custom counts
-        elements = ["word4", "word5"]
+        elements2: list[Element] = ["word4", "word5"]
         counts = [10, 20]
-        stream_dist.update_batch(elements, counts)
+        stream_dist.update_batch(elements2, counts)
 
         assert stream_dist.get_count("word4") == 10
         assert stream_dist.get_count("word5") == 20
@@ -121,7 +126,7 @@ class TestStreamingFrequencyDistribution:
         """Test statistics gathering."""
         stream_dist = StreamingFrequencyDistribution(max_vocabulary_size=100)
 
-        elements = ["a", "b", "c", "a", "b", "a"]
+        elements: list[Element] = ["a", "b", "c", "a", "b", "a"]
         stream_dist.update_batch(elements)
 
         stats = stream_dist.get_statistics()
@@ -137,7 +142,7 @@ class TestStreamingFrequencyDistribution:
         """Test dictionary-like interface."""
         stream_dist = StreamingFrequencyDistribution()
 
-        elements = ["a", "b", "a", "c"]
+        elements: list[Element] = ["a", "b", "a", "c"]
         stream_dist.update_batch(elements)
 
         # Test dict conversion
@@ -163,7 +168,7 @@ class TestStreamingScoringMethods:
 
     def test_streaming_mle_basic(self) -> None:
         """Test basic StreamingMLE functionality."""
-        initial_data = {"word1": 3, "word2": 2, "word3": 1}
+        initial_data: dict[Element, int] = {"word1": 3, "word2": 2, "word3": 1}
         streaming_mle = StreamingMLE(initial_data, logprob=False)
 
         # Test initial probabilities
@@ -181,7 +186,7 @@ class TestStreamingScoringMethods:
 
     def test_streaming_mle_with_unobs_prob(self) -> None:
         """Test StreamingMLE with unobserved probability."""
-        initial_data = {"word1": 4, "word2": 1}
+        initial_data: dict[Element, int] = {"word1": 4, "word2": 1}
         streaming_mle = StreamingMLE(initial_data, unobs_prob=0.1, logprob=False)
 
         # Observed elements should have reduced probability
@@ -194,7 +199,7 @@ class TestStreamingScoringMethods:
 
     def test_streaming_laplace(self) -> None:
         """Test StreamingLaplace functionality."""
-        initial_data = {"word1": 2, "word2": 1}
+        initial_data: dict[Element, int] = {"word1": 2, "word2": 1}
         streaming_laplace = StreamingLaplace(initial_data, logprob=False)
 
         # Test Laplace smoothing: (count + 1) / (total + vocab_size)
@@ -217,7 +222,7 @@ class TestStreamingScoringMethods:
 
     def test_streaming_statistics(self) -> None:
         """Test streaming method statistics."""
-        initial_data = {"a": 1, "b": 2}
+        initial_data: dict[Element, int] = {"a": 1, "b": 2}
         streaming_mle = StreamingMLE(initial_data, max_vocabulary_size=10)
 
         # Test initial state (should be 0 since no updates yet)
@@ -239,7 +244,7 @@ class TestStreamingScoringMethods:
 
     def test_save_load_state(self) -> None:
         """Test saving and loading streaming scorer state."""
-        initial_data = {"word1": 5, "word2": 3}
+        initial_data: dict[Element, int] = {"word1": 5, "word2": 3}
         streaming_mle = StreamingMLE(initial_data, logprob=False)
 
         # Update the scorer
@@ -270,7 +275,7 @@ class TestStreamingDataProcessor:
 
     def test_basic_processing(self) -> None:
         """Test basic data processing functionality."""
-        methods = {
+        methods: dict[str, IncrementalScoringMethod] = {
             "mle": StreamingMLE(max_vocabulary_size=100, logprob=False),
             "laplace": StreamingLaplace(max_vocabulary_size=100, logprob=False),
         }
@@ -292,7 +297,7 @@ class TestStreamingDataProcessor:
 
     def test_text_stream_processing(self) -> None:
         """Test text stream processing."""
-        methods = {"mle": StreamingMLE(logprob=False)}
+        methods: dict[str, IncrementalScoringMethod] = {"mle": StreamingMLE(logprob=False)}
         processor = StreamingDataProcessor(methods, batch_size=2)
 
         # Process text stream
@@ -306,7 +311,10 @@ class TestStreamingDataProcessor:
 
     def test_processor_statistics(self) -> None:
         """Test processor statistics gathering."""
-        methods = {"mle": StreamingMLE(), "laplace": StreamingLaplace()}
+        methods: dict[str, IncrementalScoringMethod] = {
+            "mle": StreamingMLE(),
+            "laplace": StreamingLaplace(),
+        }
         processor = StreamingDataProcessor(methods)
 
         # Process some data
@@ -325,7 +333,7 @@ class TestMemoryEfficientRepresentations:
 
     def test_compressed_frequency_distribution(self) -> None:
         """Test compressed frequency distribution."""
-        original_data = {"word1": 1000, "word2": 500, "word3": 100, "word4": 1}
+        original_data: dict[Element, int] = {"word1": 1000, "word2": 500, "word3": 100, "word4": 1}
 
         # Test without quantization
         compressed = CompressedFrequencyDistribution()
@@ -345,7 +353,7 @@ class TestMemoryEfficientRepresentations:
 
     def test_compressed_with_quantization(self) -> None:
         """Test compressed distribution with quantization."""
-        original_data = {"word1": 1000, "word2": 500, "word3": 100}
+        original_data: dict[Element, int] = {"word1": 1000, "word2": 500, "word3": 100}
 
         # Use quantization with few levels for testing
         compressed = CompressedFrequencyDistribution(quantization_levels=4)
@@ -366,7 +374,7 @@ class TestMemoryEfficientRepresentations:
 
     def test_compression_serialization(self) -> None:
         """Test compression and serialization."""
-        original_data = {"a": 100, "b": 50, "c": 25}
+        original_data: dict[Element, int] = {"a": 100, "b": 50, "c": 25}
 
         compressed = CompressedFrequencyDistribution(use_compression=True)
         compressed.update(original_data)
@@ -389,7 +397,7 @@ class TestMemoryEfficientRepresentations:
     def test_sparse_frequency_distribution(self) -> None:
         """Test sparse frequency distribution."""
         # Create data with many zero counts (simulated by not including them)
-        sparse_data = {"rare1": 1, "rare2": 2, "common": 1000}
+        sparse_data: dict[Element, int] = {"rare1": 1, "rare2": 2, "common": 1000}
 
         sparse = SparseFrequencyDistribution()
         sparse.update(sparse_data)
@@ -433,7 +441,7 @@ class TestMemoryEfficientRepresentations:
         prob_table = QuantizedProbabilityTable(num_quantization_levels=256)
 
         # Set probabilities
-        probs = {"word1": 0.5, "word2": 0.3, "word3": 0.2}
+        probs: dict[Element, float] = {"word1": 0.5, "word2": 0.3, "word3": 0.2}
         prob_table.set_probabilities(probs)
 
         # Check approximate preservation (with some tolerance for quantization error)
@@ -453,7 +461,7 @@ class TestMemoryEfficientRepresentations:
 
     def test_factory_functions(self) -> None:
         """Test factory functions for creating efficient representations."""
-        original_data = {"a": 100, "b": 50, "c": 1}
+        original_data: dict[Element, int] = {"a": 100, "b": 50, "c": 1}
 
         # Test compressed creation
         compressed = create_compressed_distribution(original_data)
@@ -525,7 +533,7 @@ class TestMemoryProfiling:
         analyzer = DistributionMemoryAnalyzer()
 
         # Create test distribution
-        freqdist = {f"word_{i}": max(1, 100 - i) for i in range(50)}
+        freqdist: dict[Element, int] = {f"word_{i}": max(1, 100 - i) for i in range(50)}
 
         # Analyze memory usage
         original_memory = analyzer.measure_distribution_memory(freqdist)
@@ -607,7 +615,7 @@ class TestMemoryManagementIntegration:
     def test_memory_efficient_scoring_comparison(self) -> None:
         """Test comparing memory efficiency of different scoring approaches."""
         # Create test data
-        large_vocab = {f"word_{i}": max(1, 1000 - i) for i in range(1000)}
+        large_vocab: dict[Element, int] = {f"word_{i}": max(1, 1000 - i) for i in range(1000)}
 
         # Test regular MLE
         from freqprob import MLE
@@ -640,7 +648,7 @@ class TestMemoryManagementIntegration:
         profiler = MemoryProfiler()
 
         # Create test data
-        test_data = {f"item_{i}": i + 1 for i in range(1000)}
+        test_data: dict[Element, int] = {f"item_{i}": i + 1 for i in range(1000)}
 
         # Profile compressed distribution creation
         with profiler.profile_operation("create_compressed"):
@@ -661,7 +669,9 @@ class TestMemoryManagementIntegration:
     def test_end_to_end_memory_efficiency(self) -> None:
         """Test end-to-end memory efficiency workflow."""
         # Start with large vocabulary
-        large_freqdist = {f"term_{i}": max(1, 10000 - i * 10) for i in range(2000)}
+        large_freqdist: dict[Element, int] = {
+            f"term_{i}": max(1, 10000 - i * 10) for i in range(2000)
+        }
 
         # Create memory analyzer
         analyzer = DistributionMemoryAnalyzer()
@@ -684,7 +694,7 @@ class TestMemoryManagementIntegration:
         assert all(savings[method]["compression_ratio"] > 0 for method in savings)
 
         # Create streaming processor for efficient updates
-        methods = {
+        methods: dict[str, IncrementalScoringMethod] = {
             "streaming_mle": StreamingMLE(large_freqdist, max_vocabulary_size=1000),
             "streaming_laplace": StreamingLaplace(large_freqdist, max_vocabulary_size=1000),
         }
