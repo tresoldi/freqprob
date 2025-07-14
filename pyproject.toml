@@ -321,6 +321,7 @@ test-property = "pytest tests/test_property_based.py -v {args}"
 validate = "python scripts/validation_report.py --output-dir validation_results {args}"
 validate-quick = "python scripts/validation_report.py --quick --output-dir quick_validation {args}"
 bench = "python docs/benchmarks.py --quick {args}"
+bench-all = "python scripts/run_benchmarks.py {args}"
 
 [tool.hatch.envs.lint]
 detached = true
