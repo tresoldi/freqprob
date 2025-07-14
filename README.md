@@ -163,91 +163,52 @@ smoothed_dist = freqprob.ELE(observed_frequencies, bins=total_categories)
 
 ## 📚 Documentation & Learning
 
-- **[User Guide](https://github.com/tresoldi/freqprob/blob/main/docs/user_guide.md)**: Mathematical foundations and usage patterns
-- **[Interactive Tutorials](https://github.com/tresoldi/freqprob/tree/main/docs)**: Jupyter notebooks for hands-on learning
-- **[API Reference](https://github.com/tresoldi/freqprob/blob/main/docs/api_reference.md)**: Complete function and class documentation
-- **[Performance Guide](https://github.com/tresoldi/freqprob/blob/main/docs/performance_comparison.md)**: Optimization tips and benchmarks
-
-## ⚡ Performance Comparison
-
-| Method | Creation Time | Memory Usage | Query Speed | Best For |
-|--------|---------------|--------------|-------------|----------|
-| MLE | Fastest | Minimal | Fastest | Large datasets, no smoothing needed |
-| Laplace | Very Fast | Low | Very Fast | General purpose, reliable baseline |
-| Kneser-Ney | Moderate | Medium | Fast | N-gram language models |
-| Simple Good-Turing | Slow | Medium | Fast | High accuracy, sufficient data |
-
-*Benchmarks on 10K vocabulary, modern hardware. See [performance guide](https://github.com/tresoldi/freqprob/blob/main/docs/performance_comparison.md) for details.*
-
-## 🛠️ Advanced Features
-
-### **Memory Optimization**
-```python
-# Compressed storage for large vocabularies
-large_dist = {f'word_{i}': count for i, count in enumerate(counts)}
-compressed = freqprob.create_compressed_distribution(large_dist)
-
-# Sparse representation for sparse data
-sparse_dist = freqprob.create_sparse_distribution(sparse_counts)
-```
-
-### **Performance Profiling**
-```python
-# Built-in performance analysis
-profiler = freqprob.PerformanceProfiler()
-with profiler.profile_operation("model_creation"):
-    model = freqprob.SimpleGoodTuring(large_distribution)
-
-metrics = profiler.get_latest_metrics()
-print(f"Memory used: {metrics.memory_delta_mb:.2f} MB")
-```
-
-### **Validation & Testing**
-```python
-# Validate implementation correctness
-is_valid = freqprob.quick_validate_method(
-    freqprob.Laplace, test_distribution, bins=1000
-)
+- **[User Guide](docs/user_guide.md)**: Mathematical foundations and usage patterns
+- **[Interactive Tutorials](docs/)**: Jupyter notebooks for hands-on learning
+- **[API Reference](docs/api_reference.md)**: Complete function and class documentation
+- **[Performance Guide](docs/performance_comparison.md)**: Optimization tips and benchmarks
+- **[Development Guide](docs/development.md)**: Contributing and development setup
 
 ## 🏁 Performance Benchmarking
 
-FreqProb provides a comprehensive benchmarking suite to evaluate the speed, memory usage, and accuracy of all smoothing methods. You can run benchmarks using Hatch or directly with Python:
+FreqProb provides a comprehensive benchmarking suite to evaluate the speed, memory usage, and accuracy of all smoothing methods.
 
-### Using Hatch (recommended)
-
-```bash
-hatch run bench-all
-```
-
-#### Options:
-- `--quick` : Run a fast subset of benchmarks (suitable for CI/testing)
-- `--plots` : Attempt to generate plots (requires matplotlib)
-
-Example:
-```bash
-hatch run bench-all --quick --plots
-```
-
-### Direct Python invocation
+### Quick Benchmark
 
 ```bash
-python scripts/run_benchmarks.py --quick --plots
+# Using Hatch (recommended)
+hatch run bench-all --quick
+
+# Direct Python invocation
+python scripts/run_benchmarks.py --quick
 ```
 
-Results are saved in a timestamped directory (e.g., `benchmark_results_YYYYMMDD_HHMMSS`).
-Summary and detailed reports are generated for each run.
+### Detailed Analysis
 
-> **Note:** The previous shell script (`run_benchmarks.sh`) is now replaced by this Python-based workflow for better cross-platform support and integration.
+```bash
+# Full benchmarks with plots
+hatch run bench-all --plots
+
+# Custom benchmarks
+python docs/benchmarks.py --output results --format all
 ```
 
+Results are saved in timestamped directories with comprehensive analysis reports.
+
+*See the [Performance Guide](docs/performance_comparison.md) for detailed comparisons and optimization tips.*
+
+## 🤝 Contributing & Development
+
+We welcome contributions! For detailed developer instructions—including environment setup, pre-commit hooks, running the full CI suite locally, making releases, troubleshooting, and best practices—please see our [Development Guide](docs/development.md).
+
+### Quick Development Setup
+
+```bash
 git clone https://github.com/tresoldi/freqprob.git
 cd freqprob
 pip install hatch
 hatch run test  # Run test suite
-
-## 🤝 Contributing & Development
-
-We welcome contributions! For all developer instructions—including environment setup, pre-commit hooks, running the full CI suite locally, making releases, troubleshooting, and best practices—please see our [Development Guide](https://github.com/tresoldi/freqprob/blob/main/docs/development.md).
+```
 
 ## 📜 License
 
