@@ -476,7 +476,11 @@ class TestAdvancedStatisticalProperties:
     def test_interpolated_smoothing_weights(self) -> None:
         """Test interpolated smoothing weight properties."""
         high_order: FrequencyDistribution = {("a", "b", "c"): 10, ("d", "e", "f"): 5}
-        low_order: FrequencyDistribution = {("b", "c"): 20, ("e", "f"): 15, ("x", "y"): 10}
+        low_order: FrequencyDistribution = {
+            ("b", "c"): 20,
+            ("e", "f"): 15,
+            ("x", "y"): 10,
+        }
 
         for lambda_weight in [0.1, 0.3, 0.5, 0.7, 0.9]:
             interpolated = freqprob.InterpolatedSmoothing(
@@ -568,7 +572,7 @@ class TestAdvancedStatisticalProperties:
             individual_scores = [method(word) for word in test_words]
 
             # Batch scores
-            batch_scores = vectorized.score_batch(test_words)  # type: ignore[arg-type]
+            batch_scores = vectorized.score_batch(test_words)
 
             # Should be identical
             for ind_score, batch_score in zip(individual_scores, batch_scores, strict=False):

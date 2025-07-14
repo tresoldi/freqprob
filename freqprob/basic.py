@@ -120,7 +120,10 @@ class Uniform(ScoringMethod):
     __slots__ = ()
 
     def __init__(
-        self, freqdist: FrequencyDistribution, unobs_prob: Probability = 0.0, logprob: bool = True
+        self,
+        freqdist: FrequencyDistribution,
+        unobs_prob: Probability = 0.0,
+        logprob: bool = True,
     ) -> None:
         """Initialize Uniform distribution."""
         config = UniformConfig(unobs_prob=unobs_prob, logprob=logprob)
@@ -330,7 +333,10 @@ class MLE(ScoringMethod):
     __slots__ = ()
 
     def __init__(
-        self, freqdist: FrequencyDistribution, unobs_prob: Probability = 0.0, logprob: bool = True
+        self,
+        freqdist: FrequencyDistribution,
+        unobs_prob: Probability = 0.0,
+        logprob: bool = True,
     ) -> None:
         """Initialize MLE distribution."""
         config = MLEConfig(unobs_prob=unobs_prob, logprob=logprob)

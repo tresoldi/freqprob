@@ -19,7 +19,11 @@ from freqprob import (
 )
 from freqprob.cache import ComputationCache, MemoizedProperty
 from freqprob.lazy import LazyLaplaceComputer, LazyMLEComputer
-from freqprob.vectorized import elements_to_numpy, normalize_scores, scores_to_probabilities
+from freqprob.vectorized import (
+    elements_to_numpy,
+    normalize_scores,
+    scores_to_probabilities,
+)
 
 # mypy: disable-error-code=arg-type
 

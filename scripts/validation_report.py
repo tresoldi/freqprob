@@ -211,7 +211,11 @@ class ValidationReportGenerator:
         self.log("  Benchmarking creation scaling...")
         vocab_sizes = [10, 50, 100, 500] if HAS_NUMPY else [10, 50]
 
-        methods_to_benchmark: list[type] = [freqprob.MLE, freqprob.Laplace, freqprob.ELE]
+        methods_to_benchmark: list[type] = [
+            freqprob.MLE,
+            freqprob.Laplace,
+            freqprob.ELE,
+        ]
 
         scaling_results = self.benchmarker.benchmark_creation_scaling(
             methods_to_benchmark, vocab_sizes, bins=1000
@@ -302,7 +306,7 @@ class ValidationReportGenerator:
             summary["validation_overview"]["numerical_stability"] = {  # type: ignore[index]
                 "total_tests": stability_total,
                 "passed_tests": stability_passed,
-                "success_rate": stability_passed / stability_total if stability_total > 0 else 0,
+                "success_rate": (stability_passed / stability_total if stability_total > 0 else 0),
             }
 
         if "statistical_correctness" in results:
@@ -325,7 +329,8 @@ class ValidationReportGenerator:
 
             if "method_comparison" in perf_data:
                 fastest_method = min(
-                    perf_data["method_comparison"].items(), key=lambda x: x[1]["duration_seconds"]
+                    perf_data["method_comparison"].items(),
+                    key=lambda x: x[1]["duration_seconds"],
                 )
 
                 summary["performance_overview"]["fastest_method"] = {  # type: ignore[index]
@@ -535,7 +540,10 @@ class ValidationReportGenerator:
 
         except Exception as e:
             self.log(f"Error during validation: {e}")
-            self.report_data["error"] = {"message": str(e), "traceback": traceback.format_exc()}
+            self.report_data["error"] = {
+                "message": str(e),
+                "traceback": traceback.format_exc(),
+            }
             return self.report_data
 
 

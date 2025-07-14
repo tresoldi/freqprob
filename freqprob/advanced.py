@@ -112,7 +112,10 @@ class WittenBell(ScoringMethod):
     __slots__ = ()
 
     def __init__(
-        self, freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
+        self,
+        freqdist: FrequencyDistribution,
+        bins: int | None = None,
+        logprob: bool = True,
     ) -> None:
         """Initialize Witten-Bell smoothing."""
         config = WittenBellConfig(bins=bins, logprob=logprob)
@@ -291,7 +294,10 @@ class SimpleGoodTuring(ScoringMethod):
     ) -> None:
         """Initialize Simple Good-Turing smoothing."""
         config = SimpleGoodTuringConfig(
-            p_value=p_value, default_p0=default_p0, logprob=logprob, allow_fail=allow_fail
+            p_value=p_value,
+            default_p0=default_p0,
+            logprob=logprob,
+            allow_fail=allow_fail,
         )
         super().__init__(config)
         self.name = "Simple Good-Turing"

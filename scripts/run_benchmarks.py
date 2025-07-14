@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
-"""
-FreqProb Benchmark Runner (Python replacement for run_benchmarks.sh)
-"""
+"""FreqProb Benchmark Runner (Python replacement for run_benchmarks.sh)."""
+
 import argparse
-import os
-import sys
-import subprocess
 import datetime
-import shutil
 import json
+import os
+import shutil
+import subprocess
+import sys
 
 
 def check_python():
+    """Check if Python 3 is available."""
     if not shutil.which("python3"):
         print("Error: Python 3 is required but not found", file=sys.stderr)
         sys.exit(1)
 
 
 def check_freqprob():
+    """Check if FreqProb is available."""
     try:
         import freqprob  # noqa: F401
     except ImportError:
@@ -27,10 +28,14 @@ def check_freqprob():
 
 
 def run_benchmark(name, args, output_dir):
+    """Run a specific benchmark configuration."""
     output_subdir = os.path.join(output_dir, name)
     os.makedirs(output_subdir, exist_ok=True)
-    cmd = [sys.executable, os.path.join(os.path.dirname(__file__), "..", "..", "docs", "benchmarks.py")]
-    cmd += args + ["--output", output_subdir]
+    cmd = [
+        sys.executable,
+        os.path.join(os.path.dirname(__file__), "..", "..", "docs", "benchmarks.py"),
+    ]
+    cmd = [*cmd, *args, "--output", output_subdir]
     print(f"Running {name} benchmark...")
     print(f"Command: {' '.join(cmd)}")
     try:
@@ -44,8 +49,11 @@ def run_benchmark(name, args, output_dir):
 
 
 def main():
+    """Main benchmark runner function."""
     parser = argparse.ArgumentParser(description="FreqProb Benchmark Runner (Python)")
-    parser.add_argument("--quick", action="store_true", help="Run quick benchmarks (fewer datasets)")
+    parser.add_argument(
+        "--quick", action="store_true", help="Run quick benchmarks (fewer datasets)"
+    )
     parser.add_argument("--plots", action="store_true", help="Generate plots (requires matplotlib)")
     args = parser.parse_args()
 
@@ -61,11 +69,14 @@ def main():
         print("Running quick benchmarks (suitable for CI/testing)...")
         run_benchmark("quick", ["--quick", "--format", "all"], output_dir)
     else:
-        print("Running comprehensive benchmarks...\nThis may take several minutes depending on your system.\n")
+        print(
+            "Running comprehensive benchmarks...\nThis may take several minutes depending on your system.\n"
+        )
         run_benchmark("comprehensive", ["--format", "all"], output_dir)
         # Memory-focused benchmark (if psutil available)
         try:
             import psutil  # noqa: F401
+
             print("✓ psutil available - including memory benchmarks")
         except ImportError:
             print("⚠ psutil not available - memory benchmarks will be limited")
@@ -80,11 +91,14 @@ def main():
         f.write(f"- Python: {sys.version.split()[0]}\n")
         try:
             import freqprob
+
             version = getattr(freqprob, "__version__", "dev")
         except Exception:
             version = "dev"
         f.write(f"- FreqProb: {version}\n\n")
-        f.write(f"Benchmark configuration:\n- Quick mode: {args.quick}\n- Output directory: {output_dir}\n\n")
+        f.write(
+            f"Benchmark configuration:\n- Quick mode: {args.quick}\n- Output directory: {output_dir}\n\n"
+        )
         f.write("Files generated:\n")
         for root, _, files in os.walk(output_dir):
             for file in files:
@@ -95,9 +109,12 @@ def main():
     # Optional: Generate plots (not implemented)
     if args.plots:
         try:
-            import matplotlib.pyplot  # noqa: F401
+            import matplotlib.pyplot as plt  # noqa: F401
+
             print("Generating performance plots...")
-            print("⚠ Plot generation not yet implemented. Results can be visualized by loading the JSON data.")
+            print(
+                "⚠ Plot generation not yet implemented. Results can be visualized by loading the JSON data."
+            )
         except ImportError:
             print("⚠ matplotlib not available - skipping plots")
             print("  Install with: pip install matplotlib seaborn")
@@ -122,10 +139,10 @@ def main():
                     if best:
                         print("  Best performers:")
                         for metric, info in best.items():
-                            method = info.get('method', 'N/A')
-                            value = info.get('value', 'N/A')
+                            method = info.get("method", "N/A")
+                            value = info.get("value", "N/A")
                             print(f"    {metric}: {method} ({value})")
-                    total_failures = failures.get('total_failures', 0)
+                    total_failures = failures.get("total_failures", 0)
                     if total_failures > 0:
                         print(f"  ⚠ {total_failures} method failures detected")
                 except Exception as e:
@@ -138,6 +155,7 @@ def main():
     print("🔍 To run specific benchmarks:")
     print(f"  {sys.executable} docs/benchmarks.py --help\n")
     print("Benchmark suite completed successfully!")
+
 
 if __name__ == "__main__":
     main()

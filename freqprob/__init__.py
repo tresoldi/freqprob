@@ -11,7 +11,12 @@ from .advanced import CertaintyDegree, SimpleGoodTuring, WittenBell
 # Import from local modules
 from .basic import MLE, Random, Uniform
 from .cache import clear_all_caches, get_cache_stats
-from .lazy import LazyBatchScorer, LazyScoringMethod, create_lazy_laplace, create_lazy_mle
+from .lazy import (
+    LazyBatchScorer,
+    LazyScoringMethod,
+    create_lazy_laplace,
+    create_lazy_mle,
+)
 from .lidstone import ELE, Laplace, Lidstone
 from .memory_efficient import (
     CompressedFrequencyDistribution,
@@ -21,7 +26,12 @@ from .memory_efficient import (
     create_sparse_distribution,
 )
 from .profiling import DistributionMemoryAnalyzer, MemoryMonitor, MemoryProfiler
-from .smoothing import BayesianSmoothing, InterpolatedSmoothing, KneserNey, ModifiedKneserNey
+from .smoothing import (
+    BayesianSmoothing,
+    InterpolatedSmoothing,
+    KneserNey,
+    ModifiedKneserNey,
+)
 from .streaming import (
     StreamingDataProcessor,
     StreamingFrequencyDistribution,

@@ -18,7 +18,12 @@ if TYPE_CHECKING:
 
 # Optional imports for reference implementations
 try:
-    from nltk.probability import FreqDist, LaplaceeProbDist, LidstoneProbDist, MLEProbDist
+    from nltk.probability import (
+        FreqDist,
+        LaplaceeProbDist,
+        LidstoneProbDist,
+        MLEProbDist,
+    )
 
     HAS_NLTK = True
 except ImportError:
@@ -316,7 +321,9 @@ class TestScipyRegression:
         # Note: Our alpha parameter is applied per category
         for i, category in enumerate(categories):
             bayesian = freqprob.BayesianSmoothing(
-                cast("FrequencyDistribution", freq_counts), alpha=alpha[i], logprob=False
+                cast("FrequencyDistribution", freq_counts),
+                alpha=alpha[i],
+                logprob=False,
             )
 
             # Test that probabilities are reasonable
@@ -332,7 +339,11 @@ class TestSklearnRegression:
     def test_count_vectorizer_compatibility(self) -> None:
         """Test compatibility with sklearn CountVectorizer."""
         # Sample documents
-        documents = ["the cat sat on the mat", "the dog ran in the park", "cats and dogs are pets"]
+        documents = [
+            "the cat sat on the mat",
+            "the dog ran in the park",
+            "cats and dogs are pets",
+        ]
 
         # Sklearn count vectorization
         vectorizer = CountVectorizer()
@@ -565,10 +576,14 @@ class TestLiteratureRegression:
         methods = {
             "mle": freqprob.MLE(cast("FrequencyDistribution", train_counts), logprob=True),
             "laplace": freqprob.Laplace(
-                cast("FrequencyDistribution", train_counts), bins=train_vocab_size * 2, logprob=True
+                cast("FrequencyDistribution", train_counts),
+                bins=train_vocab_size * 2,
+                logprob=True,
             ),
             "ele": freqprob.ELE(
-                cast("FrequencyDistribution", train_counts), bins=train_vocab_size * 2, logprob=True
+                cast("FrequencyDistribution", train_counts),
+                bins=train_vocab_size * 2,
+                logprob=True,
             ),
         }
 
