@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2025-07-21
+
+### Fixed
+- Type compatibility issues with mypy --strict mode in vectorized.py
+- Pre-commit formatting issues in documentation files
+- Trailing whitespace and end-of-file formatting
+
 ## [0.3.0] - 2025-07-21
 
 ### Added
