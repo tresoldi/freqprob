@@ -223,7 +223,7 @@ If you use FreqProb in academic research, please cite:
   author = {Tresoldi, Tiago},
   title = {FreqProb: A Python library for probability smoothing and frequency-based language modeling},
   url = {https://github.com/tresoldi/freqprob},
-  version = {0.3.0},
+  version = {0.3.1},
   publisher = {Department of Linguistics and Philology, Uppsala University},
   address = {Uppsala},
   year = {2025}
