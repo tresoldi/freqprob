@@ -4,7 +4,7 @@ This module provides numpy-based implementations for batch scoring operations,
 allowing efficient processing of large datasets without Python loops.
 """
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from typing import Any
 
 import numpy as np
@@ -66,12 +66,14 @@ class VectorizedScorer:
             self._prob_array = np.array([])
             self._default_prob = 0.0
 
-    def score_batch(self, elements: list[Element] | np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def score_batch(
+        self, elements: Sequence[Element] | np.ndarray[Any, Any]
+    ) -> np.ndarray[Any, Any]:
         """Score a batch of elements efficiently using vectorized operations.
 
         Parameters
         ----------
-        elements : Union[List[Element], np.ndarray]
+        elements : Union[Sequence[Element], np.ndarray]
             Elements to score
 
         Returns:
@@ -103,7 +105,9 @@ class VectorizedScorer:
 
         return result
 
-    def score_parallel(self, element_batches: list[list[Element]]) -> list[np.ndarray[Any, Any]]:
+    def score_parallel(
+        self, element_batches: Sequence[Sequence[Element]]
+    ) -> list[np.ndarray[Any, Any]]:
         """Score multiple batches in parallel (when available).
 
         Parameters
@@ -120,7 +124,7 @@ class VectorizedScorer:
         # In the future, could use multiprocessing or threading
         return [self.score_batch(batch) for batch in element_batches]
 
-    def score_matrix(self, elements_2d: list[list[Element]]) -> np.ndarray[Any, Any]:
+    def score_matrix(self, elements_2d: Sequence[Sequence[Element]]) -> np.ndarray[Any, Any]:
         """Score a 2D array of elements, returning a matrix of scores.
 
         Parameters
@@ -149,7 +153,7 @@ class VectorizedScorer:
 
         return result
 
-    def top_k_elements(self, k: int) -> tuple[list[Element], np.ndarray[Any, Any]]:
+    def top_k_elements(self, k: int) -> tuple[Sequence[Element], np.ndarray[Any, Any]]:
         """Get the top-k highest scoring elements.
 
         Parameters
@@ -177,7 +181,7 @@ class VectorizedScorer:
         return top_elements, top_scores
 
     def percentile_scores(
-        self, elements: list[Element], percentiles: list[float]
+        self, elements: Sequence[Element], percentiles: list[float]
     ) -> np.ndarray[Any, Any]:
         """Compute percentile ranks for element scores.
 
@@ -264,7 +268,7 @@ class BatchScorer:
             name: VectorizedScorer(scorer) for name, scorer in scorers.items()
         }
 
-    def score_batch(self, elements: list[Element]) -> dict[str, np.ndarray[Any, Any]]:
+    def score_batch(self, elements: Sequence[Element]) -> dict[str, np.ndarray[Any, Any]]:
         """Score elements using all configured scoring methods.
 
         Parameters
@@ -282,7 +286,7 @@ class BatchScorer:
             for name, vectorized in self.vectorized_scorers.items()
         }
 
-    def score_and_compare(self, elements: list[Element]) -> dict[str, Any]:
+    def score_and_compare(self, elements: Sequence[Element]) -> dict[str, Any]:
         """Score elements and provide comparison statistics.
 
         Parameters
@@ -316,7 +320,7 @@ class BatchScorer:
         return result
 
     def benchmark_methods(
-        self, elements: list[Element], num_iterations: int = 100
+        self, elements: Sequence[Element], num_iterations: int = 100
     ) -> dict[str, float]:
         """Benchmark the performance of different scoring methods.
 
