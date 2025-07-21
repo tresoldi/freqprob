@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-01-21
+
+### Added
+- Comprehensive LLM coding agent documentation (LLM_DOCUMENTATION.md)
+- Enhanced CLAUDE.md with detailed development commands and architecture overview
+
+### Fixed
+- Removed unnecessary mypy type ignore comments in validation.py and test files
+
 ## [0.2.1] - 2025-01-14
 
 ### Fixed
