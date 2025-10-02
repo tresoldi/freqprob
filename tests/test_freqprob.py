@@ -117,10 +117,10 @@ def test_uniform_dist_log_obs() -> None:
 def test_uniform_raises() -> None:
     """Test the Uniform distribution raises the correct errors."""
 
-    with pytest.raises(ValueError, match="reserved.*probability.*between"):
+    with pytest.raises(ValueError, match=r"reserved.*probability.*between"):
         Uniform(TEST_OBS1, -1.0, logprob=False)
 
-    with pytest.raises(ValueError, match="reserved.*probability.*between"):
+    with pytest.raises(ValueError, match=r"reserved.*probability.*between"):
         Uniform(TEST_OBS1, 100.0, logprob=False)
 
 
@@ -183,10 +183,10 @@ def test_random_dist_log_obs() -> None:
 def test_random_raises() -> None:
     """Test the Random distribution raises the correct errors."""
 
-    with pytest.raises(ValueError, match="reserved.*probability.*between"):
+    with pytest.raises(ValueError, match=r"reserved.*probability.*between"):
         Random(TEST_OBS1, -1.0, logprob=False)
 
-    with pytest.raises(ValueError, match="reserved.*probability.*between"):
+    with pytest.raises(ValueError, match=r"reserved.*probability.*between"):
         Random(TEST_OBS1, 100.0, logprob=False)
 
 
@@ -249,10 +249,10 @@ def test_mle_dist_log_obs() -> None:
 def test_mle_raises() -> None:
     """Test the MLE distribution raises the correct errors."""
 
-    with pytest.raises(ValueError, match="reserved.*probability.*between"):
+    with pytest.raises(ValueError, match=r"reserved.*probability.*between"):
         MLE(TEST_OBS1, -1.0, logprob=False)
 
-    with pytest.raises(ValueError, match="reserved.*probability.*between"):
+    with pytest.raises(ValueError, match=r"reserved.*probability.*between"):
         MLE(TEST_OBS1, 100.0, logprob=False)
 
 
@@ -331,10 +331,10 @@ def test_lidstone_dist_log_obs() -> None:
 def test_lidstone_raises() -> None:
     """Test the Lidstone distribution raises the correct errors."""
 
-    with pytest.raises(ValueError, match="bins.*positive"):
+    with pytest.raises(ValueError, match=r"bins.*positive"):
         Lidstone(TEST_OBS1, gamma=1.0, bins=0)
 
-    with pytest.raises(ValueError, match="Gamma.*non-negative"):
+    with pytest.raises(ValueError, match=r"Gamma.*non-negative"):
         Lidstone(TEST_OBS1, gamma=-1.0)
 
 
@@ -397,7 +397,7 @@ def test_laplace_dist_log_obs() -> None:
 def test_laplace_raises() -> None:
     """Test the Laplace distribution raises the correct errors."""
 
-    with pytest.raises(ValueError, match="bins.*positive"):
+    with pytest.raises(ValueError, match=r"bins.*positive"):
         Laplace(TEST_OBS1, bins=-1)
 
 
@@ -460,7 +460,7 @@ def test_ele_dist_log_obs() -> None:
 def test_ele_raises() -> None:
     """Test the ELE distribution raises the correct errors."""
 
-    with pytest.raises(ValueError, match="bins.*positive"):
+    with pytest.raises(ValueError, match=r"bins.*positive"):
         ELE(TEST_OBS1, bins=-1)
 
 

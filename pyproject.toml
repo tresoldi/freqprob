@@ -62,24 +62,16 @@ validation = [
 ]
 # Development dependencies
 dev = [
-    # Testing
+    # Testing (required by Makefile)
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "pytest-xdist>=3.0.0",
 
-    # Code quality
-    "black>=23.0.0",
-    "isort>=5.12.0",
+    # Code quality (required by Makefile)
     "ruff>=0.1.0",
     "mypy>=1.5.0",
-    "flake8",
-    "pydocstyle>=6.0.0",
-    "bandit[toml]>=1.7.5",
 
-    # Pre-commit hooks
-    "pre-commit>=3.0.0",
-
-    # Build and release
+    # Build and release (required by Makefile)
     "build>=0.10.0",
     "hatch>=1.7.0",
     "twine>=4.0.0",
@@ -288,7 +280,7 @@ skip_covered = false
 precision = 2
 
 [tool.coverage.html]
-directory = "htmlcov"
+directory = "tests/htmlcov"
 
 [tool.coverage.xml]
 output = "coverage.xml"
@@ -310,7 +302,6 @@ dependencies = [
     "pytest-xdist>=3.0.0",
     "psutil>=5.8.0",  # For memory profiling
     "build>=0.10.0",  # For building packages
-    "pre-commit>=3.0.0",  # For pre-commit hooks
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -338,11 +329,6 @@ clean = [
 install = "pip install -e ."
 install-dev = "pip install -e .[dev]"
 
-# Pre-commit helpers
-precommit = "pre-commit run --all-files"
-precommit-staged = "pre-commit run"
-precommit-update = "pre-commit autoupdate"
-precommit-install = "pre-commit install"
 
 [tool.hatch.envs.lint]
 detached = true
@@ -401,7 +387,6 @@ dependencies = [
     "ruff>=0.1.0",
     "mypy>=1.5.0",
     "bandit[toml]>=1.7.5",
-    "pre-commit>=3.0.0",
     "build>=0.10.0",
     "twine>=4.0.0",
     "psutil>=5.8.0",
