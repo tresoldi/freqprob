@@ -73,13 +73,13 @@ def test_kneser_ney_logprob() -> None:
 
 def test_kneser_ney_discount_validation() -> None:
     """Test that Kneser-Ney validates discount parameter."""
-    with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
+    with pytest.raises(ValueError, match=r"Discount.*between.*0.*1"):
         KneserNey(BIGRAM_DATA, discount=0.0)  # type: ignore[arg-type]  # Invalid: discount must be > 0
 
-    with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
+    with pytest.raises(ValueError, match=r"Discount.*between.*0.*1"):
         KneserNey(BIGRAM_DATA, discount=1.0)  # type: ignore[arg-type]  # Invalid: discount must be < 1
 
-    with pytest.raises(ValueError, match="Discount.*between.*0.*1"):
+    with pytest.raises(ValueError, match=r"Discount.*between.*0.*1"):
         KneserNey(BIGRAM_DATA, discount=1.5)  # type: ignore[arg-type]  # Invalid: discount must be < 1
 
 
@@ -162,10 +162,10 @@ def test_interpolated_smoothing_validation() -> None:
     high_order = {"a": 1}
     low_order = {"b": 1}
 
-    with pytest.raises(ValueError, match="Lambda.*between.*0.*1"):
+    with pytest.raises(ValueError, match=r"Lambda.*between.*0.*1"):
         InterpolatedSmoothing(high_order, low_order, lambda_weight=-0.1)  # type: ignore[arg-type]
 
-    with pytest.raises(ValueError, match="Lambda.*between.*0.*1"):
+    with pytest.raises(ValueError, match=r"Lambda.*between.*0.*1"):
         InterpolatedSmoothing(high_order, low_order, lambda_weight=1.1)  # type: ignore[arg-type]
 
 
@@ -218,10 +218,10 @@ def test_bayesian_smoothing_logprob() -> None:
 
 def test_bayesian_smoothing_validation() -> None:
     """Test that Bayesian smoothing validates alpha parameter."""
-    with pytest.raises(ValueError, match="Alpha.*positive"):
+    with pytest.raises(ValueError, match=r"Alpha.*positive"):
         BayesianSmoothing(SIMPLE_DATA, alpha=0.0)  # type: ignore[arg-type]
 
-    with pytest.raises(ValueError, match="Alpha.*positive"):
+    with pytest.raises(ValueError, match=r"Alpha.*positive"):
         BayesianSmoothing(SIMPLE_DATA, alpha=-1.0)  # type: ignore[arg-type]
 
 

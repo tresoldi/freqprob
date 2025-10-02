@@ -220,7 +220,7 @@ def test_model_comparison() -> None:
         "laplace": Laplace({"a": 2, "b": 1}, logprob=True),
     }
 
-    with pytest.raises(ValueError, match="Model.*must be configured for log probabilities"):
+    with pytest.raises(ValueError, match=r"Model.*must be configured for log probabilities"):
         model_comparison(models_no_log, test_data)
 
 
