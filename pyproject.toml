@@ -1,13 +1,13 @@
 [build-system]
-requires = ["hatchling>=1.13.0"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "freqprob"
 dynamic = ["version"]
 description = "A Python library for scoring observation probabilities from frequency counts, with multiple smoothing methods."
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {text = "MIT"}
 keywords = ["nlp", "smoothing", "frequency", "probability", "language-model"]
 authors = [
     {name = "Tiago Tresoldi", email = "tiago.tresoldi@lingfil.uu.se"},
@@ -73,7 +73,6 @@ dev = [
 
     # Build and release (required by Makefile)
     "build>=0.10.0",
-    "hatch>=1.7.0",
     "twine>=4.0.0",
 
     # Documentation
@@ -92,22 +91,12 @@ Repository = "https://github.com/tresoldi/freqprob.git"
 Issues = "https://github.com/tresoldi/freqprob/issues"
 Changelog = "https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md"
 
-[tool.hatch.version]
-path = "freqprob/__init__.py"
+[tool.setuptools.dynamic]
+version = {attr = "freqprob.__version__"}
 
-[tool.hatch.build.targets.wheel]
-packages = ["freqprob"]
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/freqprob",
-    "/tests",
-    "/docs",
-    "/README.md",
-    "/LICENSE",
-    "/CHANGELOG.md",
-    "/pyproject.toml",
-]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["freqprob*"]
 
 
 
@@ -294,126 +283,3 @@ skips = ["B101", "B601", "B403", "B301", "B404", "B603", "B110", "B311"]  # Skip
 [tool.bandit.assert_used]
 skips = ["*_test.py", "*/test_*.py"]
 
-# Hatch environment configuration
-[tool.hatch.envs.default]
-dependencies = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-xdist>=3.0.0",
-    "psutil>=5.8.0",  # For memory profiling
-    "build>=0.10.0",  # For building packages
-]
-
-[tool.hatch.envs.default.scripts]
-# Testing
-test = "pytest {args:tests}"
-test-cov = "pytest --cov=freqprob --cov-report=xml --cov-report=html --cov-report=term-missing {args:tests}"
-test-fast = "pytest -n auto {args:tests}"
-test-numerical = "pytest tests/test_numerical_stability.py -v {args}"
-test-statistical = "pytest tests/test_statistical_correctness.py -v {args}"
-test-regression = "pytest tests/test_regression_reference.py -v {args}"
-test-property = "pytest tests/test_property_based.py -v {args}"
-
-# Validation and benchmarking
-validate = "python scripts/validation_report.py --output-dir validation_results {args}"
-validate-quick = "python scripts/validation_report.py --quick --output-dir quick_validation {args}"
-bench = "python docs/benchmarks.py --quick {args}"
-bench-all = "python scripts/run_benchmarks.py {args}"
-
-# Build and deployment
-build = "python -m build"
-clean = [
-    "python -c \"import shutil; import os; [shutil.rmtree(p, ignore_errors=True) for p in ['dist', 'build', '*.egg-info', '.coverage', 'htmlcov', '.pytest_cache', '.ruff_cache', '.mypy_cache']]\"",
-    "python -c \"import os; [os.remove(f) for f in ['coverage.xml'] if os.path.exists(f)]\"",
-]
-install = "pip install -e ."
-install-dev = "pip install -e .[dev]"
-
-
-[tool.hatch.envs.lint]
-detached = true
-dependencies = [
-    "ruff>=0.1.0",
-    "mypy>=1.5.0",
-    "bandit[toml]>=1.7.5",
-]
-
-[tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:freqprob tests}"
-style = [
-    "ruff check {args:.}",
-    "ruff format --check {args:.}",
-]
-format = [
-    "ruff check --fix {args:.}",
-    "ruff format {args:.}",
-]
-security = "bandit -r freqprob/"
-all = [
-    "style",
-    "typing",
-    "security",
-]
-
-[tool.hatch.envs.docs]
-dependencies = [
-    "jupyter>=1.0.0",
-    "matplotlib>=3.5.0",
-    "seaborn>=0.11.0",
-    "mkdocs>=1.5.0",
-    "mkdocs-material>=9.0.0",
-    "mkdocstrings[python]>=0.20.0",
-]
-
-[tool.hatch.envs.docs.scripts]
-build = "mkdocs build --clean --strict"
-serve = "mkdocs serve --dev-addr localhost:8000"
-notebooks = "jupyter notebook docs/"
-test-notebooks = [
-    "cd docs && jupyter nbconvert --to notebook --execute tutorial_1_basic_smoothing.ipynb --output test_tutorial_1.ipynb",
-    "cd docs && jupyter nbconvert --to notebook --execute tutorial_2_advanced_methods.ipynb --output test_tutorial_2.ipynb",
-    "cd docs && jupyter nbconvert --to notebook --execute tutorial_3_efficiency_memory.ipynb --output test_tutorial_3.ipynb",
-    "cd docs && jupyter nbconvert --to notebook --execute tutorial_4_real_world_applications.ipynb --output test_tutorial_4.ipynb",
-]
-
-# CI environment for running GitHub Actions locally
-[tool.hatch.envs.ci]
-dependencies = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-xdist>=3.0.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "ruff>=0.1.0",
-    "mypy>=1.5.0",
-    "bandit[toml]>=1.7.5",
-    "build>=0.10.0",
-    "twine>=4.0.0",
-    "psutil>=5.8.0",
-]
-
-[tool.hatch.envs.ci.scripts]
-# Full CI pipeline (mimics GitHub Actions)
-ci-full = [
-    "lint:all",
-    "test-cov",
-    "bench --quick",
-    "docs:build",
-]
-# Quick CI check
-ci-quick = [
-    "lint:style",
-    "test-fast",
-]
-# Release preparation
-release-check = [
-    "clean",
-    "ci-full",
-    "build",
-    "python -c \"import subprocess; subprocess.run(['python', '-m', 'twine', 'check', 'dist/*'], check=True)\"",
-]
-# Version management
-version-patch = "hatch version patch"
-version-minor = "hatch version minor"
-version-major = "hatch version major"
-version-show = "hatch version"
