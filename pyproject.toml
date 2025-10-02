@@ -7,7 +7,7 @@ name = "freqprob"
 dynamic = ["version"]
 description = "A Python library for scoring observation probabilities from frequency counts, with multiple smoothing methods."
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 keywords = ["nlp", "smoothing", "frequency", "probability", "language-model"]
 authors = [
     {name = "Tiago Tresoldi", email = "tiago.tresoldi@lingfil.uu.se"},
@@ -19,7 +19,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
