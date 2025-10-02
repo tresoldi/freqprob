@@ -55,19 +55,23 @@ test-fast: ## Run tests in parallel (faster)
 	@echo "✓ Tests passed!"
 
 bump-version: ## Bump version (TYPE=patch|minor|major), commit, and tag
-	@echo "==> Current version: $$(grep -o "__version__ = \"[^\"]*\"" freqprob/__init__.py | cut -d'"' -f2)"
-	@echo "==> Bumping $(TYPE) version..."
-	@hatch version $(TYPE)
-	@NEW_VERSION=$$(grep -o "__version__ = \"[^\"]*\"" freqprob/__init__.py | cut -d'"' -f2); \
-	echo "==> New version: $$NEW_VERSION"; \
+	@CURRENT=$$(grep -o "__version__ = \"[^\"]*\"" freqprob/__init__.py | cut -d'"' -f2); \
+	echo "==> Current version: $$CURRENT"; \
+	IFS='.' read -r major minor patch <<< "$$CURRENT"; \
+	if [ "$(TYPE)" = "major" ]; then NEW="$$((major + 1)).0.0"; \
+	elif [ "$(TYPE)" = "minor" ]; then NEW="$$major.$$((minor + 1)).0"; \
+	elif [ "$(TYPE)" = "patch" ]; then NEW="$$major.$$minor.$$((patch + 1))"; \
+	else echo "Error: TYPE must be patch, minor, or major"; exit 1; fi; \
+	echo "==> Bumping $(TYPE) version to $$NEW..."; \
+	sed -i "s/__version__ = \"$$CURRENT\"/__version__ = \"$$NEW\"/" freqprob/__init__.py; \
 	echo ""; \
 	echo "⚠️  Please update CHANGELOG.md manually before committing!"; \
 	echo ""; \
 	read -p "Press Enter to commit and tag, or Ctrl+C to cancel..."; \
 	git add freqprob/__init__.py; \
-	git commit -m "chore: bump version to $$NEW_VERSION"; \
-	git tag -a "v$$NEW_VERSION" -m "Release v$$NEW_VERSION"; \
-	echo "✓ Version bumped to $$NEW_VERSION and tagged!"; \
+	git commit -m "chore: bump version to $$NEW"; \
+	git tag -a "v$$NEW" -m "Release v$$NEW"; \
+	echo "✓ Version bumped to $$NEW and tagged!"; \
 	echo ""; \
 	echo "Next steps:"; \
 	echo "  1. Update CHANGELOG.md"; \
@@ -106,7 +110,7 @@ install-dev: ## Install package with development dependencies (includes all Make
 	@echo "Installed tools for Makefile:"
 	@echo "  - pytest, pytest-cov, pytest-xdist (testing)"
 	@echo "  - ruff, mypy (code quality)"
-	@echo "  - hatch, build, twine (build/release)"
+	@echo "  - build, twine (build/release)"
 
 validate: ## Run full validation suite
 	@echo "==> Running validation suite..."
