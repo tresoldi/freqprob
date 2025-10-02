@@ -1,7 +1,7 @@
 # FreqProb Makefile
 # POSIX-compatible development commands
 
-.PHONY: help quality format test test-cov test-fast bump-version build build-release clean install install-dev validate validate-quick bench bench-all
+.PHONY: help quality format test test-cov test-fast bump-version build build-release clean install install-dev validate validate-quick bench bench-all docs docs-clean
 
 # Default target: show help
 .DEFAULT_GOAL := help
@@ -111,6 +111,7 @@ install-dev: ## Install package with development dependencies (includes all Make
 	@echo "  - pytest, pytest-cov, pytest-xdist (testing)"
 	@echo "  - ruff, mypy (code quality)"
 	@echo "  - build, twine (build/release)"
+	@echo "  - nhandu (documentation generation)"
 
 validate: ## Run full validation suite
 	@echo "==> Running validation suite..."
@@ -131,3 +132,16 @@ bench-all: ## Run comprehensive benchmark suite
 	@echo "==> Running comprehensive benchmarks..."
 	$(PYTHON) scripts/run_benchmarks.py
 	@echo "✓ Comprehensive benchmarks complete!"
+
+docs: ## Generate HTML documentation from Nhandu tutorial sources
+	@echo "==> Generating tutorial documentation..."
+	@for f in docs/tutorial_*.py; do \
+		echo "  Generating $$(basename $$f .py).html..."; \
+		nhandu "$$f" -o "docs/$$(basename $$f .py).html"; \
+	done
+	@echo "✓ Documentation generated in docs/"
+
+docs-clean: ## Remove generated HTML documentation
+	@echo "==> Cleaning generated documentation..."
+	rm -f docs/tutorial_*.html
+	@echo "✓ Documentation cleaned!"
