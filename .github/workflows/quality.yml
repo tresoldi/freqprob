@@ -8,7 +8,7 @@ on:
 
 jobs:
   quality:
-    name: Code Quality Checks
+    name: Code Quality & Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +21,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff mypy numpy scipy
+          pip install ruff mypy numpy scipy pytest pytest-cov
+
+      - name: Install package
+        run: pip install -e .
 
       - name: Check formatting with ruff
         run: ruff format --check .
@@ -31,3 +34,6 @@ jobs:
 
       - name: Type check with mypy
         run: mypy freqprob/ tests/
+
+      - name: Run tests
+        run: pytest tests/ --cov=freqprob --cov-report=term-missing --cov-fail-under=80
