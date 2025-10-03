@@ -1,7 +1,6 @@
 # FreqProb
 
 [![CI](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml/badge.svg)](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml)
-[![codecov](https://codecov.io/gh/tresoldi/freqprob/branch/main/graph/badge.svg?token=YOUR_TOKEN_HERE)](https://codecov.io/gh/tresoldi/freqprob)
 [![PyPI version](https://badge.fury.io/py/freqprob.svg)](https://badge.fury.io/py/freqprob)
 [![Python versions](https://img.shields.io/pypi/pyversions/freqprob.svg)](https://pypi.org/project/freqprob/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
