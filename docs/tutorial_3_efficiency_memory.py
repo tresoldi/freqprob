@@ -104,7 +104,6 @@ for i, (name, dataset) in enumerate(datasets.items()):
     plt.grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.show()
 
 #' ## Vectorized Operations for Batch Processing
 #' 
@@ -264,7 +263,6 @@ plt.legend(legend_elements, colors.keys(), loc="center")
 plt.axis("off")
 
 plt.tight_layout()
-plt.show()
 
 # Performance analysis
 print("Method Performance Analysis:")
@@ -673,7 +671,6 @@ axes[1, 1].legend()
 axes[1, 1].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.show()
 
 print("\nKey Observations:")
 print("- Vocabulary size stabilizes at the maximum limit")
@@ -835,7 +832,6 @@ ax2.set_ylabel("Mean Relative Error (%)")
 ax2.grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.show()
 
 # Performance comparison
 print("\nQuery Performance Comparison:")
@@ -1106,7 +1102,6 @@ axes[1, 1].axhline(y=100, color="red", linestyle="--", alpha=0.7, label="Thresho
 axes[1, 1].legend()
 
 plt.tight_layout()
-plt.show()
 
 # Recommendations
 print("\nMemory Optimization Recommendations:")
@@ -1346,7 +1341,6 @@ axes[1, 1].legend()
 axes[1, 1].set_yscale("log")
 
 plt.tight_layout()
-plt.show()
 
 # Best practices summary
 print("\nBEST PRACTICES SUMMARY")

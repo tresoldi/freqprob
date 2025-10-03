@@ -77,7 +77,6 @@ plt.xlabel("Words")
 plt.ylabel("Probability")
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.show()
 
 print(f"\nProbability sum: {sum(probs):.4f}")
 print(f"Problem: P(unknown_word) = {mle('unknown_word'):.4f} (zero probability!)")
@@ -114,7 +113,6 @@ plt.ylabel("Probability")
 plt.xticks(x, observed_words, rotation=45)
 plt.legend()
 plt.tight_layout()
-plt.show()
 
 print(f"\nUnseen word probability (Laplace): {laplace('unknown_word'):.6f}")
 print(f"Unseen word probability (MLE): {mle('unknown_word'):.6f}")
@@ -166,7 +164,6 @@ plt.ylabel("Probability")
 plt.grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.show()
 
 print("\nObservation: As gamma increases, probabilities become more uniform")
 
@@ -205,7 +202,6 @@ plt.legend()
 plt.yscale("log")  # Log scale to see differences better
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.show()
 
 #' ## Model Evaluation with Perplexity
 #' 
@@ -272,7 +268,6 @@ if perplexities:
         )
 
     plt.tight_layout()
-    plt.show()
 
     best_method = min(perplexities.items(), key=lambda x: x[1])
     print(f"\nBest performing method: {best_method[0]} (PP = {best_method[1]:.2f})")
@@ -346,7 +341,6 @@ for bar, value in zip(bars, unseen_probs, strict=False):
     )
 
 plt.tight_layout()
-plt.show()
 
 print("Key Insights:")
 print("- MLE gives zero probability to unseen words (problematic)")

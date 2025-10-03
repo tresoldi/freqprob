@@ -357,7 +357,6 @@ if perplexities:
         )
 
 plt.tight_layout()
-plt.show()
 
 # Text generation example
 print("Text Generation Examples:")
@@ -697,7 +696,6 @@ axes[1, 1].set_xlabel("Confidence (Score Difference)")
 axes[1, 1].set_ylabel("Frequency")
 
 plt.tight_layout()
-plt.show()
 
 print("\nKey Insights:")
 print("- Smoothing methods handle unseen words gracefully")
@@ -1053,7 +1051,6 @@ for i in range(len(doc_labels)):
 plt.colorbar(im, ax=axes[1, 1])
 
 plt.tight_layout()
-plt.show()
 
 print("\nKey Insights:")
 print("- Language model interpolation balances document and collection statistics")
@@ -1402,7 +1399,6 @@ axes[1, 1].set_xlabel("Confidence Score")
 axes[1, 1].set_ylabel("Frequency")
 
 plt.tight_layout()
-plt.show()
 
 print("\nKey Insights:")
 print("- Bayesian smoothing with term frequency weighting performs well")
@@ -1762,7 +1758,6 @@ for bar, eff in zip(bars, effectiveness, strict=False):
     )
 
 plt.tight_layout()
-plt.show()
 
 print("Cross-Domain Applications Summary:")
 print("=" * 35)
