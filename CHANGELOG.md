@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - TBD
+
+### Changed - BREAKING
+
+- **SimpleGoodTuring**: Changed unseen word probability semantics from total mass to per-word probability
+  - Previously: `sgt('unseen')` returned p₀ (total probability mass for ALL unseen words, e.g., ~0.07)
+  - Now: `sgt('unseen')` returns per-word probability (p₀ / estimated_unseen_types, e.g., ~0.00012)
+  - This makes SGT consistent with other smoothing methods and enables meaningful probability arithmetic
+  - **Migration**: Use `sgt.total_unseen_mass` property to access the old p₀ value
+
+### Added
+
+- **SimpleGoodTuring bins parameter**: Controls total vocabulary size for per-word probability calculation
+  - Default heuristic: `bins = V_observed + N₁` (observed vocabulary + singleton count)
+  - Allows explicit control over estimated vocabulary size
+  - Theoretically motivated default provides sensible out-of-box behavior
+- **SimpleGoodTuring.total_unseen_mass property**: Read-only property providing access to p₀ (total unseen mass)
+- **ScoringMethod._total_unseen_mass**: Base class support for methods that track total unseen mass
+
+### Improved
+
+- Tutorial 2: Comprehensive explanation of SGT's per-word vs total mass semantics
+- Tutorial 2: Demonstration of bins parameter effects on unseen probabilities
+- Tutorial 2: Example showing SGT compatibility with perplexity calculation
+- API Reference: Complete documentation of new bins parameter and migration guide
+- Test suite: Added 5 new tests for bins parameter, total_unseen_mass, and perplexity compatibility
+
+### Migration Guide
+
+For users upgrading from v0.3.x:
+
+```python
+# v0.3.x code:
+sgt = SimpleGoodTuring(freqdist)
+p_total_unseen = sgt('unseen_word')  # Returned p₀ ≈ 0.07
+
+# v0.4.0 equivalent:
+sgt = SimpleGoodTuring(freqdist)
+p_per_word = sgt('unseen_word')      # Returns per-word prob ≈ 0.00012
+p_total_unseen = sgt.total_unseen_mass  # Access p₀ ≈ 0.07
+
+# If you need the old behavior (not recommended):
+# The old behavior was mathematically inconsistent. If you truly need it,
+# multiply per-word probability by estimated unseen types:
+estimated_unseen = int(sgt.total_unseen_mass / sgt('unseen_word'))
+p_approx_old = sgt('unseen_word') * estimated_unseen
+```
+
+**Why this change?**
+- **Consistency**: All smoothing methods now return per-word probabilities
+- **Composability**: Probabilities can be meaningfully added/compared: P(word₁) + P(word₂)
+- **Perplexity**: Enables direct use with perplexity and other evaluation metrics
+- **Semantics**: Returns what users actually expect: P(this specific unseen word)
+
 ## [0.3.1] - 2025-07-21
 
 ### Fixed

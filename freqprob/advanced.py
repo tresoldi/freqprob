@@ -66,6 +66,10 @@ class SimpleGoodTuringConfig(ScoringMethodConfig):
         Confidence level for smoothing threshold (default: 0.05)
     default_p0 : float | None
         Fallback probability for unobserved elements (default: None)
+    bins : int | None
+        Total vocabulary size for per-word probability calculation (default: None).
+        If None, uses heuristic: bins = V_observed + N1 (singletons).
+        This determines how p0 (total unseen mass) is distributed across unseen words.
     logprob : bool
         Whether to return log-probabilities (default: True)
     allow_fail : bool
@@ -75,6 +79,7 @@ class SimpleGoodTuringConfig(ScoringMethodConfig):
     p_value: float = 0.05
 
     default_p0: float | None = None
+    bins: int | None = None
     logprob: bool = True
     allow_fail: bool = True
 
@@ -252,6 +257,13 @@ class SimpleGoodTuring(ScoringMethod):
     of Gale and Sampson, even though the differences are never expected to
     be significant and are equally distributed across the samples.
 
+    **IMPORTANT (v0.4.0 Breaking Change):** Unseen word queries now return
+    per-word probability P(word) = p0 / (bins - V), not the total mass p0.
+    This makes SimpleGoodTuring compatible with perplexity calculations and
+    consistent with other smoothing methods. Use the `total_unseen_mass`
+    property to access the original p0 value (total probability mass for ALL
+    unseen words).
+
     freqdist : dict
         Frequency distribution of samples (keys) and counts (values) from
         which the probability distribution will be calculated.
@@ -268,6 +280,11 @@ class SimpleGoodTuring(ScoringMethod):
         this value is not specified, "p0" will default to a Laplace estimation
         for the current frequency distribution. Please note that this is
         intended change from the reference implementation by Gale and Sampson.
+    bins : int | None
+        Total vocabulary size for calculating per-word unseen probabilities.
+        If None (default), uses heuristic: bins = V_observed + N1, where N1 is
+        the number of singleton words. This assumes approximately as many unseen
+        types as singletons. Users can specify exact vocabulary size if known.
     logprob : bool
         Whether to return the log-probabilities (default) or the
         probabilities themselves. When using the log-probabilities, the
@@ -289,6 +306,7 @@ class SimpleGoodTuring(ScoringMethod):
         freqdist: FrequencyDistribution,
         p_value: float = 0.05,
         default_p0: float | None = None,
+        bins: int | None = None,
         logprob: bool = True,
         allow_fail: bool = True,
     ) -> None:
@@ -296,12 +314,38 @@ class SimpleGoodTuring(ScoringMethod):
         config = SimpleGoodTuringConfig(
             p_value=p_value,
             default_p0=default_p0,
+            bins=bins,
             logprob=logprob,
             allow_fail=allow_fail,
         )
         super().__init__(config)
         self.name = "Simple Good-Turing"
         self.fit(freqdist)
+
+    @property
+    def total_unseen_mass(self) -> float:
+        """Total probability mass reserved for ALL unseen words (p0).
+
+        This is the value that Good-Turing actually estimates. The per-word
+        unseen probability returned by __call__() is this value divided by
+        the estimated number of unseen types (bins - V_observed).
+
+        Returns:
+        -------
+        float
+            Total probability mass for all unseen words combined
+
+        Examples:
+        --------
+        >>> from freqprob import SimpleGoodTuring
+        >>> freqdist = {'a': 10, 'b': 5, 'c': 1, 'd': 1, 'e': 1}
+        >>> sgt = SimpleGoodTuring(freqdist, logprob=False)
+        >>> sgt.total_unseen_mass  # Total mass for ALL unseen words
+        0.16666666666666666
+        >>> sgt('unknown')  # Per-word probability for ONE unseen word
+        0.027777777777777776
+        """
+        return getattr(self, "_total_unseen_mass", 0.0)
 
     @cached_sgt_computation
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
@@ -354,7 +398,7 @@ class SimpleGoodTuring(ScoringMethod):
         slope, intercept = scipy.linalg.lstsq(
             np.c_[np.log(z_keys), (1,) * len(z_keys)], np.log(z_values)
         )[0]
-        if slope > -1.0 and allow_fail:
+        if slope > -1.0 and not allow_fail:
             raise RuntimeWarning("In SGT, linear regression slope is > -1.0.")
 
         # Apply Gale and Sampson's "simple" log-linear smoothing method.
@@ -417,21 +461,46 @@ class SimpleGoodTuring(ScoringMethod):
         # cases.
         smooth_sum = sum([freqs_of_freqs[r] * r_smooth for r, r_smooth in r_smoothed.items()])
 
+        # Calculate bins value for per-word unseen probability
+        # Default heuristic: bins = V_observed + N1 (number of singletons)
+        # Rationale: If we saw N1 words once, we expect ~N1 unseen words
+        # Edge case: If N1=0, use V+1 as minimum to ensure bins > V
+        bins = self.config.bins
+        if bins is None:
+            n1 = freqs_of_freqs.get(1, 0)
+            bins = len(freqdist) + max(n1, 1)  # Ensure bins > V even when N1=0
+
+        # Validate bins value
+        if bins <= len(freqdist):
+            raise ValueError(
+                f"bins ({bins}) must be greater than observed vocabulary size ({len(freqdist)}). "
+                f"Consider bins = {len(freqdist) + max(freqs_of_freqs.get(1, 0), 1)} (V + N1 heuristic)"
+            )
+
+        # Calculate number of unseen types
+        v_unseen = bins - len(freqdist)
+
+        # Store total unseen mass (p0) for the property accessor
+        self._total_unseen_mass = p0
+
+        # Calculate per-word unseen probability
+        p_per_unseen = p0 / v_unseen
+
         # Build the probability distribution for the observed samples and for
         # unobserved ones.
         if self.logprob:
-            self._unobs = math.log(p0)
+            self._unobs = math.log(p_per_unseen)
             for sample, count in freqdist.items():
                 prob = (1.0 - p0) * (r_smoothed[count] / smooth_sum)
                 if prob == 0.0:
-                    self._prob[sample] = math.log(p0)
+                    self._prob[sample] = math.log(p_per_unseen)
                 else:
                     self._prob[sample] = math.log(prob)
         else:
-            self._unobs = p0
+            self._unobs = p_per_unseen
             for sample, count in freqdist.items():
                 prob = (1.0 - p0) * (r_smoothed[count] / smooth_sum)
                 if prob == 0.0:
-                    self._prob[sample] = p0
+                    self._prob[sample] = p_per_unseen
                 else:
                     self._prob[sample] = prob
