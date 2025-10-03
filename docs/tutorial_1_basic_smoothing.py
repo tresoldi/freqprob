@@ -11,7 +11,6 @@
 #'
 #' First, let's import the necessary libraries and set up our environment.
 
-# | hide
 from collections import Counter
 
 import matplotlib.pyplot as plt
@@ -25,7 +24,6 @@ plt.style.use("default")
 sns.set_palette("husl")
 
 print(f"FreqProb version: {freqprob.__version__ if hasattr(freqprob, '__version__') else 'dev'}")
-# |
 
 #' ## Creating a Frequency Distribution
 #'

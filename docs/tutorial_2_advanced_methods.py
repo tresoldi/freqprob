@@ -10,7 +10,6 @@
 #'
 #' ## Setup
 
-# | hide
 from collections import Counter, defaultdict
 
 import matplotlib.pyplot as plt
@@ -26,7 +25,6 @@ np.random.seed(42)
 
 print("Advanced Smoothing Methods Tutorial")
 print("===================================")
-# |
 
 #' ## Dataset Preparation
 #'

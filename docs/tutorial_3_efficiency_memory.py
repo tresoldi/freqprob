@@ -11,7 +11,6 @@
 #'
 #' ## Setup
 
-# | hide
 import gc
 import random
 import time
@@ -46,7 +45,6 @@ print("FreqProb Efficiency and Memory Management Tutorial")
 print("=" * 50)
 print(f"NumPy version: {np.__version__}")
 print(f"Current memory usage: {psutil.Process().memory_info().rss / 1024 / 1024:.1f} MB")
-# |
 
 #' ## Creating Large-Scale Data
 #'

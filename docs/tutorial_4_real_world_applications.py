@@ -11,7 +11,6 @@
 #'
 #' ## Setup and Data Preparation
 
-# | hide
 import math
 import random
 import re
@@ -124,7 +123,6 @@ def generate_ngrams(tokens: list[str], n: int) -> list[tuple[str, ...]]:
 print("Text preprocessing utilities ready")
 print("Sample preprocessing:", preprocess_text("Hello, World! This is a test."))
 print("Sample bigrams:", generate_ngrams(["hello", "world", "test"], 2))
-# |
 
 #' ## Application 1: Language Modeling
 #'
