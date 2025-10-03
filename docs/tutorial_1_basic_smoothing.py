@@ -68,7 +68,7 @@ for word in test_words:
 words = list(freqdist.keys())
 probs = [mle(word) for word in words]
 
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(10, 5))
 plt.bar(words, probs)
 plt.title("MLE Probability Distribution")
 plt.xlabel("Words")
@@ -98,7 +98,7 @@ observed_words = list(freqdist.keys())
 mle_probs = [mle(word) for word in observed_words]
 laplace_probs = [laplace(word) for word in observed_words]
 
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(10, 5))
 x = np.arange(len(observed_words))
 width = 0.35
 
@@ -145,7 +145,7 @@ for gamma in gamma_list:
     )
 
 # Plot the effect of gamma on probabilities
-plt.figure(figsize=(14, 6))
+plt.figure(figsize=(11, 5))
 
 plt.subplot(1, 2, 1)
 plt.semilogx(gamma_list, common_probs, "o-", linewidth=2, markersize=8)
@@ -182,7 +182,7 @@ methods = {"MLE": mle, "Laplace": laplace, "ELE": ele, "Lidstone (gamma=0.1)": l
 
 comparison_words = ["the", "cat", "garden", "unknown_word"]
 
-plt.figure(figsize=(14, 8))
+plt.figure(figsize=(11, 6))
 method_names = list(methods.keys())
 word_positions = np.arange(len(comparison_words))
 bar_width = 0.2
@@ -243,7 +243,7 @@ for method_name, model in methods.items():
 
 # Visualize perplexity comparison
 if perplexities:
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(9, 5))
     methods_list = list(perplexities.keys())
     pp_values = list(perplexities.values())
 
@@ -295,7 +295,7 @@ for method_name, model in methods.items():
     print()
 
 # Visualize the trade-off
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
 # Plot 1: Probability mass for observed vs unseen
 methods_list = list(total_prob_mass.keys())
