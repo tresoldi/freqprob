@@ -1,17 +1,17 @@
 #' # FreqProb Tutorial 3: Computational Efficiency and Memory Management
-#' 
+#'
 #' This tutorial demonstrates the efficiency and memory management features of FreqProb for large-scale applications:
-#' 
+#'
 #' 1. **Vectorized Operations** - Batch processing for performance
 #' 2. **Caching and Memoization** - Avoiding redundant computations
 #' 3. **Lazy Evaluation** - Computing only what's needed
 #' 4. **Streaming Updates** - Real-time incremental learning
 #' 5. **Memory-Efficient Representations** - Handling large vocabularies
 #' 6. **Memory Profiling** - Monitoring and optimization
-#' 
+#'
 #' ## Setup
 
-#| hide
+# | hide
 import gc
 import random
 import time
@@ -46,11 +46,12 @@ print("FreqProb Efficiency and Memory Management Tutorial")
 print("=" * 50)
 print(f"NumPy version: {np.__version__}")
 print(f"Current memory usage: {psutil.Process().memory_info().rss / 1024 / 1024:.1f} MB")
-#|
+# |
 
 #' ## Creating Large-Scale Data
-#' 
+#'
 #' First, let's create realistic large-scale datasets to demonstrate efficiency features.
+
 
 def create_realistic_frequency_distribution(vocab_size, total_count, zipf_exponent=1.2):
     """Create a realistic frequency distribution following Zipf's law."""
@@ -106,7 +107,7 @@ for i, (name, dataset) in enumerate(datasets.items()):
 plt.tight_layout()
 
 #' ## Vectorized Operations for Batch Processing
-#' 
+#'
 #' Vectorized operations allow efficient batch processing of multiple elements.
 
 # Create models for comparison
@@ -186,7 +187,7 @@ print(
 print(f"Normalized scores sum:    {np.sum(normalized_scores):.6f} (should be 1.0)")
 
 #' ## Batch Scoring with Multiple Methods
-#' 
+#'
 #' BatchScorer allows comparing multiple models efficiently.
 
 print("BATCH SCORING WITH MULTIPLE METHODS")
@@ -285,7 +286,7 @@ for method_name in methods:
     print()
 
 #' ## Caching and Memoization
-#' 
+#'
 #' FreqProb automatically caches expensive computations like Simple Good-Turing.
 
 import sys
@@ -389,7 +390,7 @@ print(f"  Misses: {cache_info.misses}")
 print(f"  Hit rate: {cache_info.hits / (cache_info.hits + cache_info.misses) * 100:.1f}%")
 
 #' ## Lazy Evaluation
-#' 
+#'
 #' Lazy evaluation computes probabilities only when needed, saving time and memory.
 
 from freqprob import LazyBatchScorer
@@ -527,7 +528,7 @@ print(f"Computational efficiency:   {computation_ratio:.1%} of full computation"
 print(f"Memory efficiency:          ~{(1 - computation_ratio) * 100:.1f}% savings")
 
 #' ## Streaming Updates and Real-time Learning
-#' 
+#'
 #' Streaming models allow incremental updates for real-time applications.
 
 print("STREAMING UPDATES AND REAL-TIME LEARNING")
@@ -679,7 +680,7 @@ print("- Probabilities adapt to new data in real-time")
 print("- Streaming Laplace provides smoother probability estimates")
 
 #' ## Memory-Efficient Representations
-#' 
+#'
 #' For large vocabularies, compressed and sparse representations can significantly reduce memory usage.
 
 print("MEMORY-EFFICIENT REPRESENTATIONS")
@@ -868,7 +869,7 @@ print("- Trade-off between compression ratio and accuracy")
 print("- Query performance generally comparable")
 
 #' ## Memory Profiling and Monitoring
-#' 
+#'
 #' FreqProb provides tools for monitoring memory usage and optimizing performance.
 
 print("MEMORY PROFILING AND MONITORING")
@@ -1114,7 +1115,7 @@ print("5. Profile operations to identify memory bottlenecks")
 print("6. Implement garbage collection strategies for batch processing")
 
 #' ## Performance Benchmarks and Best Practices
-#' 
+#'
 #' Let's conclude with comprehensive benchmarks and practical recommendations.
 
 print("PERFORMANCE BENCHMARKS AND BEST PRACTICES")
@@ -1385,39 +1386,39 @@ print("  ☐ Validate accuracy vs. efficiency trade-offs")
 print("  ☐ Plan for scaling and growth")
 
 #' ## Summary and Next Steps
-#' 
+#'
 #' In this tutorial, you learned how to optimize FreqProb for large-scale, production applications:
-#' 
+#'
 #' ### Key Techniques Covered:
-#' 
+#'
 #' 1. **Vectorized Operations** - 2-10x speedup for batch processing
 #' 2. **Caching and Memoization** - Automatic optimization for expensive computations
 #' 3. **Lazy Evaluation** - Compute only what's needed, save memory
 #' 4. **Streaming Updates** - Real-time learning with bounded memory
 #' 5. **Memory-Efficient Representations** - 50-80% memory savings for large vocabularies
 #' 6. **Memory Profiling** - Monitor and optimize memory usage
-#' 
+#'
 #' ### Performance Insights:
-#' 
+#'
 #' - **Vectorization** provides consistent speedups across dataset sizes
 #' - **Lazy evaluation** is most beneficial for sparse access patterns
 #' - **Compressed representations** offer significant memory savings with minimal accuracy loss
 #' - **Streaming models** enable real-time applications with predictable memory usage
-#' 
+#'
 #' ### When to Use What:
-#' 
+#'
 #' - **Small datasets** (<10K): Standard implementations are sufficient
 #' - **Medium datasets** (10K-100K): Add vectorization and consider compression
 #' - **Large datasets** (>100K): Use all efficiency features
 #' - **Real-time applications**: Streaming models with memory monitoring
 #' - **Batch processing**: Vectorized operations with profiling
-#' 
+#'
 #' ### Next Steps:
-#' 
+#'
 #' 1. **Apply these techniques** to your specific use case
 #' 2. **Profile your applications** to identify bottlenecks
 #' 3. **Try Tutorial 4**: Real-world NLP Applications
 #' 4. **Experiment** with different combinations of techniques
 #' 5. **Scale gradually** and monitor performance metrics
-#' 
+#'
 #' Remember: **optimization is application-specific**. Always profile your specific use case and validate that optimizations actually improve performance for your data and usage patterns!

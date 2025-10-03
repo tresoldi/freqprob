@@ -1,17 +1,17 @@
 #' # FreqProb Tutorial 4: Real-World NLP Applications
-#' 
+#'
 #' This tutorial demonstrates practical applications of FreqProb in real-world NLP scenarios:
-#' 
+#'
 #' 1. **Language Modeling** - Building n-gram language models
 #' 2. **Text Classification** - Feature extraction with smoothed probabilities
 #' 3. **Information Retrieval** - Document scoring and ranking
 #' 4. **Sentiment Analysis** - Building probability-based classifiers
 #' 5. **Machine Translation** - Language model scoring
 #' 6. **Speech Recognition** - N-gram model integration
-#' 
+#'
 #' ## Setup and Data Preparation
 
-#| hide
+# | hide
 import math
 import random
 import re
@@ -124,10 +124,10 @@ def generate_ngrams(tokens: list[str], n: int) -> list[tuple[str, ...]]:
 print("Text preprocessing utilities ready")
 print("Sample preprocessing:", preprocess_text("Hello, World! This is a test."))
 print("Sample bigrams:", generate_ngrams(["hello", "world", "test"], 2))
-#|
+# |
 
 #' ## Application 1: Language Modeling
-#' 
+#'
 #' Build n-gram language models for text generation and probability estimation.
 
 print("APPLICATION 1: LANGUAGE MODELING")
@@ -380,7 +380,7 @@ print("- Language models can be used for domain classification")
 print("- Text generation reflects domain-specific patterns")
 
 #' ## Application 2: Text Classification
-#' 
+#'
 #' Use smoothed probability features for document classification.
 
 print("APPLICATION 2: TEXT CLASSIFICATION")
@@ -704,7 +704,7 @@ print("- Different domains show varying classification difficulty")
 print("- Probability-based features provide interpretable results")
 
 #' ## Application 3: Information Retrieval
-#' 
+#'
 #' Build document ranking systems using language model scoring.
 
 print("APPLICATION 3: INFORMATION RETRIEVAL")
@@ -1060,7 +1060,7 @@ print("- Term contributions help explain retrieval decisions")
 print("- Relevant documents tend to have higher scores than non-relevant ones")
 
 #' ## Application 4: Sentiment Analysis
-#' 
+#'
 #' Build sentiment classifiers using probability-based features.
 
 print("APPLICATION 4: SENTIMENT ANALYSIS")
@@ -1408,7 +1408,7 @@ print("- Polar words align with human intuitions about sentiment")
 print("- Different smoothing methods handle rare words differently")
 
 #' ## Application 5: Cross-Domain Applications
-#' 
+#'
 #' Demonstrate how FreqProb techniques apply across different NLP domains.
 
 print("APPLICATION 5: CROSS-DOMAIN APPLICATIONS")
@@ -1774,7 +1774,7 @@ print("- Domain-specific training data improves performance")
 print("- Probability-based features are interpretable and robust")
 
 #' ## Summary and Best Practices
-#' 
+#'
 #' This tutorial demonstrated real-world applications of FreqProb across various NLP domains.
 
 print("REAL-WORLD APPLICATIONS: SUMMARY AND BEST PRACTICES")
@@ -1900,38 +1900,38 @@ print("Master these fundamentals, and you'll have a strong foundation")
 print("for tackling any NLP challenge! 🎉")
 
 #' ## Conclusion
-#' 
+#'
 #' Congratulations! You've completed the comprehensive FreqProb tutorial series covering:
-#' 
+#'
 #' ### Tutorial Series Summary:
-#' 
+#'
 #' 1. **Tutorial 1: Basic Smoothing Methods** - Foundation concepts and simple techniques
-#' 2. **Tutorial 2: Advanced Smoothing Methods** - State-of-the-art techniques for complex scenarios  
+#' 2. **Tutorial 2: Advanced Smoothing Methods** - State-of-the-art techniques for complex scenarios
 #' 3. **Tutorial 3: Efficiency and Memory Management** - Scaling to production environments
 #' 4. **Tutorial 4: Real-World Applications** - Practical NLP implementations
-#' 
+#'
 #' ### What You've Learned:
-#' 
+#'
 #' - **Core Concepts**: Probability estimation, smoothing, zero probability problem
 #' - **Methods**: From simple Laplace to advanced Kneser-Ney smoothing
 #' - **Optimization**: Vectorization, caching, lazy evaluation, memory management
 #' - **Applications**: Language modeling, classification, retrieval, sentiment analysis
 #' - **Best Practices**: Model selection, evaluation, scaling, debugging
-#' 
+#'
 #' ### Your Next Steps:
-#' 
+#'
 #' 1. **Apply to Your Projects** - Use FreqProb techniques in your own NLP tasks
 #' 2. **Experiment** - Try different combinations of methods and parameters
 #' 3. **Benchmark** - Compare with other approaches on your specific data
 #' 4. **Contribute** - Share improvements and new applications with the community
 #' 5. **Learn More** - Explore advanced topics like neural-statistical hybrids
-#' 
+#'
 #' ### Remember:
-#' 
+#'
 #' - **Always use smoothing** in real applications
 #' - **Validate your approach** with proper evaluation
 #' - **Consider the trade-offs** between accuracy, speed, and interpretability
 #' - **Start simple** and add complexity as needed
 #' - **Monitor performance** in production environments
-#' 
+#'
 #' Happy modeling! 🚀
