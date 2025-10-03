@@ -120,7 +120,7 @@ class ScoringMethod(ABC):
     0.0
     """
 
-    __slots__ = ("_prob", "_unobs", "config", "logprob", "name")
+    __slots__ = ("_prob", "_total_unseen_mass", "_unobs", "config", "logprob", "name")
 
     def __init__(self, config: ScoringMethodConfig) -> None:
         """Initialize the scoring method.
@@ -139,6 +139,7 @@ class ScoringMethod(ABC):
 
         self._unobs: Probability | LogProbability = 1e-10  # Default value to avoid domain errors
         self._prob: dict[Element, Probability | LogProbability] = {}
+        self._total_unseen_mass: float | None = None  # For methods that track total unseen mass (e.g., SGT)
         self.logprob: bool | None = config.logprob
         self.name: str | None = None
 

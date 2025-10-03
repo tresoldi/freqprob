@@ -1,14 +1,15 @@
-#' # FreqProb Tutorial 2: Advanced Smoothing Methods
-#'
-#' This tutorial covers advanced smoothing techniques that are essential for modern NLP applications:
-#'
-#' 1. **Simple Good-Turing smoothing** - Using frequency-of-frequencies
-#' 2. **Kneser-Ney smoothing** - The gold standard for n-gram models
-#' 3. **Modified Kneser-Ney** - Enhanced version with count-dependent discounting
-#' 4. **Interpolated smoothing** - Combining multiple models
-#' 5. **Bayesian smoothing** - Principled probabilistic approach
-#'
-#' ## Setup
+# FreqProb Tutorial 2: Advanced Smoothing Methods
+
+This tutorial covers advanced smoothing techniques that are essential for modern NLP applications:
+
+1. **Simple Good-Turing smoothing** - Using frequency-of-frequencies
+2. **Kneser-Ney smoothing** - The gold standard for n-gram models
+3. **Modified Kneser-Ney** - Enhanced version with count-dependent discounting
+4. **Interpolated smoothing** - Combining multiple models
+5. **Bayesian smoothing** - Principled probabilistic approach
+
+## Setup
+```python
 
 from collections import Counter, defaultdict
 
@@ -25,12 +26,20 @@ np.random.seed(42)
 
 print("Advanced Smoothing Methods Tutorial")
 print("===================================")
+```
 
-#' ## Dataset Preparation
-#'
-#' We'll use a larger, more realistic dataset to demonstrate advanced smoothing methods.
-#' The corpus is built from Python's built-in module docstrings, which provide natural
-#' language text with realistic frequency distributions.
+Output:
+```
+Advanced Smoothing Methods Tutorial
+===================================
+```
+
+## Dataset Preparation
+
+We'll use a larger, more realistic dataset to demonstrate advanced smoothing methods.
+The corpus is built from Python's built-in module docstrings, which provide natural
+language text with realistic frequency distributions.
+```python
 
 # Create corpus from built-in Python module docstrings
 import sys
@@ -72,24 +81,113 @@ freq_of_freqs = Counter(freqdist.values())
 print("\nFrequency-of-frequencies (r -> Nr):")
 for r in sorted(freq_of_freqs.keys()):
     print(f"r={r}: {freq_of_freqs[r]} words appear {r} time(s)")
+```
 
-#' ## Simple Good-Turing Smoothing
-#'
-#' Simple Good-Turing (SGT) is a frequency-based smoothing method that uses frequency-of-frequencies
-#' statistics to estimate probabilities. The key insight: if we observed N₁ words that appear once,
-#' we should expect about N₁ words we haven't seen yet.
-#'
-#' ### Understanding Total Mass vs Per-Word Probability
-#'
-#' Good-Turing estimates p₀, the **total probability mass** for ALL unseen words combined.
-#' To get the probability for a single unseen word, we need to divide by the estimated number
-#' of unseen types. The `bins` parameter controls this calculation:
-#'
-#' - **bins**: Total vocabulary size (observed + unobserved types)
-#' - **Default**: bins = V + N₁ (observed types + singleton count)
-#' - **Per-word unseen probability**: p₀ / (bins - V)
-#'
-#' This ensures probabilities are meaningful: P(word₁) + P(word₂) makes sense for different words.
+Output:
+```
+Corpus statistics:
+Total tokens: 7460
+Unique words: 1175
+Average frequency: 6.35
+
+Most common words:
+the: 589
+a: 211
+is: 174
+to: 173
+of: 150
+if: 149
+or: 131
+be: 103
+and: 96
+->: 91
+
+Frequency-of-frequencies (r -> Nr):
+r=1: 521 words appear 1 time(s)
+r=2: 226 words appear 2 time(s)
+r=3: 72 words appear 3 time(s)
+r=4: 81 words appear 4 time(s)
+r=5: 36 words appear 5 time(s)
+r=6: 49 words appear 6 time(s)
+r=7: 34 words appear 7 time(s)
+r=8: 18 words appear 8 time(s)
+r=9: 14 words appear 9 time(s)
+r=10: 9 words appear 10 time(s)
+r=11: 5 words appear 11 time(s)
+r=12: 7 words appear 12 time(s)
+r=13: 4 words appear 13 time(s)
+r=14: 7 words appear 14 time(s)
+r=15: 3 words appear 15 time(s)
+r=16: 2 words appear 16 time(s)
+r=17: 5 words appear 17 time(s)
+r=18: 2 words appear 18 time(s)
+r=19: 2 words appear 19 time(s)
+r=20: 1 words appear 20 time(s)
+r=21: 6 words appear 21 time(s)
+r=23: 2 words appear 23 time(s)
+r=24: 2 words appear 24 time(s)
+r=25: 20 words appear 25 time(s)
+r=26: 2 words appear 26 time(s)
+r=27: 1 words appear 27 time(s)
+r=28: 2 words appear 28 time(s)
+r=29: 1 words appear 29 time(s)
+r=31: 2 words appear 31 time(s)
+r=32: 1 words appear 32 time(s)
+r=33: 2 words appear 33 time(s)
+r=34: 2 words appear 34 time(s)
+r=35: 1 words appear 35 time(s)
+r=36: 1 words appear 36 time(s)
+r=37: 1 words appear 37 time(s)
+r=40: 1 words appear 40 time(s)
+r=42: 1 words appear 42 time(s)
+r=45: 1 words appear 45 time(s)
+r=46: 1 words appear 46 time(s)
+r=48: 2 words appear 48 time(s)
+r=50: 1 words appear 50 time(s)
+r=52: 1 words appear 52 time(s)
+r=53: 1 words appear 53 time(s)
+r=54: 1 words appear 54 time(s)
+r=55: 1 words appear 55 time(s)
+r=56: 1 words appear 56 time(s)
+r=62: 1 words appear 62 time(s)
+r=64: 1 words appear 64 time(s)
+r=65: 1 words appear 65 time(s)
+r=66: 1 words appear 66 time(s)
+r=68: 1 words appear 68 time(s)
+r=73: 1 words appear 73 time(s)
+r=80: 1 words appear 80 time(s)
+r=87: 1 words appear 87 time(s)
+r=89: 1 words appear 89 time(s)
+r=91: 1 words appear 91 time(s)
+r=96: 1 words appear 96 time(s)
+r=103: 1 words appear 103 time(s)
+r=131: 1 words appear 131 time(s)
+r=149: 1 words appear 149 time(s)
+r=150: 1 words appear 150 time(s)
+r=173: 1 words appear 173 time(s)
+r=174: 1 words appear 174 time(s)
+r=211: 1 words appear 211 time(s)
+r=589: 1 words appear 589 time(s)
+```
+
+## Simple Good-Turing Smoothing
+
+Simple Good-Turing (SGT) is a frequency-based smoothing method that uses frequency-of-frequencies
+statistics to estimate probabilities. The key insight: if we observed N₁ words that appear once,
+we should expect about N₁ words we haven't seen yet.
+
+### Understanding Total Mass vs Per-Word Probability
+
+Good-Turing estimates p₀, the **total probability mass** for ALL unseen words combined.
+To get the probability for a single unseen word, we need to divide by the estimated number
+of unseen types. The `bins` parameter controls this calculation:
+
+- **bins**: Total vocabulary size (observed + unobserved types)
+- **Default**: bins = V + N₁ (observed types + singleton count)
+- **Per-word unseen probability**: p₀ / (bins - V)
+
+This ensures probabilities are meaningful: P(word₁) + P(word₂) makes sense for different words.
+```python
 
 # Create Simple Good-Turing model
 try:
@@ -211,10 +309,86 @@ except Exception as e:
     print(f"Error creating Simple Good-Turing model: {e}")
     print("This can happen with small datasets or irregular frequency patterns")
     sgt = None
+```
 
-#' ## N-gram Language Models Setup
-#'
-#' For Kneser-Ney smoothing, we need to work with n-grams. Let's create bigram data.
+Output:
+```
+Simple Good-Turing model created successfully
+Default bins: 1175 (observed) + 521 (singletons) = 1696
+
+Simple Good-Turing probabilities:
+P(the) = 0.077690 (original count: 589)
+P(cat) = 0.000134 (original count: 0)
+P(forest) = 0.000134 (original count: 0)
+P(elephant) = 0.000134 (original count: 0)
+
+MLE vs Simple Good-Turing comparison:
+Word       MLE        SGT        Difference
+----------------------------------------
+the        0.078954   0.077690   -0.001264 
+cat        0.000000   0.000134   0.000134  
+forest     0.000000   0.000134   0.000134  
+elephant   0.000000   0.000134   0.000134  
+
+============================================================
+TOTAL MASS vs PER-WORD PROBABILITY
+============================================================
+
+Total probability mass (p₀): 0.069839
+Per-word unseen probability: 0.000134
+Ratio (total/per-word): 521 estimated unseen types
+
+Total probability for observed words: 0.930161
+Total probability for all unseen words (p₀): 0.069839
+Sum (should be ≈ 1.0): 1.000000
+
+============================================================
+VERIFYING PROBABILITY SEMANTICS
+============================================================
+
+P(elephant) = 0.000134
+P(giraffe)  = 0.000134
+P(elephant) + P(giraffe) = 0.000268
+This sum is meaningful because each returns PER-WORD probability
+
+============================================================
+EFFECT OF BINS PARAMETER
+============================================================
+
+Observed vocabulary size (V): 1175
+Singleton count (N₁): 521
+
+bins       P(unseen)    Est. Unseen Types    Description                   
+--------------------------------------------------------------------------------
+1696       0.000134     521                  Default (V + N₁)              
+2350       0.000059     1175                 2x observed vocabulary        
+5875       0.000015     4700                 5x observed vocabulary        
+10000      0.000008     8825                 Fixed large vocabulary        
+
+Key insight: Larger bins → smaller per-word unseen probability
+Choose bins based on your domain knowledge of total vocabulary size
+
+============================================================
+COMPATIBILITY WITH PERPLEXITY
+============================================================
+
+Test words: ['the', 'cat', 'walks', 'slowly', 'elephant']
+
+Log-probabilities:
+  the       : log P =  -2.5550, P = 0.077690
+  cat       : log P =  -8.9173, P = 0.000134
+  walks     : log P =  -8.9173, P = 0.000134
+  slowly    : log P =  -8.9173, P = 0.000134
+  elephant  : log P =  -8.9173, P = 0.000134
+
+Perplexity: 2089.86
+Lower perplexity = better model fit to this test data
+```
+
+## N-gram Language Models Setup
+
+For Kneser-Ney smoothing, we need to work with n-grams. Let's create bigram data.
+```python
 
 # Generate bigrams from our corpus
 # We'll use sentence boundaries based on punctuation
@@ -262,10 +436,39 @@ print(f"\nNumber of unique contexts: {len(context_counts)}")
 print("Most frequent contexts:")
 for context, count in context_counts.most_common(5):
     print(f"'{context}': {count}")
+```
 
-#' ## Kneser-Ney Smoothing
-#'
-#' Kneser-Ney is the gold standard for n-gram language models. It uses absolute discounting and continuation probabilities.
+Output:
+```
+Bigram statistics:
+Total bigrams: 7461
+Unique bigrams: 2562
+
+Most common bigrams:
+('<s>', 'if'): 91
+('the', 'given'): 66
+('defaults', 'to'): 65
+('of', 'the'): 61
+('<s>', 'the'): 58
+('->', 'str'): 50
+('in', 'the'): 39
+('from', 'the'): 37
+('will', 'be'): 37
+('a', 'new'): 34
+
+Number of unique contexts: 956
+Most frequent contexts:
+'<s>': 662
+'the': 589
+'a': 211
+'is': 174
+'to': 173
+```
+
+## Kneser-Ney Smoothing
+
+Kneser-Ney is the gold standard for n-gram language models. It uses absolute discounting and continuation probabilities.
+```python
 
 # Create Kneser-Ney model
 try:
@@ -324,10 +527,33 @@ try:
 except Exception as e:
     print(f"Error creating Kneser-Ney model: {e}")
     kn = None
+```
 
-#' ## Modified Kneser-Ney Smoothing
-#'
-#' Modified Kneser-Ney uses different discount values for different frequency counts.
+Output:
+```
+Kneser-Ney model created successfully
+
+Kneser-Ney probabilities:
+('the', 'cat')       (count=0): P = 0.000850
+('the', 'dog')       (count=0): P = 0.000850
+('in', 'the')        (count=39): P = 0.444706
+('of', 'animals')    (count=0): P = 0.000850
+('elephant', 'runs') (count=0): P = 0.000850
+
+Continuation probability insight:
+'the': appears 589 times in 79 different contexts
+'cat': appears 0 times in 0 different contexts
+'forest': appears 0 times in 0 different contexts
+
+Kneser-Ney favors words that appear in many different contexts!
+```
+
+![Figure](figures/figure_0.png)
+
+## Modified Kneser-Ney Smoothing
+
+Modified Kneser-Ney uses different discount values for different frequency counts.
+```python
 
 # Create Modified Kneser-Ney model
 try:
@@ -375,10 +601,30 @@ try:
 except Exception as e:
     print(f"Error creating Modified Kneser-Ney model: {e}")
     mkn = None
+```
 
-#' ## Interpolated Smoothing
-#'
-#' Interpolated smoothing combines multiple models (e.g., trigram with bigram fallback).
+Output:
+```
+Modified Kneser-Ney model created successfully
+
+Comparison: Kneser-Ney vs Modified Kneser-Ney
+-------------------------------------------------------
+('the', 'cat')       (c=0): KN=0.000850, MKN=0.000850
+('the', 'dog')       (c=0): KN=0.000850, MKN=0.000850
+('in', 'the')        (c=39): KN=0.444706, MKN=0.433860
+('of', 'animals')    (c=0): KN=0.000850, MKN=0.000850
+
+Modified Kneser-Ney uses count-dependent discounts:
+- Different discount values for counts 1, 2, and 3+
+- Automatically estimated from frequency-of-frequencies
+```
+
+![Figure](figures/figure_1.png)
+
+## Interpolated Smoothing
+
+Interpolated smoothing combines multiple models (e.g., trigram with bigram fallback).
+```python
 
 # Generate trigrams for interpolation example
 
@@ -478,10 +724,39 @@ try:
 except Exception as e:
     print(f"Error creating interpolated model: {e}")
     interpolated = None
+```
 
-#' ## Bayesian Smoothing
-#'
-#' Bayesian smoothing uses a Dirichlet prior for theoretically principled probability estimates.
+Output:
+```
+Trigram statistics:
+Total trigrams: 7462
+Unique trigrams: 3100
+
+Most common trigrams:
+('<s>', '<s>', 'if'): 91
+('<s>', '<s>', 'the'): 58
+('will', 'be', 'decoded'): 29
+('<s>', '<s>', 'encoding'): 29
+('<s>', '<s>', 'errors'): 29
+
+Interpolated model created (λ = 0.7)
+
+Interpolated smoothing probabilities:
+('the', 'cat', 'sits')    (count=0): P = 0.000000
+('in', 'the', 'forest')   (count=0): P = 0.000000
+('<s>', 'the', 'quick')   (count=0): P = 0.000000
+('animals', 'in', 'the')  (count=0): P = 0.000000
+
+As lambda increases, we rely more on trigram model (more specific context)
+As lambda decreases, we rely more on bigram model (more general, better coverage)
+```
+
+![Figure](figures/figure_2.png)
+
+## Bayesian Smoothing
+
+Bayesian smoothing uses a Dirichlet prior for theoretically principled probability estimates.
+```python
 
 # Create Bayesian smoothing models with different priors
 alpha_values = [0.1, 0.5, 1.0, 2.0, 5.0]
@@ -555,123 +830,190 @@ for word in ["the", "cat", "elephant"]:
 
 print("\nKey insight: Bayesian smoothing with alpha=1.0 is equivalent to Laplace!")
 print("The alpha parameter controls the strength of the uniform prior.")
+```
 
-#' # Create test set
-#' test_corpus = [
-#'     "the elephant walks slowly through the dense jungle",
-#'     "wild animals search for food in the morning",
-#'     "cats climb trees to escape from dangerous predators",
-#' ]
-#'
-#' test_words = []
-#' for sentence in test_corpus:
-#'     test_words.extend(sentence.split())
-#'
-#' print(f"Test set: {len(test_words)} words")
-#' print(f"Words: {test_words}")
-#'
-#' # Evaluate unigram models
-#' print("\nUnigram Model Evaluation (Perplexity):")
-#' print("=" * 40)
-#'
-#' unigram_models = {
-#'     "MLE": freqprob.MLE(freqdist, logprob=True),
-#'     "Laplace": freqprob.Laplace(freqdist, bins=1000, logprob=True),
-#'     "Bayesian (alpha=0.5)": freqprob.BayesianSmoothing(freqdist, alpha=0.5, logprob=True),
-#' }
-#'
-#' if sgt is not None:
-#'     unigram_models["Simple Good-Turing"] = freqprob.SimpleGoodTuring(freqdist, logprob=True)
-#'
-#' unigram_perplexities = {}
-#' for name, model in unigram_models.items():
-#'     try:
-#'         pp = freqprob.perplexity(model, test_words)
-#'         unigram_perplexities[name] = pp
-#'         print(f"{name:<20}: {pp:.2f}")
-#'     except Exception as e:
-#'         print(f"{name:<20}: Error - {str(e)[:30]}...")
-#'
-#' # Evaluate bigram models (on bigram test data)
-#' test_bigrams = []
-#' for sentence in test_corpus:
-#'     words = ["<s>", *sentence.split(), "</s>"]
-#'     for i in range(len(words) - 1):
-#'         test_bigrams.append((words[i], words[i + 1]))
-#'
-#' print("\nBigram Model Evaluation (Perplexity):")
-#' print("=" * 40)
-#'
-#' bigram_models = {"Bigram MLE": freqprob.MLE(bigram_freqdist, logprob=True)}
-#'
-#' if kn is not None:
-#'     bigram_models["Kneser-Ney"] = freqprob.KneserNey(bigram_freqdist, discount=0.75, logprob=True)
-#'
-#' if mkn is not None:
-#'     bigram_models["Modified Kneser-Ney"] = freqprob.ModifiedKneserNey(bigram_freqdist, logprob=True)
-#'
-#' bigram_perplexities = {}
-#' for name, model in bigram_models.items():
-#'     try:
-#'         pp = freqprob.perplexity(model, test_bigrams)
-#'         bigram_perplexities[name] = pp
-#'         print(f"{name:<20}: {pp:.2f}")
-#'     except Exception as e:
-#'         print(f"{name:<20}: Error - {str(e)[:30]}...")
-#'
-#' # Visualize results
-#' fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-#'
-#' # Unigram models
-#' if unigram_perplexities:
-#'     methods = list(unigram_perplexities.keys())
-#'     values = list(unigram_perplexities.values())
-#'
-#'     bars1 = ax1.bar(methods, values, alpha=0.8, color=plt.cm.Set3(np.linspace(0, 1, len(methods))))
-#'     ax1.set_title("Unigram Model Perplexity Comparison")
-#'     ax1.set_ylabel("Perplexity (lower is better)")
-#'     ax1.tick_params(axis="x", rotation=45)
-#'
-#'     # Add value labels
-#'     for bar, value in zip(bars1, values, strict=False):
-#'         ax1.text(
-#'             bar.get_x() + bar.get_width() / 2,
-#'             bar.get_height() + 0.5,
-#'             f"{value:.1f}",
-#'             ha="center",
-#'             va="bottom",
-#'         )
-#'
-#' # Bigram models
-#' if bigram_perplexities:
-#'     methods = list(bigram_perplexities.keys())
-#'     values = list(bigram_perplexities.values())
-#'
-#'     bars2 = ax2.bar(methods, values, alpha=0.8, color=plt.cm.Set2(np.linspace(0, 1, len(methods))))
-#'     ax2.set_title("Bigram Model Perplexity Comparison")
-#'     ax2.set_ylabel("Perplexity (lower is better)")
-#'     ax2.tick_params(axis="x", rotation=45)
-#'
-#'     # Add value labels
-#'     for bar, value in zip(bars2, values, strict=False):
-#'         ax2.text(
-#'             bar.get_x() + bar.get_width() / 2,
-#'             bar.get_height() + 0.5,
-#'             f"{value:.1f}",
-#'             ha="center",
-#'             va="bottom",
-#'         )
-#'
-#' plt.tight_layout()
-#'
-#' # Find best models
-#' if unigram_perplexities:
-#'     best_unigram = min(unigram_perplexities.items(), key=lambda x: x[1])
-#'     print(f"\nBest unigram model: {best_unigram[0]} (PP = {best_unigram[1]:.2f})")
-#'
-#' if bigram_perplexities:
-#'     best_bigram = min(bigram_perplexities.items(), key=lambda x: x[1])
-#'     print(f"Best bigram model: {best_bigram[0]} (PP = {best_bigram[1]:.2f})")
+Output:
+```
+Bayesian Smoothing with different alpha (concentration parameters):
+=================================================================
+
+Word: 'the' (count = 589)
+alpha  Probability  Effect              
+----------------------------------------
+0.1    0.077743     Minimal smoothing
+0.5    0.073253     Light smoothing
+1.0    0.068327     Uniform prior (Laplace)
+2.0    0.060245     Strong uniform bias
+5.0    0.044544     Strong uniform bias
+
+Word: 'cat' (count = 0)
+alpha  Probability  Effect              
+----------------------------------------
+0.1    0.000013     Minimal smoothing
+0.5    0.000062     Light smoothing
+1.0    0.000116     Uniform prior (Laplace)
+2.0    0.000204     Strong uniform bias
+5.0    0.000375     Strong uniform bias
+
+Word: 'forest' (count = 0)
+alpha  Probability  Effect              
+----------------------------------------
+0.1    0.000013     Minimal smoothing
+0.5    0.000062     Light smoothing
+1.0    0.000116     Uniform prior (Laplace)
+2.0    0.000204     Strong uniform bias
+5.0    0.000375     Strong uniform bias
+
+Word: 'elephant' (count = 0)
+alpha  Probability  Effect              
+----------------------------------------
+0.1    0.000013     Minimal smoothing
+0.5    0.000062     Light smoothing
+1.0    0.000116     Uniform prior (Laplace)
+2.0    0.000204     Strong uniform bias
+5.0    0.000375     Strong uniform bias
+
+Comparison with other smoothing methods:
+=============================================
+
+P('the'):
+  Laplace           : 0.069740
+  Bayesian (alpha=1.0): 0.068327
+  Bayesian (alpha=0.5): 0.073253
+
+P('cat'):
+  Laplace           : 0.000118
+  Bayesian (alpha=1.0): 0.000116
+  Bayesian (alpha=0.5): 0.000062
+
+P('elephant'):
+  Laplace           : 0.000118
+  Bayesian (alpha=1.0): 0.000116
+  Bayesian (alpha=0.5): 0.000062
+
+Key insight: Bayesian smoothing with alpha=1.0 is equivalent to Laplace!
+The alpha parameter controls the strength of the uniform prior.
+```
+
+![Figure](figures/figure_3.png)
+
+# Create test set
+test_corpus = [
+    "the elephant walks slowly through the dense jungle",
+    "wild animals search for food in the morning",
+    "cats climb trees to escape from dangerous predators",
+]
+
+test_words = []
+for sentence in test_corpus:
+    test_words.extend(sentence.split())
+
+print(f"Test set: {len(test_words)} words")
+print(f"Words: {test_words}")
+
+# Evaluate unigram models
+print("\nUnigram Model Evaluation (Perplexity):")
+print("=" * 40)
+
+unigram_models = {
+    "MLE": freqprob.MLE(freqdist, logprob=True),
+    "Laplace": freqprob.Laplace(freqdist, bins=1000, logprob=True),
+    "Bayesian (alpha=0.5)": freqprob.BayesianSmoothing(freqdist, alpha=0.5, logprob=True),
+}
+
+if sgt is not None:
+    unigram_models["Simple Good-Turing"] = freqprob.SimpleGoodTuring(freqdist, logprob=True)
+
+unigram_perplexities = {}
+for name, model in unigram_models.items():
+    try:
+        pp = freqprob.perplexity(model, test_words)
+        unigram_perplexities[name] = pp
+        print(f"{name:<20}: {pp:.2f}")
+    except Exception as e:
+        print(f"{name:<20}: Error - {str(e)[:30]}...")
+
+# Evaluate bigram models (on bigram test data)
+test_bigrams = []
+for sentence in test_corpus:
+    words = ["<s>", *sentence.split(), "</s>"]
+    for i in range(len(words) - 1):
+        test_bigrams.append((words[i], words[i + 1]))
+
+print("\nBigram Model Evaluation (Perplexity):")
+print("=" * 40)
+
+bigram_models = {"Bigram MLE": freqprob.MLE(bigram_freqdist, logprob=True)}
+
+if kn is not None:
+    bigram_models["Kneser-Ney"] = freqprob.KneserNey(bigram_freqdist, discount=0.75, logprob=True)
+
+if mkn is not None:
+    bigram_models["Modified Kneser-Ney"] = freqprob.ModifiedKneserNey(bigram_freqdist, logprob=True)
+
+bigram_perplexities = {}
+for name, model in bigram_models.items():
+    try:
+        pp = freqprob.perplexity(model, test_bigrams)
+        bigram_perplexities[name] = pp
+        print(f"{name:<20}: {pp:.2f}")
+    except Exception as e:
+        print(f"{name:<20}: Error - {str(e)[:30]}...")
+
+# Visualize results
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
+# Unigram models
+if unigram_perplexities:
+    methods = list(unigram_perplexities.keys())
+    values = list(unigram_perplexities.values())
+
+    bars1 = ax1.bar(methods, values, alpha=0.8, color=plt.cm.Set3(np.linspace(0, 1, len(methods))))
+    ax1.set_title("Unigram Model Perplexity Comparison")
+    ax1.set_ylabel("Perplexity (lower is better)")
+    ax1.tick_params(axis="x", rotation=45)
+
+    # Add value labels
+    for bar, value in zip(bars1, values, strict=False):
+        ax1.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.5,
+            f"{value:.1f}",
+            ha="center",
+            va="bottom",
+        )
+
+# Bigram models
+if bigram_perplexities:
+    methods = list(bigram_perplexities.keys())
+    values = list(bigram_perplexities.values())
+
+    bars2 = ax2.bar(methods, values, alpha=0.8, color=plt.cm.Set2(np.linspace(0, 1, len(methods))))
+    ax2.set_title("Bigram Model Perplexity Comparison")
+    ax2.set_ylabel("Perplexity (lower is better)")
+    ax2.tick_params(axis="x", rotation=45)
+
+    # Add value labels
+    for bar, value in zip(bars2, values, strict=False):
+        ax2.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.5,
+            f"{value:.1f}",
+            ha="center",
+            va="bottom",
+        )
+
+plt.tight_layout()
+
+# Find best models
+if unigram_perplexities:
+    best_unigram = min(unigram_perplexities.items(), key=lambda x: x[1])
+    print(f"\nBest unigram model: {best_unigram[0]} (PP = {best_unigram[1]:.2f})")
+
+if bigram_perplexities:
+    best_bigram = min(bigram_perplexities.items(), key=lambda x: x[1])
+    print(f"Best bigram model: {best_bigram[0]} (PP = {best_bigram[1]:.2f})")
+```python
 
 # Create test set
 test_corpus = [
@@ -869,33 +1211,126 @@ for method, complexity in methods_complexity.items():
     print(f"  {method:<18}: {complexity}")
 
 print("\n  V = vocabulary size, N = total n-grams, k = number of models")
+```
 
-#' ## Exercise: Advanced Method Selection
-#'
-#' Practice choosing the right advanced method for different scenarios.
+Output:
+```
+Test set: 24 words
+Words: ['the', 'elephant', 'walks', 'slowly', 'through', 'the', 'dense', 'jungle', 'wild', 'animals', 'search', 'for', 'food', 'in', 'the', 'morning', 'cats', 'climb', 'trees', 'to', 'escape', 'from', 'dangerous', 'predators']
 
-#' ## Summary
-#'
-#' In this tutorial, you learned about advanced smoothing methods that are essential for modern NLP:
-#'
-#' ### Methods Covered:
-#' 1. **Simple Good-Turing** - Uses frequency-of-frequencies for principled probability estimation
-#' 2. **Kneser-Ney** - The gold standard for n-gram language models with continuation probabilities
-#' 3. **Modified Kneser-Ney** - Enhanced version with count-dependent discounting
-#' 4. **Interpolated Smoothing** - Combines multiple models for robustness
-#' 5. **Bayesian Smoothing** - Theoretically principled approach with Dirichlet priors
-#'
-#' ### Key Insights:
-#' - **Kneser-Ney** dominates for n-gram language modeling
-#' - **Good-Turing** provides theoretical foundation for unseen event estimation
-#' - **Interpolation** is crucial for practical systems
-#' - **Bayesian methods** offer principled parameter control
-#' - **Context matters** - different methods excel in different scenarios
-#'
-#' ### Next Steps:
-#' - **Tutorial 3**: Computational Efficiency and Memory Management
-#' - **Tutorial 4**: Real-world Applications and Case Studies
-#' - Practice implementing these methods on your own datasets
-#' - Experiment with hyperparameter tuning
-#'
-#' **Remember**: The best method depends on your specific use case, data characteristics, and computational constraints!
+Unigram Model Evaluation (Perplexity):
+========================================
+MLE                 : 5175566.74
+Laplace             : 1505.03
+Bayesian (alpha=0.5): 2183.78
+Simple Good-Turing  : 1381.54
+
+Bigram Model Evaluation (Perplexity):
+========================================
+Bigram MLE          : 2641755664.90
+Kneser-Ney          : 783.93
+Modified Kneser-Ney : 784.48
+
+Best unigram model: Simple Good-Turing (PP = 1381.54)
+Best bigram model: Kneser-Ney (PP = 783.93)
+ADVANCED SMOOTHING METHODS: KEY INSIGHTS
+==================================================
+
+🔵 SIMPLE GOOD-TURING:
+   • Uses frequency-of-frequencies statistics
+   • Returns per-word probability (divides p₀ by estimated unseen types)
+   • bins parameter controls vocabulary size estimate (default: V + N₁)
+   • total_unseen_mass property provides access to p₀
+   • Works well when frequency patterns are reliable
+   • Can fail with sparse data or irregular patterns
+
+🟢 KNESER-NEY:
+   • Gold standard for n-gram language models
+   • Uses absolute discounting (subtract fixed amount)
+   • Continuation probability: how likely is word in new contexts?
+   • Particularly effective for bigrams and trigrams
+
+🟡 MODIFIED KNESER-NEY:
+   • Enhanced version of Kneser-Ney
+   • Different discount values for different frequency counts
+   • Automatically estimates discounts from data
+   • Generally performs better than standard Kneser-Ney
+
+🔴 INTERPOLATED SMOOTHING:
+   • Combines multiple models (e.g., trigram + bigram)
+   • Linear interpolation: lambda*P_high + (1-lambda)*P_low
+   • Balances specificity with coverage
+   • Essential for practical n-gram systems
+
+🟣 BAYESIAN SMOOTHING:
+   • Theoretically principled using Dirichlet prior
+   • alpha parameter controls prior strength
+   • alpha=1.0 equivalent to Laplace smoothing
+   • Good theoretical foundation
+
+🎯 PRACTICAL RECOMMENDATIONS:
+==============================
+
+For Language Modeling:
+  1. Start with Modified Kneser-Ney for n-grams
+  2. Use interpolation for robustness
+  3. Consider neural models for large datasets
+
+For General Frequency Estimation:
+  1. Try Simple Good-Turing first
+  2. Fall back to Bayesian smoothing if SGT fails
+  3. Tune alpha parameter using validation data
+
+For Production Systems:
+  1. Use interpolated smoothing for robustness
+  2. Consider computational costs
+  3. Validate on domain-specific data
+
+⚡ COMPUTATIONAL COMPLEXITY:
+============================
+  Laplace/Bayesian  : O(1) per query
+  Simple Good-Turing: O(V) preprocessing, O(1) query
+  Kneser-Ney        : O(N) preprocessing, O(1) query
+  Modified Kneser-Ney: O(N) preprocessing, O(1) query
+  Interpolated      : O(k) per query (k models)
+
+  V = vocabulary size, N = total n-grams, k = number of models
+```
+
+![Figure](figures/figure_4.png)
+
+## Exercise: Advanced Method Selection
+
+Practice choosing the right advanced method for different scenarios.
+```python
+
+```
+
+## Summary
+
+In this tutorial, you learned about advanced smoothing methods that are essential for modern NLP:
+
+### Methods Covered:
+1. **Simple Good-Turing** - Uses frequency-of-frequencies for principled probability estimation
+2. **Kneser-Ney** - The gold standard for n-gram language models with continuation probabilities
+3. **Modified Kneser-Ney** - Enhanced version with count-dependent discounting
+4. **Interpolated Smoothing** - Combines multiple models for robustness
+5. **Bayesian Smoothing** - Theoretically principled approach with Dirichlet priors
+
+### Key Insights:
+- **Kneser-Ney** dominates for n-gram language modeling
+- **Good-Turing** provides theoretical foundation for unseen event estimation
+- **Interpolation** is crucial for practical systems
+- **Bayesian methods** offer principled parameter control
+- **Context matters** - different methods excel in different scenarios
+
+### Next Steps:
+- **Tutorial 3**: Computational Efficiency and Memory Management
+- **Tutorial 4**: Real-world Applications and Case Studies
+- Practice implementing these methods on your own datasets
+- Experiment with hyperparameter tuning
+
+**Remember**: The best method depends on your specific use case, data characteristics, and computational constraints!
+```python
+
+```

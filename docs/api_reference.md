@@ -250,29 +250,68 @@ class SimpleGoodTuring(ScoringMethod)
 ```python
 SimpleGoodTuring(freqdist: FrequencyDistribution,
                  p_value: float = 0.05,
-                 allow_fail: bool = False,
-                 logprob: bool = True)
+                 default_p0: Optional[float] = None,
+                 bins: Optional[int] = None,
+                 logprob: bool = True,
+                 allow_fail: bool = True)
 ```
 
 **Parameters:**
 - `freqdist` - Dictionary mapping elements to counts
-- `p_value` - Confidence level for smoothing decisions
-- `allow_fail` - Whether to raise exception on failure
+- `p_value` - Confidence level for smoothing decisions (default: 0.05)
+- `default_p0` - Fallback p₀ value if SGT estimation fails (default: None)
+- `bins` - Total vocabulary size for per-word probability calculation (default: None)
+  - If None, uses heuristic: bins = V_observed + N₁ (singletons)
+  - Must be greater than observed vocabulary size
+  - Controls how total unseen mass p₀ is distributed across unseen words
 - `logprob` - Return log probabilities if True
+- `allow_fail` - Whether to raise exception on failure (default: True)
+
+**Properties:**
+- `total_unseen_mass` - Read-only property returning p₀ (total probability mass for ALL unseen words)
 
 **Example:**
 ```python
 freqdist = {'cat': 3, 'dog': 2, 'bird': 1, 'fish': 1}
 try:
+    # Default behavior: bins = V + N₁
     sgt = freqprob.SimpleGoodTuring(freqdist, logprob=False)
-    print(sgt('cat'))
-    print(sgt('unknown'))  # Non-zero probability
+    print(sgt('cat'))       # Probability for observed word
+    print(sgt('unknown'))   # Per-word probability for unseen word
+
+    # Access total unseen mass
+    print(sgt.total_unseen_mass)  # p₀ (total mass for ALL unseen)
+
+    # Custom bins for larger vocabulary
+    sgt_large = freqprob.SimpleGoodTuring(freqdist, bins=10000, logprob=False)
+    print(sgt_large('unknown'))  # Smaller per-word probability
+
 except ValueError:
     print("SGT failed - frequency distribution unsuitable")
 ```
 
 **Mathematical Foundation:**
 Uses Good-Turing frequency estimation with log-linear smoothing of frequency-of-frequencies.
+
+**Per-Word Probability Calculation:**
+- Good-Turing estimates p₀ = total mass for ALL unseen words
+- Per-word unseen probability = p₀ / (bins - V_observed)
+- Default bins = V_observed + N₁ (theoretically motivated heuristic)
+
+**Version Note:**
+Starting from v0.4.0, SimpleGoodTuring returns **per-word probability** for unseen elements
+instead of the total unseen mass p₀. Use the `total_unseen_mass` property to access p₀.
+
+**Migration from v0.3.x:**
+```python
+# v0.3.x behavior (returned total mass p₀ for unseen):
+# sgt('unseen') returned p₀ ≈ 0.07 (7% total mass)
+
+# v0.4.0+ behavior (returns per-word probability):
+sgt = SimpleGoodTuring(freqdist)
+sgt('unseen')            # ≈ 0.00012 (per-word probability)
+sgt.total_unseen_mass    # ≈ 0.07 (same p₀ as before)
+```
 
 ---
 
