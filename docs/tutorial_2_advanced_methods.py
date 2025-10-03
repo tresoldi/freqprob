@@ -29,30 +29,32 @@ print("===================================")
 #' ## Dataset Preparation
 #'
 #' We'll use a larger, more realistic dataset to demonstrate advanced smoothing methods.
+#' The corpus is built from Python's built-in module docstrings, which provide natural
+#' language text with realistic frequency distributions.
 
-# Create a more substantial corpus for realistic frequency patterns
-corpus = [
-    "the quick brown fox jumps over the lazy dog",
-    "a dog runs fast in the park every morning",
-    "the cat sits quietly on the warm windowsill",
-    "brown bears roam freely in the dense forest",
-    "quick movements help animals escape from predators",
-    "lazy cats sleep most of the day in sunny spots",
-    "the forest contains many different species of animals",
-    "fast cars drive on the highway during rush hour",
-    "morning light filters through the trees in the forest",
-    "animals in the wild must find food and shelter",
-    "the dog barks loudly when strangers approach the house",
-    "cats and dogs are popular pets in many households",
-    "sunny weather brings people outdoors to enjoy nature",
-    "dense fog covers the mountains in the early morning",
-    "species diversity is important for ecosystem health",
-]
+# Create corpus from built-in Python module docstrings
+import sys
+import re
 
-# Create word frequency distribution
-all_words = []
-for sentence in corpus:
-    all_words.extend(sentence.split())
+# Collect docstrings from sys and re modules
+corpus_text = ""
+
+# Add sys module docstrings
+corpus_text += sys.__doc__ or ""
+for name in dir(sys):
+    obj = getattr(sys, name)
+    if hasattr(obj, "__doc__") and obj.__doc__ and isinstance(obj.__doc__, str):
+        corpus_text += "\n" + obj.__doc__
+
+# Add re module docstrings
+corpus_text += "\n" + (re.__doc__ or "")
+for name in dir(re):
+    obj = getattr(re, name)
+    if hasattr(obj, "__doc__") and obj.__doc__ and isinstance(obj.__doc__, str):
+        corpus_text += "\n" + obj.__doc__
+
+# Tokenize: simple whitespace splitting and lowercase
+all_words = corpus_text.lower().split()
 
 freqdist = Counter(all_words)
 print("Corpus statistics:")
@@ -104,9 +106,13 @@ try:
     # Show probability mass for unseen events
     unseen_prob = sgt("unseen_word")
     total_observed_mass = sum(sgt(word) for word in freqdist)
-    print(f"\nProbability for unseen words: {unseen_prob:.6f}")
+    print(f"\nProbability mass reserved for unseen words: {unseen_prob:.6f}")
     print(f"Total probability mass for observed words: {total_observed_mass:.4f}")
     print(f"Reserved mass for unseen events: {1 - total_observed_mass:.4f}")
+    print(f"\nIMPORTANT: The unseen probability ({unseen_prob:.4f}) is the TOTAL mass")
+    print(f"for ALL unseen words together, not the probability of each unseen word.")
+    print(f"With {len(freqdist)} observed types, Good-Turing estimates there are likely")
+    print(f"many more unobserved types sharing this {unseen_prob*100:.1f}% probability mass.")
 
 except Exception as e:
     print(f"Error creating Simple Good-Turing model: {e}")
@@ -118,19 +124,29 @@ except Exception as e:
 #' For Kneser-Ney smoothing, we need to work with n-grams. Let's create bigram data.
 
 # Generate bigrams from our corpus
+# We'll use sentence boundaries based on punctuation
 
-
-def generate_bigrams(text_corpus):
-    """Generate bigrams with sentence boundaries."""
+def generate_bigrams(words):
+    """Generate bigrams from a list of words, treating periods as sentence boundaries."""
     bigrams = []
-    for sentence in text_corpus:
-        words = ["<s>", *sentence.split(), "</s>"]  # Add sentence boundaries
-        for i in range(len(words) - 1):
-            bigrams.append((words[i], words[i + 1]))
+    # Add sentence start marker
+    prev_word = "<s>"
+    for word in words:
+        # Check if this word ends with sentence-ending punctuation
+        if word.endswith(('.', '!', '?', ':', ';')):
+            # Add bigram with current word
+            bigrams.append((prev_word, word))
+            # Next bigram starts a new sentence
+            prev_word = "<s>"
+        else:
+            bigrams.append((prev_word, word))
+            prev_word = word
+    # Add final sentence end marker
+    bigrams.append((prev_word, "</s>"))
     return bigrams
 
 
-bigrams = generate_bigrams(corpus)
+bigrams = generate_bigrams(all_words)
 bigram_freqdist = Counter(bigrams)
 
 print("Bigram statistics:")
@@ -274,17 +290,32 @@ except Exception as e:
 # Generate trigrams for interpolation example
 
 
-def generate_trigrams(text_corpus):
-    """Generate trigrams with sentence boundaries."""
+def generate_trigrams(words):
+    """Generate trigrams from a list of words, treating periods as sentence boundaries."""
     trigrams = []
-    for sentence in text_corpus:
-        words = ["<s>", "<s>", *sentence.split(), "</s>", "</s>"]
-        for i in range(len(words) - 2):
-            trigrams.append((words[i], words[i + 1], words[i + 2]))
+    # Start with two sentence boundary markers
+    context = ["<s>", "<s>"]
+
+    for word in words:
+        # Add the trigram
+        trigrams.append((context[0], context[1], word))
+
+        # Check if this word ends with sentence-ending punctuation
+        if word.endswith((".", "!", "?", ":", ";")):
+            # Reset context for new sentence
+            context = ["<s>", "<s>"]
+        else:
+            # Shift context window
+            context = [context[1], word]
+
+    # Add final trigrams with sentence end markers
+    trigrams.append((context[0], context[1], "</s>"))
+    trigrams.append((context[1], "</s>", "</s>"))
+
     return trigrams
 
 
-trigrams = generate_trigrams(corpus)
+trigrams = generate_trigrams(all_words)
 trigram_freqdist = Counter(trigrams)
 
 print("Trigram statistics:")
