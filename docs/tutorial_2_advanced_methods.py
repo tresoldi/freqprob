@@ -1,16 +1,16 @@
 #' # FreqProb Tutorial 2: Advanced Smoothing Methods
-#' 
+#'
 #' This tutorial covers advanced smoothing techniques that are essential for modern NLP applications:
-#' 
+#'
 #' 1. **Simple Good-Turing smoothing** - Using frequency-of-frequencies
 #' 2. **Kneser-Ney smoothing** - The gold standard for n-gram models
 #' 3. **Modified Kneser-Ney** - Enhanced version with count-dependent discounting
 #' 4. **Interpolated smoothing** - Combining multiple models
 #' 5. **Bayesian smoothing** - Principled probabilistic approach
-#' 
+#'
 #' ## Setup
 
-#| hide
+# | hide
 from collections import Counter, defaultdict
 
 import matplotlib.pyplot as plt
@@ -26,10 +26,10 @@ np.random.seed(42)
 
 print("Advanced Smoothing Methods Tutorial")
 print("===================================")
-#|
+# |
 
 #' ## Dataset Preparation
-#' 
+#'
 #' We'll use a larger, more realistic dataset to demonstrate advanced smoothing methods.
 
 # Create a more substantial corpus for realistic frequency patterns
@@ -74,7 +74,7 @@ for r in sorted(freq_of_freqs.keys()):
     print(f"r={r}: {freq_of_freqs[r]} words appear {r} time(s)")
 
 #' ## Simple Good-Turing Smoothing
-#' 
+#'
 #' Good-Turing uses the frequency-of-frequencies to estimate probabilities for unseen events.
 
 # Create Simple Good-Turing model
@@ -116,7 +116,7 @@ except Exception as e:
     sgt = None
 
 #' ## N-gram Language Models Setup
-#' 
+#'
 #' For Kneser-Ney smoothing, we need to work with n-grams. Let's create bigram data.
 
 # Generate bigrams from our corpus
@@ -157,7 +157,7 @@ for context, count in context_counts.most_common(5):
     print(f"'{context}': {count}")
 
 #' ## Kneser-Ney Smoothing
-#' 
+#'
 #' Kneser-Ney is the gold standard for n-gram language models. It uses absolute discounting and continuation probabilities.
 
 # Create Kneser-Ney model
@@ -219,7 +219,7 @@ except Exception as e:
     kn = None
 
 #' ## Modified Kneser-Ney Smoothing
-#' 
+#'
 #' Modified Kneser-Ney uses different discount values for different frequency counts.
 
 # Create Modified Kneser-Ney model
@@ -270,7 +270,7 @@ except Exception as e:
     mkn = None
 
 #' ## Interpolated Smoothing
-#' 
+#'
 #' Interpolated smoothing combines multiple models (e.g., trigram with bigram fallback).
 
 # Generate trigrams for interpolation example
@@ -358,7 +358,7 @@ except Exception as e:
     interpolated = None
 
 #' ## Bayesian Smoothing
-#' 
+#'
 #' Bayesian smoothing uses a Dirichlet prior for theoretically principled probability estimates.
 
 # Create Bayesian smoothing models with different priors
@@ -440,27 +440,27 @@ print("The alpha parameter controls the strength of the uniform prior.")
 #'     "wild animals search for food in the morning",
 #'     "cats climb trees to escape from dangerous predators",
 #' ]
-#' 
+#'
 #' test_words = []
 #' for sentence in test_corpus:
 #'     test_words.extend(sentence.split())
-#' 
+#'
 #' print(f"Test set: {len(test_words)} words")
 #' print(f"Words: {test_words}")
-#' 
+#'
 #' # Evaluate unigram models
 #' print("\nUnigram Model Evaluation (Perplexity):")
 #' print("=" * 40)
-#' 
+#'
 #' unigram_models = {
 #'     "MLE": freqprob.MLE(freqdist, logprob=True),
 #'     "Laplace": freqprob.Laplace(freqdist, bins=1000, logprob=True),
 #'     "Bayesian (alpha=0.5)": freqprob.BayesianSmoothing(freqdist, alpha=0.5, logprob=True),
 #' }
-#' 
+#'
 #' if sgt is not None:
 #'     unigram_models["Simple Good-Turing"] = freqprob.SimpleGoodTuring(freqdist, logprob=True)
-#' 
+#'
 #' unigram_perplexities = {}
 #' for name, model in unigram_models.items():
 #'     try:
@@ -469,25 +469,25 @@ print("The alpha parameter controls the strength of the uniform prior.")
 #'         print(f"{name:<20}: {pp:.2f}")
 #'     except Exception as e:
 #'         print(f"{name:<20}: Error - {str(e)[:30]}...")
-#' 
+#'
 #' # Evaluate bigram models (on bigram test data)
 #' test_bigrams = []
 #' for sentence in test_corpus:
 #'     words = ["<s>", *sentence.split(), "</s>"]
 #'     for i in range(len(words) - 1):
 #'         test_bigrams.append((words[i], words[i + 1]))
-#' 
+#'
 #' print("\nBigram Model Evaluation (Perplexity):")
 #' print("=" * 40)
-#' 
+#'
 #' bigram_models = {"Bigram MLE": freqprob.MLE(bigram_freqdist, logprob=True)}
-#' 
+#'
 #' if kn is not None:
 #'     bigram_models["Kneser-Ney"] = freqprob.KneserNey(bigram_freqdist, discount=0.75, logprob=True)
-#' 
+#'
 #' if mkn is not None:
 #'     bigram_models["Modified Kneser-Ney"] = freqprob.ModifiedKneserNey(bigram_freqdist, logprob=True)
-#' 
+#'
 #' bigram_perplexities = {}
 #' for name, model in bigram_models.items():
 #'     try:
@@ -496,20 +496,20 @@ print("The alpha parameter controls the strength of the uniform prior.")
 #'         print(f"{name:<20}: {pp:.2f}")
 #'     except Exception as e:
 #'         print(f"{name:<20}: Error - {str(e)[:30]}...")
-#' 
+#'
 #' # Visualize results
 #' fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-#' 
+#'
 #' # Unigram models
 #' if unigram_perplexities:
 #'     methods = list(unigram_perplexities.keys())
 #'     values = list(unigram_perplexities.values())
-#' 
+#'
 #'     bars1 = ax1.bar(methods, values, alpha=0.8, color=plt.cm.Set3(np.linspace(0, 1, len(methods))))
 #'     ax1.set_title("Unigram Model Perplexity Comparison")
 #'     ax1.set_ylabel("Perplexity (lower is better)")
 #'     ax1.tick_params(axis="x", rotation=45)
-#' 
+#'
 #'     # Add value labels
 #'     for bar, value in zip(bars1, values, strict=False):
 #'         ax1.text(
@@ -519,17 +519,17 @@ print("The alpha parameter controls the strength of the uniform prior.")
 #'             ha="center",
 #'             va="bottom",
 #'         )
-#' 
+#'
 #' # Bigram models
 #' if bigram_perplexities:
 #'     methods = list(bigram_perplexities.keys())
 #'     values = list(bigram_perplexities.values())
-#' 
+#'
 #'     bars2 = ax2.bar(methods, values, alpha=0.8, color=plt.cm.Set2(np.linspace(0, 1, len(methods))))
 #'     ax2.set_title("Bigram Model Perplexity Comparison")
 #'     ax2.set_ylabel("Perplexity (lower is better)")
 #'     ax2.tick_params(axis="x", rotation=45)
-#' 
+#'
 #'     # Add value labels
 #'     for bar, value in zip(bars2, values, strict=False):
 #'         ax2.text(
@@ -539,14 +539,14 @@ print("The alpha parameter controls the strength of the uniform prior.")
 #'             ha="center",
 #'             va="bottom",
 #'         )
-#' 
+#'
 #' plt.tight_layout()
-#' 
+#'
 #' # Find best models
 #' if unigram_perplexities:
 #'     best_unigram = min(unigram_perplexities.items(), key=lambda x: x[1])
 #'     print(f"\nBest unigram model: {best_unigram[0]} (PP = {best_unigram[1]:.2f})")
-#' 
+#'
 #' if bigram_perplexities:
 #'     best_bigram = min(bigram_perplexities.items(), key=lambda x: x[1])
 #'     print(f"Best bigram model: {best_bigram[0]} (PP = {best_bigram[1]:.2f})")
@@ -747,31 +747,31 @@ for method, complexity in methods_complexity.items():
 print("\n  V = vocabulary size, N = total n-grams, k = number of models")
 
 #' ## Exercise: Advanced Method Selection
-#' 
+#'
 #' Practice choosing the right advanced method for different scenarios.
 
 #' ## Summary
-#' 
+#'
 #' In this tutorial, you learned about advanced smoothing methods that are essential for modern NLP:
-#' 
+#'
 #' ### Methods Covered:
 #' 1. **Simple Good-Turing** - Uses frequency-of-frequencies for principled probability estimation
 #' 2. **Kneser-Ney** - The gold standard for n-gram language models with continuation probabilities
 #' 3. **Modified Kneser-Ney** - Enhanced version with count-dependent discounting
 #' 4. **Interpolated Smoothing** - Combines multiple models for robustness
 #' 5. **Bayesian Smoothing** - Theoretically principled approach with Dirichlet priors
-#' 
+#'
 #' ### Key Insights:
 #' - **Kneser-Ney** dominates for n-gram language modeling
 #' - **Good-Turing** provides theoretical foundation for unseen event estimation
 #' - **Interpolation** is crucial for practical systems
 #' - **Bayesian methods** offer principled parameter control
 #' - **Context matters** - different methods excel in different scenarios
-#' 
+#'
 #' ### Next Steps:
 #' - **Tutorial 3**: Computational Efficiency and Memory Management
 #' - **Tutorial 4**: Real-world Applications and Case Studies
 #' - Practice implementing these methods on your own datasets
 #' - Experiment with hyperparameter tuning
-#' 
+#'
 #' **Remember**: The best method depends on your specific use case, data characteristics, and computational constraints!

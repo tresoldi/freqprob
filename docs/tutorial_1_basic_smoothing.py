@@ -1,17 +1,17 @@
 #' # FreqProb Tutorial 1: Basic Smoothing Methods
-#' 
+#'
 #' This tutorial introduces the fundamental smoothing methods in FreqProb. You'll learn how to:
-#' 
+#'
 #' 1. Create frequency distributions from text data
 #' 2. Apply different smoothing techniques
 #' 3. Compare model performance
 #' 4. Handle unseen elements
-#' 
+#'
 #' ## Setup
-#' 
+#'
 #' First, let's import the necessary libraries and set up our environment.
 
-#| hide
+# | hide
 from collections import Counter
 
 import matplotlib.pyplot as plt
@@ -25,10 +25,10 @@ plt.style.use("default")
 sns.set_palette("husl")
 
 print(f"FreqProb version: {freqprob.__version__ if hasattr(freqprob, '__version__') else 'dev'}")
-#|
+# |
 
 #' ## Creating a Frequency Distribution
-#' 
+#'
 #' Let's start with a simple text corpus and create a frequency distribution.
 
 # Sample text corpus
@@ -54,7 +54,7 @@ print(f"\nTotal words: {sum(freqdist.values())}")
 print(f"Unique words: {len(freqdist)}")
 
 #' ## Maximum Likelihood Estimation (MLE)
-#' 
+#'
 #' Let's start with the simplest approach - Maximum Likelihood Estimation.
 
 # Create MLE model
@@ -82,7 +82,7 @@ print(f"\nProbability sum: {sum(probs):.4f}")
 print(f"Problem: P(unknown_word) = {mle('unknown_word'):.4f} (zero probability!)")
 
 #' ## Laplace Smoothing (Add-One)
-#' 
+#'
 #' Laplace smoothing solves the zero probability problem by adding 1 to all counts.
 
 # Create Laplace smoothing model
@@ -118,7 +118,7 @@ print(f"\nUnseen word probability (Laplace): {laplace('unknown_word'):.6f}")
 print(f"Unseen word probability (MLE): {mle('unknown_word'):.6f}")
 
 #' ## Lidstone Smoothing (Add-k)
-#' 
+#'
 #' Lidstone smoothing is a generalization of Laplace smoothing where we can adjust the smoothing parameter.
 
 # Test different gamma values for Lidstone smoothing
@@ -168,7 +168,7 @@ plt.tight_layout()
 print("\nObservation: As gamma increases, probabilities become more uniform")
 
 #' ## Expected Likelihood Estimation (ELE)
-#' 
+#'
 #' ELE is a special case of Lidstone smoothing with γ = 0.5, which has theoretical justification.
 
 # Create ELE model
@@ -204,7 +204,7 @@ plt.grid(True, alpha=0.3)
 plt.tight_layout()
 
 #' ## Model Evaluation with Perplexity
-#' 
+#'
 #' Let's evaluate our models using perplexity on a held-out test set.
 
 # Create a test set
@@ -273,7 +273,7 @@ if perplexities:
     print(f"\nBest performing method: {best_method[0]} (PP = {best_method[1]:.2f})")
 
 #' ## Understanding the Trade-offs
-#' 
+#'
 #' Let's visualize how different smoothing methods handle the trade-off between fitting training data and generalizing to unseen data.
 
 # Analyze the probability mass allocated to unseen events
@@ -349,7 +349,7 @@ print("- Higher smoothing → more probability reserved for unseen words")
 print("- Trade-off: fitting training data vs. handling unseen data")
 
 #' ## Practical Tips and Conclusions
-#' 
+#'
 #' Let's summarize what we've learned and provide practical guidance.
 
 print("PRACTICAL RECOMMENDATIONS:")
@@ -391,7 +391,7 @@ print("\nAs vocabulary size increases, unseen word probability decreases")
 print("This affects the smoothing strength!")
 
 #' ## Exercise: Try It Yourself!
-#' 
+#'
 #' Now it's your turn to experiment with the concepts we've covered.
 
 # EXERCISE 1: Create your own text corpus and compare smoothing methods
@@ -431,9 +431,9 @@ print("- Vocabulary size estimates")
 print("- Evaluation metrics")
 
 #' ## Summary
-#' 
+#'
 #' In this tutorial, you learned:
-#' 
+#'
 #' 1. **The zero probability problem** and why pure MLE fails
 #' 2. **Laplace smoothing** as a simple solution (add-one)
 #' 3. **Lidstone smoothing** for tunable smoothing strength
@@ -441,10 +441,10 @@ print("- Evaluation metrics")
 #' 5. **Model evaluation** using perplexity
 #' 6. **Trade-offs** between fitting training data and generalizing to unseen data
 #' 7. **Practical considerations** for real-world applications
-#' 
+#'
 #' **Next Steps:**
 #' - Try Tutorial 2: Advanced Smoothing Methods (Kneser-Ney, Simple Good-Turing)
 #' - Try Tutorial 3: Computational Efficiency and Memory Management
 #' - Try Tutorial 4: Real-world NLP Applications
-#' 
+#'
 #' **Key Takeaway:** Always use some form of smoothing in real applications. The choice of method depends on your data size, domain, and performance requirements.
