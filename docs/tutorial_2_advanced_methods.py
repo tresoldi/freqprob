@@ -201,7 +201,6 @@ try:
     plt.xticks(x, [str(bg) for bg in observed_bigrams], rotation=45)
     plt.legend()
     plt.tight_layout()
-    plt.show()
 
     # Demonstrate continuation probability concept
     print("\nContinuation probability insight:")
@@ -257,7 +256,6 @@ try:
         plt.xticks(x, [str(bg) for bg in bigrams_to_plot], rotation=45)
         plt.legend()
         plt.tight_layout()
-        plt.show()
 
         # Show discount values used by MKN
         print("\nModified Kneser-Ney uses count-dependent discounts:")
@@ -351,7 +349,6 @@ try:
     )
     plt.legend()
     plt.tight_layout()
-    plt.show()
 
     print("\nAs lambda increases, we rely more on trigram model (more specific context)")
     print("As lambda decreases, we rely more on bigram model (more general, better coverage)")
@@ -412,7 +409,6 @@ for i, word in enumerate(test_words):
     axes[i].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.show()
 
 # Compare Bayesian with other methods
 print("\nComparison with other smoothing methods:")
@@ -545,7 +541,6 @@ print("The alpha parameter controls the strength of the uniform prior.")
 #'         )
 #' 
 #' plt.tight_layout()
-#' plt.show()
 #' 
 #' # Find best models
 #' if unigram_perplexities:
@@ -663,7 +658,6 @@ if bigram_perplexities:
         )
 
 plt.tight_layout()
-plt.show()
 
 # Find best models
 if unigram_perplexities:
