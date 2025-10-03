@@ -1,11 +1,11 @@
 # FreqProb
 
-[![CI](https://github.com/tresoldi/freqprob/actions/workflows/ci.yml/badge.svg)](https://github.com/tresoldi/freqprob/actions/workflows/ci.yml)
+[![CI](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml/badge.svg)](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml)
 [![codecov](https://codecov.io/gh/tresoldi/freqprob/branch/main/graph/badge.svg?token=YOUR_TOKEN_HERE)](https://codecov.io/gh/tresoldi/freqprob)
 [![PyPI version](https://badge.fury.io/py/freqprob.svg)](https://badge.fury.io/py/freqprob)
 [![Python versions](https://img.shields.io/pypi/pyversions/freqprob.svg)](https://pypi.org/project/freqprob/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
 **A modern, high-performance Python library for probability smoothing and frequency-based language modeling.**
 
@@ -164,10 +164,35 @@ smoothed_dist = freqprob.ELE(observed_frequencies, bins=total_categories)
 ## 📚 Documentation & Learning
 
 - **[User Guide](docs/user_guide.md)**: Mathematical foundations and usage patterns
-- **[Interactive Tutorials](docs/)**: Jupyter notebooks for hands-on learning
 - **[API Reference](docs/api_reference.md)**: Complete function and class documentation
 - **[Performance Guide](docs/performance_comparison.md)**: Optimization tips and benchmarks
 - **[Development Guide](docs/development.md)**: Contributing and development setup
+
+### 📖 Interactive Tutorials
+
+Learn FreqProb through comprehensive, executable tutorials with visualizations:
+
+1. **[Basic Smoothing Methods](docs/tutorial_1_basic_smoothing.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_1_basic_smoothing.html))
+   - Introduction to probability smoothing
+   - MLE, Laplace, Lidstone, and ELE methods
+   - Model evaluation with perplexity
+
+2. **[Advanced Methods](docs/tutorial_2_advanced_methods.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_2_advanced_methods.html))
+   - Simple Good-Turing smoothing
+   - Kneser-Ney and Modified Kneser-Ney
+   - Bayesian and interpolated methods
+
+3. **[Efficiency & Memory](docs/tutorial_3_efficiency_memory.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_3_efficiency_memory.html))
+   - Vectorized batch processing
+   - Streaming algorithms
+   - Memory-efficient representations
+
+4. **[Real-World Applications](docs/tutorial_4_real_world_applications.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_4_real_world_applications.html))
+   - Language modeling
+   - Text classification
+   - Information retrieval
+
+*Tutorials are written using [Nhandu](https://github.com/tresoldi/nhandu) literate programming format.*
 
 ## 🏁 Performance Benchmarking
 
@@ -176,21 +201,21 @@ FreqProb provides a comprehensive benchmarking suite to evaluate the speed, memo
 ### Quick Benchmark
 
 ```bash
-# Using Hatch (recommended)
-hatch run bench-all --quick
+# Using Makefile
+make bench
 
 # Direct Python invocation
-python scripts/run_benchmarks.py --quick
+python docs/benchmarks.py --quick
 ```
 
 ### Detailed Analysis
 
 ```bash
-# Full benchmarks with plots
-hatch run bench-all --plots
+# Full benchmarks
+make bench-all
 
 # Custom benchmarks
-python docs/benchmarks.py --output results --format all
+python scripts/run_benchmarks.py --output results --format all
 ```
 
 Results are saved in timestamped directories with comprehensive analysis reports.
@@ -199,15 +224,16 @@ Results are saved in timestamped directories with comprehensive analysis reports
 
 ## 🤝 Contributing & Development
 
-We welcome contributions! For detailed developer instructions—including environment setup, pre-commit hooks, running the full CI suite locally, making releases, troubleshooting, and best practices—please see our [Development Guide](docs/development.md).
+We welcome contributions! For detailed developer instructions—including environment setup, running the full CI suite locally, making releases, troubleshooting, and best practices—please see our [Development Guide](docs/development.md).
 
 ### Quick Development Setup
 
 ```bash
 git clone https://github.com/tresoldi/freqprob.git
 cd freqprob
-pip install hatch
-hatch run test  # Run test suite
+make install-dev  # Install with dev dependencies
+make quality      # Run code quality checks
+make test         # Run test suite
 ```
 
 ## 📜 License
