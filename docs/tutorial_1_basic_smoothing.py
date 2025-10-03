@@ -294,50 +294,32 @@ for method_name, model in methods.items():
     print(f"  Reserved mass for unseen events: {1 - observed_mass:.4f}")
     print()
 
-# Visualize the trade-off
+# Display results in a clean table format
 methods_list = list(total_prob_mass.keys())
-observed_masses = [total_prob_mass[m] for m in methods_list]
-unseen_masses = [1 - total_prob_mass[m] for m in methods_list]
-x = np.arange(len(methods_list))
 
-# Figure 1: Probability mass distribution
-plt.figure(figsize=(9, 4))
-plt.bar(x, observed_masses, label="Observed words", alpha=0.8)
-plt.bar(x, unseen_masses, bottom=observed_masses, label="Reserved for unseen", alpha=0.8)
-plt.title("Probability Mass Distribution")
-plt.xlabel("Smoothing Method")
-plt.ylabel("Probability Mass")
-plt.xticks(x, methods_list, rotation=45)
-plt.legend()
-plt.grid(True, alpha=0.3)
+print("\n" + "="*75)
+print("PROBABILITY MASS ALLOCATION: OBSERVED vs. UNSEEN WORDS")
+print("="*75)
+print(f"{'Method':<20} {'Observed Mass':<18} {'Reserved Mass':<18} {'Per Unseen Word':<18}")
+print("-"*75)
+
+for method_name in methods_list:
+    observed = total_prob_mass[method_name]
+    reserved = 1 - observed
+    per_unseen = unseen_prob_mass[method_name]
+    print(f"{method_name:<20} {observed:>12.4f} ({observed*100:>5.1f}%)  "
+          f"{reserved:>12.4f} ({reserved*100:>5.1f}%)  {per_unseen:>17.2e}")
+
+# Simple bar chart showing reserved probability mass
+reserved_masses = [1 - total_prob_mass[m] for m in methods_list]
+plt.figure(figsize=(8, 4))
+plt.bar(methods_list, reserved_masses, alpha=0.8)
+plt.title("Probability Mass Reserved for Unseen Events")
+plt.ylabel("Reserved Probability")
+plt.xticks(rotation=45)
 plt.tight_layout()
 
-# Figure 2: Individual unseen word probabilities
-unseen_probs = [unseen_prob_mass[m] for m in methods_list]
-plt.figure(figsize=(9, 4))
-bars = plt.bar(x, unseen_probs, alpha=0.8, color="orange")
-plt.title("Probability for Individual Unseen Words")
-plt.xlabel("Smoothing Method")
-plt.ylabel("Probability")
-plt.xticks(x, methods_list, rotation=45)
-plt.yscale("log")
-plt.grid(True, alpha=0.3)
-
-# Add value labels
-for bar, value in zip(bars, unseen_probs, strict=False):
-    plt.text(
-        bar.get_x() + bar.get_width() / 2,
-        bar.get_height() * 1.5,
-        f"{value:.2e}",
-        ha="center",
-        va="bottom",
-        rotation=45,
-        fontsize=8,
-    )
-
-plt.tight_layout()
-
-print("Key Insights:")
+print("\nKey Insights:")
 print("- MLE gives zero probability to unseen words (problematic)")
 print("- Smoothing methods allocate probability mass to unseen events")
 print("- Higher smoothing → more probability reserved for unseen words")
