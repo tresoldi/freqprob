@@ -295,40 +295,37 @@ for method_name, model in methods.items():
     print()
 
 # Visualize the trade-off
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-
-# Plot 1: Probability mass for observed vs unseen
 methods_list = list(total_prob_mass.keys())
 observed_masses = [total_prob_mass[m] for m in methods_list]
 unseen_masses = [1 - total_prob_mass[m] for m in methods_list]
-
 x = np.arange(len(methods_list))
-ax1.bar(x, observed_masses, label="Observed words", alpha=0.8)
-ax1.bar(x, unseen_masses, bottom=observed_masses, label="Reserved for unseen", alpha=0.8)
 
-ax1.set_title("Probability Mass Distribution")
-ax1.set_xlabel("Smoothing Method")
-ax1.set_ylabel("Probability Mass")
-ax1.set_xticks(x)
-ax1.set_xticklabels(methods_list, rotation=45)
-ax1.legend()
-ax1.grid(True, alpha=0.3)
+# Figure 1: Probability mass distribution
+plt.figure(figsize=(9, 4))
+plt.bar(x, observed_masses, label="Observed words", alpha=0.8)
+plt.bar(x, unseen_masses, bottom=observed_masses, label="Reserved for unseen", alpha=0.8)
+plt.title("Probability Mass Distribution")
+plt.xlabel("Smoothing Method")
+plt.ylabel("Probability Mass")
+plt.xticks(x, methods_list, rotation=45)
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
 
-# Plot 2: Individual unseen word probabilities
+# Figure 2: Individual unseen word probabilities
 unseen_probs = [unseen_prob_mass[m] for m in methods_list]
-bars = ax2.bar(x, unseen_probs, alpha=0.8, color="orange")
-
-ax2.set_title("Probability for Individual Unseen Words")
-ax2.set_xlabel("Smoothing Method")
-ax2.set_ylabel("Probability")
-ax2.set_xticks(x)
-ax2.set_xticklabels(methods_list, rotation=45)
-ax2.set_yscale("log")
-ax2.grid(True, alpha=0.3)
+plt.figure(figsize=(9, 4))
+bars = plt.bar(x, unseen_probs, alpha=0.8, color="orange")
+plt.title("Probability for Individual Unseen Words")
+plt.xlabel("Smoothing Method")
+plt.ylabel("Probability")
+plt.xticks(x, methods_list, rotation=45)
+plt.yscale("log")
+plt.grid(True, alpha=0.3)
 
 # Add value labels
 for bar, value in zip(bars, unseen_probs, strict=False):
-    ax2.text(
+    plt.text(
         bar.get_x() + bar.get_width() / 2,
         bar.get_height() * 1.5,
         f"{value:.2e}",
