@@ -166,6 +166,11 @@ ignore = [
     "PLR0915", # Too many statements
     "C901",    # Complex function
 ]
+"docs/tutorial_*.py" = [
+    "D100",   # Missing module docstring (Nhandu files are self-documenting)
+    "E402",   # Module level import not at top (pedagogical import placement)
+    "RUF003", # Ambiguous Greek characters (mathematical notation)
+]
 "docs/*.ipynb" = [
     "E402",    # Module level import not at top of file (common in notebooks)
 ]
