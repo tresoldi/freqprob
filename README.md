@@ -10,26 +10,24 @@
 
 FreqProb provides state-of-the-art smoothing techniques for converting frequency counts into probability estimates, with applications in natural language processing, information retrieval, and statistical modeling.
 
-## 🌟 Why FreqProb?
-
-### **🎯 Comprehensive & Accurate**
+## **Comprehensive & Accurate**
 - **10+ smoothing methods**: From basic Laplace to advanced Kneser-Ney and Simple Good-Turing
 - **Mathematically rigorous**: Implementations validated against reference sources (NLTK, SciPy)
 - **Production-ready**: Extensive testing with 400+ test cases and property-based validation
 
-### **⚡ High Performance**
+## **High Performance**
 - **Vectorized operations**: Batch processing with NumPy acceleration
 - **Memory efficient**: Compressed representations and streaming algorithms  
 - **Lazy evaluation**: Compute probabilities only when needed
 - **Caching system**: Intelligent memoization for expensive operations
 
-### **🔧 Developer Experience**
+## **Developer Experience**
 - **Type safety**: Full type hints with mypy validation
 - **Modern Python**: Requires Python 3.10+, uses latest language features
 - **Rich documentation**: Mathematical background, tutorials, and API reference
 - **Easy integration**: Clean, intuitive API design
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -65,29 +63,7 @@ perplexity = freqprob.perplexity(laplace, test_data)
 print(f"Perplexity: {perplexity:.2f}")
 ```
 
-### High-Performance Operations
-
-```python
-# Vectorized batch processing
-vectorized = freqprob.VectorizedScorer(laplace)
-words = ['cat', 'dog', 'bird', 'fish'] * 1000
-scores = vectorized.score_batch(words)  # Fast batch scoring
-
-# Memory-efficient streaming for large datasets
-streaming = freqprob.StreamingMLE(max_vocabulary_size=100000)
-for word in massive_text_stream:
-    streaming.update_single(word)
-
-# Compare multiple models
-models = {
-    'laplace': freqprob.Laplace(word_counts, bins=10000),
-    'kneser_ney': freqprob.KneserNey(bigrams),
-    'simple_gt': freqprob.SimpleGoodTuring(word_counts)
-}
-comparison = freqprob.model_comparison(models, test_data)
-```
-
-## 🎓 Smoothing Methods
+## Smoothing Methods
 
 ### Basic Methods
 - **MLE (Maximum Likelihood)**: Unsmoothed relative frequencies
@@ -107,7 +83,7 @@ comparison = freqprob.model_comparison(models, test_data)
 - **Memory optimization**: Compressed and sparse representations
 - **Performance profiling**: Built-in benchmarking and validation tools
 
-## 📊 Use Cases
+## Use Cases
 
 ### **Natural Language Processing**
 ```python
@@ -140,7 +116,7 @@ estimator = freqprob.SimpleGoodTuring(category_counts)
 smoothed_dist = freqprob.ELE(observed_frequencies, bins=total_categories)
 ```
 
-## 🔬 Quality & Reliability
+## Quality & Reliability
 
 ### **Rigorous Testing**
 - **400+ test cases** covering edge cases and normal operations
@@ -160,16 +136,9 @@ smoothed_dist = freqprob.ELE(observed_frequencies, bins=total_categories)
 - **Precision testing** for floating-point edge cases
 - **Reference compatibility** with established libraries
 
-## 📚 Documentation & Learning
+## Documentation & Learning
 
-- **[User Guide](docs/user_guide.md)**: Mathematical foundations and usage patterns
-- **[API Reference](docs/api_reference.md)**: Complete function and class documentation
-- **[Performance Guide](docs/performance_comparison.md)**: Optimization tips and benchmarks
-- **[Development Guide](docs/development.md)**: Contributing and development setup
-
-### 📖 Interactive Tutorials
-
-Learn FreqProb through comprehensive, executable tutorials with visualizations:
+Learn FreqProb through comprehensive, executable tutorials with visualizations. Tutorials are written using [Nhandu](https://pypi.org/project/nhandu) literate programming format.
 
 1. **[Basic Smoothing Methods](docs/tutorial_1_basic_smoothing.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_1_basic_smoothing.html))
    - Introduction to probability smoothing
@@ -191,55 +160,7 @@ Learn FreqProb through comprehensive, executable tutorials with visualizations:
    - Text classification
    - Information retrieval
 
-*Tutorials are written using [Nhandu](https://github.com/tresoldi/nhandu) literate programming format.*
-
-## 🏁 Performance Benchmarking
-
-FreqProb provides a comprehensive benchmarking suite to evaluate the speed, memory usage, and accuracy of all smoothing methods.
-
-### Quick Benchmark
-
-```bash
-# Using Makefile
-make bench
-
-# Direct Python invocation
-python docs/benchmarks.py --quick
-```
-
-### Detailed Analysis
-
-```bash
-# Full benchmarks
-make bench-all
-
-# Custom benchmarks
-python scripts/run_benchmarks.py --output results --format all
-```
-
-Results are saved in timestamped directories with comprehensive analysis reports.
-
-*See the [Performance Guide](docs/performance_comparison.md) for detailed comparisons and optimization tips.*
-
-## 🤝 Contributing & Development
-
-We welcome contributions! For detailed developer instructions—including environment setup, running the full CI suite locally, making releases, troubleshooting, and best practices—please see our [Development Guide](docs/development.md).
-
-### Quick Development Setup
-
-```bash
-git clone https://github.com/tresoldi/freqprob.git
-cd freqprob
-make install-dev  # Install with dev dependencies
-make quality      # Run code quality checks
-make test         # Run test suite
-```
-
-## 📜 License
-
-FreqProb is released under the [GNU General Public License v3.0](LICENSE). See the license file for details.
-
-## 🎓 Citation
+## Citation
 
 If you use FreqProb in academic research, please cite:
 
