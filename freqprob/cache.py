@@ -138,6 +138,7 @@ def cached_sgt_computation(
         config_params = {
             "p_value": getattr(self.config, "p_value", None),
             "default_p0": getattr(self.config, "default_p0", None),
+            "bins": getattr(self.config, "bins", None),
             "allow_fail": getattr(self.config, "allow_fail", None),
             "logprob": self.logprob,
         }
@@ -145,15 +146,19 @@ def cached_sgt_computation(
         # Try to get cached result
         cached_result = _sgt_cache.get(freqdist, **config_params)
         if cached_result is not None:
-            # Restore cached probability distributions
-            self._prob, self._unobs = cached_result
+            # Restore cached probability distributions and total_unseen_mass
+            if len(cached_result) == 3:  # New format with _total_unseen_mass
+                self._prob, self._unobs, self._total_unseen_mass = cached_result
+            else:  # Old format without _total_unseen_mass (backward compatibility)
+                self._prob, self._unobs = cached_result
+                self._total_unseen_mass = None
             return
 
         # Compute if not cached
         func(self, freqdist)
 
         # Cache the result (deep copy to avoid reference issues)
-        result = (dict(self._prob), self._unobs)
+        result = (dict(self._prob), self._unobs, self._total_unseen_mass)
         _sgt_cache.set(freqdist, result, **config_params)
 
     return wrapper

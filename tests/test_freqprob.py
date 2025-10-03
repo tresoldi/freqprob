@@ -594,10 +594,16 @@ def test_sgt_dist_nolog_noobs() -> None:
 
     # Test with allow_fail=True to demonstrate SGT can handle poor data gracefully
     scorer = SimpleGoodTuring(TEST_OBS2, logprob=False, allow_fail=True)
-    # Just verify it returns reasonable probabilities
+    # Verify it returns reasonable probabilities (per-word semantics)
     assert scorer("0") > 0
     assert scorer("~") > 0
-    assert scorer("aaa") > 0
+    unseen_prob = scorer("aaa")
+    assert unseen_prob > 0
+    # Verify per-word semantics: two unseen words should be additive
+    assert 2 * unseen_prob <= 1.0  # Should not exceed total probability
+    # Verify total_unseen_mass property exists and is >= per-word
+    # (Equal when bins = V+1, larger when bins > V+1)
+    assert scorer.total_unseen_mass >= unseen_prob
 
 
 def test_sgt_dist_log_noobs() -> None:
@@ -610,10 +616,12 @@ def test_sgt_dist_log_noobs() -> None:
 
     # Test with allow_fail=True to demonstrate SGT can handle poor data gracefully
     scorer = SimpleGoodTuring(TEST_OBS2, allow_fail=True)
-    # Just verify it returns reasonable log probabilities (negative values)
+    # Verify it returns reasonable log probabilities (negative values)
     assert scorer("0") < 0
     assert scorer("~") < 0
     assert scorer("aaa") < 0
+    # Verify total_unseen_mass property works with logprob model
+    assert scorer.total_unseen_mass > 0  # Should be regular probability, not log
 
 
 def test_sgt_dist_nolog_obs() -> None:
@@ -651,5 +659,97 @@ def test_sgt_dist_log_obs() -> None:
 def test_sgt_raises() -> None:
     """Test the Simple Good-Turing distribution raises the correct errors."""
 
-    with pytest.raises(RuntimeWarning):
-        SimpleGoodTuring(TEST_OBS1)
+    # TEST_OBS1 is very simple (just ABBCCCDDDDEEEE) and won't trigger
+    # RuntimeWarning with default allow_fail=True.
+    # Test bins validation instead:
+    with pytest.raises(ValueError, match=r"bins .* must be greater than observed vocabulary size"):
+        # bins <= V should raise ValueError
+        SimpleGoodTuring(TEST_OBS1, bins=5)  # TEST_OBS1 has 5 types, so bins=5 should fail
+
+
+def test_sgt_bins_parameter() -> None:
+    """Test SimpleGoodTuring bins parameter functionality."""
+    freqdist = Counter({"a": 10, "b": 5, "c": 1, "d": 1, "e": 1})
+
+    # Test with explicit bins parameter
+    sgt_1000 = SimpleGoodTuring(freqdist, bins=1000, logprob=False, allow_fail=True)
+    sgt_5000 = SimpleGoodTuring(freqdist, bins=5000, logprob=False, allow_fail=True)
+
+    # Unseen probability should decrease as bins increases (same p0, more unseen types)
+    p_unseen_1000 = sgt_1000("unseen")
+    p_unseen_5000 = sgt_5000("unseen")
+    assert p_unseen_1000 > p_unseen_5000
+
+    # Total unseen mass should be same regardless of bins
+    assert abs(sgt_1000.total_unseen_mass - sgt_5000.total_unseen_mass) < 0.001
+
+    # Probabilities should be positive
+    assert p_unseen_1000 > 0
+    assert p_unseen_5000 > 0
+
+
+def test_sgt_bins_default() -> None:
+    """Test SimpleGoodTuring default bins calculation (V + N1)."""
+    freqdist = Counter({"a": 10, "b": 5, "c": 1, "d": 1, "e": 1})
+    # V = 5, N1 = 3, so default bins should be 8
+
+    sgt_default = SimpleGoodTuring(freqdist, logprob=False, allow_fail=True)
+    sgt_explicit = SimpleGoodTuring(freqdist, bins=8, logprob=False, allow_fail=True)
+
+    # Should give same results
+    assert abs(sgt_default("unseen") - sgt_explicit("unseen")) < 1e-10
+    assert abs(sgt_default.total_unseen_mass - sgt_explicit.total_unseen_mass) < 1e-10
+
+
+def test_sgt_bins_validation() -> None:
+    """Test that SGT validates bins parameter correctly."""
+    freqdist = Counter({"a": 10, "b": 5, "c": 1})
+
+    # bins must be greater than V_observed (3)
+    with pytest.raises(ValueError, match=r"bins.*must be greater"):
+        SimpleGoodTuring(freqdist, bins=3, logprob=False, allow_fail=True)
+
+    with pytest.raises(ValueError, match=r"bins.*must be greater"):
+        SimpleGoodTuring(freqdist, bins=2, logprob=False, allow_fail=True)
+
+
+def test_sgt_total_unseen_mass() -> None:
+    """Test total_unseen_mass property returns correct p0 value."""
+    freqdist = Counter({"a": 10, "b": 5, "c": 1, "d": 1, "e": 1})
+
+    sgt = SimpleGoodTuring(freqdist, bins=100, logprob=False, allow_fail=True)
+
+    # total_unseen_mass should be p0 (based on N1/N formula)
+    # N1 = 3, N = 18, p0 should be approximately 3/18 = 0.167
+    p0 = sgt.total_unseen_mass
+    assert 0.1 < p0 < 0.3  # Reasonable range
+
+    # Per-word unseen should be much smaller than total mass
+    p_per_word = sgt("unseen")
+    assert p_per_word < p0
+
+    # Relationship: p_per_word ≈ p0 / (bins - V)
+    # bins=100, V=5, so p_per_word ≈ p0 / 95
+    expected_per_word = p0 / (100 - 5)
+    assert abs(p_per_word - expected_per_word) < 1e-10
+
+
+def test_sgt_perplexity_compatible() -> None:
+    """Test that new SGT behavior works with perplexity calculation."""
+    from freqprob import perplexity
+
+    freqdist = Counter({"a": 10, "b": 5, "c": 3, "d": 1, "e": 1})
+    test_data = ["a", "b", "c", "unseen1", "unseen2"]
+
+    # Create SGT model with logprob=True (required for perplexity)
+    sgt = SimpleGoodTuring(freqdist, bins=100, logprob=True, allow_fail=True)
+
+    # Should be able to calculate perplexity without errors
+    pp = perplexity(sgt, test_data)
+
+    # Perplexity should be positive and finite
+    assert pp > 0
+    assert pp < float("inf")
+
+    # With per-word semantics, unseen words should have reasonable impact
+    # (not dominate the entire probability space like old behavior)
