@@ -426,7 +426,7 @@ N-gram interpolation (trigrams + bigrams):
 trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
 bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3, ('small', 'cat'): 2}
 interp = freqprob.InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.7, logprob=False)
-print(interp(('the', 'big', 'cat')))  # 0.5 = 0.7 * (3/5) + 0.3 * (5/10)
+print(interp(('the', 'big', 'cat')))  # 0.57 = 0.7 * (3/5) + 0.3 * (5/10)
 print(interp(('unseen', 'big', 'cat')))  # 0.15 = 0.7 * 0 + 0.3 * (5/10)
 ```
 
