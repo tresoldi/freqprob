@@ -43,15 +43,9 @@ dependencies = [
 memory = [
     "psutil>=5.8.0",
 ]
-# Notebook and plotting for tutorials
-notebook = [
-    "jupyter>=1.0.0",
-    "matplotlib>=3.5.0",
-    "seaborn>=0.11.0",
-]
 # All optional dependencies
 all = [
-    "freqprob[memory,notebook]",
+    "freqprob[memory]",
 ]
 # Development dependencies
 dev = [
@@ -71,10 +65,7 @@ dev = [
     "build>=0.10.0",
     "twine>=4.0.0",
 
-    # Documentation
-    "mkdocs>=1.5.0",
-    "mkdocs-material>=9.0.0",
-    "mkdocstrings[python]>=0.20.0",
+    # Documentation generation (nhandu for tutorials)
     "nhandu>=0.1.0",
     "matplotlib>=3.5.0",
     "seaborn>=0.11.0",
