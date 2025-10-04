@@ -26,13 +26,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **SimpleGoodTuring.total_unseen_mass property**: Read-only property providing access to p₀ (total unseen mass)
 - **ScoringMethod._total_unseen_mass**: Base class support for methods that track total unseen mass
 
+### Fixed
+
+- **InterpolatedSmoothing**: Fixed n-gram interpolation to properly extract lower-order context
+  - Previously: trigram+bigram interpolation returned zero probabilities (looked for trigram keys in bigram model)
+  - Now: automatically detects n-gram orders and extracts appropriate context (e.g., extracts bigram `('big', 'cat')` from trigram `('the', 'big', 'cat')`)
+  - Supports two modes: n-gram interpolation (different orders) and same-type interpolation (same element types)
+  - All probabilities floored at `1e-10` for numerical stability
+  - Unseen n-grams backoff to lower-order model: `(1-λ) * P_low(context)`
+
 ### Improved
 
+- **InterpolatedSmoothing**: Enhanced with automatic n-gram mode detection
+  - Validates that high-order n ≥ low-order n for tuple distributions
+  - Provides helpful error messages suggesting how to fix order issues
+  - Added `_detect_order()` and `_extract_lower_context()` helper methods
+  - Dual-mode support for both n-gram and same-type interpolation
 - Tutorial 2: Comprehensive explanation of SGT's per-word vs total mass semantics
 - Tutorial 2: Demonstration of bins parameter effects on unseen probabilities
 - Tutorial 2: Example showing SGT compatibility with perplexity calculation
+- Tutorial 2: Updated interpolated smoothing section with n-gram mode explanation
 - API Reference: Complete documentation of new bins parameter and migration guide
+- API Reference: Updated InterpolatedSmoothing documentation with dual-mode examples
 - Test suite: Added 5 new tests for bins parameter, total_unseen_mass, and perplexity compatibility
+- Test suite: Added 7 new tests for n-gram interpolation modes
 
 ### Migration Guide
 
