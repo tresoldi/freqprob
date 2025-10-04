@@ -115,12 +115,12 @@ install-dev: ## Install package with development dependencies (includes all Make
 
 validate: ## Run full validation suite
 	@echo "==> Running validation suite..."
-	$(PYTHON) scripts/validation_report.py --output-dir validation_results
+	$(PYTHON) scripts/validation.py --output-dir validation_results
 	@echo "✓ Validation complete! Results in validation_results/"
 
 validate-quick: ## Run quick validation checks
 	@echo "==> Running quick validation..."
-	$(PYTHON) scripts/validation_report.py --quick --output-dir quick_validation
+	$(PYTHON) scripts/validation.py --quick --output-dir validation_results_quick
 	@echo "✓ Quick validation complete!"
 
 bench: ## Run quick performance benchmarks
