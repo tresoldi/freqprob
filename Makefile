@@ -125,12 +125,14 @@ validate-quick: ## Run quick validation checks
 
 bench: ## Run quick performance benchmarks
 	@echo "==> Running quick benchmarks..."
-	$(PYTHON) docs/benchmarks.py --quick
-	@echo "✓ Benchmarks complete!"
+	$(PYTHON) scripts/benchmarks.py --quick --output benchmark_results_quick
+	@echo "✓ Quick benchmarks complete!"
+	@echo "  Results saved to benchmark_results_quick/"
 
 bench-all: ## Run comprehensive benchmark suite
 	@echo "==> Running comprehensive benchmarks..."
-	$(PYTHON) scripts/run_benchmarks.py
+	@echo "  This may take several minutes..."
+	$(PYTHON) scripts/benchmarks.py --output benchmark_results_$$(date +%Y%m%d_%H%M%S)
 	@echo "✓ Comprehensive benchmarks complete!"
 
 docs: ## Generate HTML documentation from Nhandu tutorial sources
