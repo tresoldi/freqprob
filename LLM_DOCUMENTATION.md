@@ -237,6 +237,8 @@ print(strong_prior("positive"))  # Closer to 1/3
 
 **Requirements:** Needs diverse frequency-of-frequency distribution
 
+**New in v0.4.0:** `bins` parameter for per-word unseen probability
+
 ```python
 import freqprob
 
@@ -244,17 +246,33 @@ import freqprob
 large_counts = {f"word_{i}": max(1, 1000 - i*2) for i in range(500)}
 
 try:
+    # Default: bins = V_observed + N1 (singletons)
     sgt = freqprob.SimpleGoodTuring(large_counts, logprob=True)
 
     # Good-Turing excels at low-frequency and unseen words
     prob_rare = sgt("word_400")      # Rare word
-    prob_unseen = sgt("new_word")    # Unseen word
+    prob_unseen = sgt("new_word")    # Per-word unseen probability
+
+    # Access total unseen mass (p0) if needed
+    total_mass = sgt.total_unseen_mass  # Total for ALL unseen words
+
+    # Custom vocabulary size
+    sgt_large = freqprob.SimpleGoodTuring(
+        large_counts,
+        bins=10000,  # Estimated total vocabulary
+        logprob=True
+    )
 
 except ValueError as e:
     # May fail if frequency distribution is too uniform
     print(f"Good-Turing failed: {e}")
     # Fallback to ELE or Bayesian smoothing
 ```
+
+**Breaking change from v0.3.x:**
+- Old: `sgt('unseen')` returned p₀ (total mass for ALL unseen, ~7%)
+- New: `sgt('unseen')` returns per-word probability (~0.012%)
+- Migration: Use `sgt.total_unseen_mass` to access p₀
 
 ### 7. Kneser-Ney Smoothing
 
@@ -1014,7 +1032,7 @@ log_sum = logsumexp(log_probs)
 
 ## Package Information
 
-**Version:** 0.3.1
+**Version:** 0.4.0
 **Python:** Requires 3.10+
 **Core dependencies:** numpy, scipy
 **License:** MIT
