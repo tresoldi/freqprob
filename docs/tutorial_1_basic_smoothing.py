@@ -44,9 +44,6 @@ for sentence in corpus:
     all_words.extend(sentence.split())
 
 freqdist = Counter(all_words)
-print("Frequency Distribution:")
-for word, count in freqdist.most_common():
-    print(f"{word}: {count}")
 
 print(f"\nTotal words: {sum(freqdist.values())}")
 print(f"Unique words: {len(freqdist)}")
@@ -163,8 +160,8 @@ plt.grid(True, alpha=0.3)
 
 plt.tight_layout()
 
-print("\nObservation: As gamma increases, probabilities become more uniform")
-
+#' Note how, as gamma increases, probabilities become more uniform.
+#
 #' ## Expected Likelihood Estimation (ELE)
 #'
 #' ELE is a special case of Lidstone smoothing with γ = 0.5, which has theoretical justification.
@@ -319,109 +316,28 @@ plt.ylabel("Reserved Probability")
 plt.xticks(rotation=45)
 plt.tight_layout()
 
-print("\nKey Insights:")
-print("- MLE gives zero probability to unseen words (problematic)")
-print("- Smoothing methods allocate probability mass to unseen events")
-print("- Higher smoothing → more probability reserved for unseen words")
-print("- Trade-off: fitting training data vs. handling unseen data")
+#' Key Insights:
+#'   - MLE gives zero probability to unseen words (problematic)
+#'   - Smoothing methods allocate probability mass to unseen events
+#'   - Higher smoothing → more probability reserved for unseen words
+#'   - Trade-off: fitting training data vs. handling unseen data
 
 #' ## Practical Tips and Conclusions
 #'
 #' Let's summarize what we've learned and provide practical guidance.
-
-print("PRACTICAL RECOMMENDATIONS:")
-print("=" * 50)
-print()
-
-print("1. NEVER use pure MLE for real applications")
-print("   → Zero probabilities break many algorithms")
-print()
-
-print("2. Laplace smoothing (add-one) is a good baseline")
-print("   → Simple, robust, works well for small datasets")
-print()
-
-print("3. Use ELE (gamma=0.5) for theoretically motivated smoothing")
-print("   → Good balance between smoothing and data fidelity")
-print()
-
-print("4. Tune Lidstone gamma parameter using validation data")
-print("   → Cross-validation to find optimal smoothing strength")
-print()
-
-print("5. Consider vocabulary size when setting 'bins' parameter")
-print("   → Underestimating leads to over-smoothing")
-print("   → Overestimating leads to under-smoothing")
-print()
-
-# Demonstrate vocabulary size effect
-print("VOCABULARY SIZE EFFECT DEMONSTRATION:")
-print("-" * 40)
-
-vocab_sizes = [100, 1000, 10000]
-for vocab_size in vocab_sizes:
-    laplace_model = freqprob.Laplace(freqdist, bins=vocab_size, logprob=False)
-    unseen_prob = laplace_model("unseen_word")
-    print(f"Vocabulary size {vocab_size:5d}: P(unseen) = {unseen_prob:.6f}")
-
-print("\nAs vocabulary size increases, unseen word probability decreases")
-print("This affects the smoothing strength!")
-
-#' ## Exercise: Try It Yourself!
 #'
-#' Now it's your turn to experiment with the concepts we've covered.
-
-# EXERCISE 1: Create your own text corpus and compare smoothing methods
-# TODO: Replace this with your own text data
-your_corpus = [
-    "machine learning is fascinating",
-    "deep learning models are powerful",
-    "natural language processing uses machine learning",
-    "artificial intelligence and machine learning overlap",
-    "learning algorithms improve with data",
-]
-
-# Create frequency distribution
-your_words = []
-for sentence in your_corpus:
-    your_words.extend(sentence.split())
-
-your_freqdist = Counter(your_words)
-print("Your frequency distribution:")
-print(your_freqdist)
-
-# TODO: Create different smoothing models and compare them
-# Hint: Use the code patterns from above
-
-# EXERCISE 2: Find the optimal gamma for Lidstone smoothing
-# TODO: Create a validation set and test different gamma values
-# Hint: Use perplexity to evaluate performance
-
-# EXERCISE 3: Analyze the effect of different vocabulary size estimates
-# TODO: Try bins=[100, 500, 1000, 5000] and see how it affects smoothing
-
-print("\nComplete the exercises above to deepen your understanding!")
-print("Experiment with different:")
-print("- Text corpora (different domains, sizes)")
-print("- Smoothing parameters (gamma values)")
-print("- Vocabulary size estimates")
-print("- Evaluation metrics")
-
-#' ## Summary
+#' 1. NEVER use pure MLE for real applications
+#'    → Zero probabilities break many algorithms
 #'
-#' In this tutorial, you learned:
+#' 2. Laplace smoothing (add-one) is a good baseline
+#'    → Simple, robust, works well for small datasets
 #'
-#' 1. **The zero probability problem** and why pure MLE fails
-#' 2. **Laplace smoothing** as a simple solution (add-one)
-#' 3. **Lidstone smoothing** for tunable smoothing strength
-#' 4. **Expected Likelihood Estimation** as a theoretically motivated choice
-#' 5. **Model evaluation** using perplexity
-#' 6. **Trade-offs** between fitting training data and generalizing to unseen data
-#' 7. **Practical considerations** for real-world applications
+#' 3. Use ELE (gamma=0.5) for theoretically motivated smoothing
+#'    → Good balance between smoothing and data fidelity
 #'
-#' **Next Steps:**
-#' - Try Tutorial 2: Advanced Smoothing Methods (Kneser-Ney, Simple Good-Turing)
-#' - Try Tutorial 3: Computational Efficiency and Memory Management
-#' - Try Tutorial 4: Real-world NLP Applications
+#' 4. Tune Lidstone gamma parameter using validation data
+#'    → Cross-validation to find optimal smoothing strength
 #'
-#' **Key Takeaway:** Always use some form of smoothing in real applications. The choice of method depends on your data size, domain, and performance requirements.
+#' 5. Consider vocabulary size when setting 'bins' parameter
+#'    → Underestimating leads to over-smoothing
+#'    → Overestimating leads to under-smoothing
