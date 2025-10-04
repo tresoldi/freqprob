@@ -294,18 +294,20 @@ for method_name, model in methods.items():
 # Display results in a clean table format
 methods_list = list(total_prob_mass.keys())
 
-print("\n" + "="*75)
+print("\n" + "=" * 75)
 print("PROBABILITY MASS ALLOCATION: OBSERVED vs. UNSEEN WORDS")
-print("="*75)
+print("=" * 75)
 print(f"{'Method':<20} {'Observed Mass':<18} {'Reserved Mass':<18} {'Per Unseen Word':<18}")
-print("-"*75)
+print("-" * 75)
 
 for method_name in methods_list:
     observed = total_prob_mass[method_name]
     reserved = 1 - observed
     per_unseen = unseen_prob_mass[method_name]
-    print(f"{method_name:<20} {observed:>12.4f} ({observed*100:>5.1f}%)  "
-          f"{reserved:>12.4f} ({reserved*100:>5.1f}%)  {per_unseen:>17.2e}")
+    print(
+        f"{method_name:<20} {observed:>12.4f} ({observed * 100:>5.1f}%)  "
+        f"{reserved:>12.4f} ({reserved * 100:>5.1f}%)  {per_unseen:>17.2e}"
+    )
 
 # Simple bar chart showing reserved probability mass
 reserved_masses = [1 - total_prob_mass[m] for m in methods_list]
