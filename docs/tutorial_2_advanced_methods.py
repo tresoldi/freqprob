@@ -98,14 +98,16 @@ try:
     print("Simple Good-Turing model created successfully")
     print(f"Default bins: {len(freqdist)} (observed) + {freq_of_freqs.get(1, 0)} (singletons) = {len(freqdist) + freq_of_freqs.get(1, 0)}")
 
-    # Test on sample words
-    test_words = ["the", "cat", "forest", "elephant"]  # Last one is unseen
+    # Test on sample words from the corpus (sys/re module docstrings)
+    # Use common programming terms and one unseen word
+    test_words = ["the", "string", "pattern", "xyzabc"]  # Last one is unseen
 
     print("\nSimple Good-Turing probabilities:")
     for word in test_words:
         original_count = freqdist.get(word, 0)
         sgt_prob = sgt(word)
-        print(f"P({word}) = {sgt_prob:.6f} (original count: {original_count})")
+        status = "unseen" if original_count == 0 else f"count: {original_count}"
+        print(f"P({word:<10}) = {sgt_prob:.6f} ({status})")
 
     # Compare with MLE
     mle_comparison = freqprob.MLE(freqdist, logprob=False)
@@ -141,11 +143,11 @@ try:
     print("=" * 60)
 
     # Two different unseen words should have same probability
-    unseen1 = sgt("elephant")
-    unseen2 = sgt("giraffe")
-    print(f"\nP(elephant) = {unseen1:.6f}")
-    print(f"P(giraffe)  = {unseen2:.6f}")
-    print(f"P(elephant) + P(giraffe) = {unseen1 + unseen2:.6f}")
+    unseen1 = sgt("xyzabc")
+    unseen2 = sgt("qwerty")
+    print(f"\nP(xyzabc) = {unseen1:.6f}")
+    print(f"P(qwerty) = {unseen2:.6f}")
+    print(f"P(xyzabc) + P(qwerty) = {unseen1 + unseen2:.6f}")
     print(f"This sum is meaningful because each returns PER-WORD probability")
 
     # Demonstrate effect of bins parameter
@@ -167,7 +169,7 @@ try:
 
     for bins in bins_values:
         sgt_test = freqprob.SimpleGoodTuring(freqdist, bins=bins, logprob=False)
-        unseen_prob = sgt_test("elephant")
+        unseen_prob = sgt_test("xyzabc")
         est_unseen = int(sgt_test.total_unseen_mass / unseen_prob)
 
         if bins == bins_values[0]:
@@ -192,15 +194,16 @@ try:
     # Create log-probability version for perplexity
     sgt_log = freqprob.SimpleGoodTuring(freqdist, logprob=True)
 
-    # Small test set
-    test_sample = ["the", "cat", "walks", "slowly", "elephant"]
+    # Small test set with words relevant to sys/re documentation
+    test_sample = ["the", "string", "module", "function", "xyzabc"]
 
     print(f"\nTest words: {test_sample}")
     print(f"\nLog-probabilities:")
     for word in test_sample:
         logprob = sgt_log(word)
         prob = np.exp(logprob)
-        print(f"  {word:<10}: log P = {logprob:8.4f}, P = {prob:.6f}")
+        status = "(unseen)" if word == "xyzabc" else "(observed)"
+        print(f"  {word:<10}: log P = {logprob:8.4f}, P = {prob:.6f} {status}")
 
     # Calculate perplexity
     perp = freqprob.perplexity(sgt_log, test_sample)
@@ -273,13 +276,13 @@ try:
     kn = freqprob.KneserNey(bigram_freqdist, discount=0.75, logprob=False)
     print("Kneser-Ney model created successfully")
 
-    # Test on various bigrams
+    # Test on various bigrams from programming documentation
     test_bigrams = [
-        ("the", "cat"),
-        ("the", "dog"),
+        ("the", "string"),
+        ("the", "function"),
         ("in", "the"),
-        ("of", "animals"),
-        ("elephant", "runs"),  # Unseen bigram
+        ("of", "module"),
+        ("xyzabc", "qwerty"),  # Unseen bigram
     ]
 
     print("\nKneser-Ney probabilities:")
@@ -311,7 +314,7 @@ try:
 
     # Demonstrate continuation probability concept
     print("\nContinuation probability insight:")
-    words_to_analyze = ["the", "cat", "forest"]
+    words_to_analyze = ["the", "string", "module"]
 
     for word in words_to_analyze:
         # Count how many different contexts this word appears in
@@ -430,12 +433,12 @@ try:
 
     print(f"\nInterpolated model created (λ = {lambda_weight})")
 
-    # Test on trigrams
+    # Test on trigrams from programming documentation
     test_trigrams = [
-        ("the", "cat", "sits"),
-        ("in", "the", "forest"),
-        ("<s>", "the", "quick"),
-        ("animals", "in", "the"),
+        ("the", "string", "object"),
+        ("in", "the", "module"),
+        ("<s>", "the", "function"),
+        ("pattern", "in", "the"),
     ]
 
     print("\nInterpolated smoothing probabilities:")
@@ -446,7 +449,7 @@ try:
 
     # Compare different lambda values
     lambda_values = [0.1, 0.3, 0.5, 0.7, 0.9]
-    test_trigram = ("in", "the", "forest")
+    test_trigram = ("in", "the", "module")
 
     probs_by_lambda = []
     for lam in lambda_values:
@@ -493,7 +496,7 @@ for alpha in alpha_values:
 print("Bayesian Smoothing with different alpha (concentration parameters):")
 print("=" * 65)
 
-test_words = ["the", "cat", "forest", "elephant"]  # Last one unseen
+test_words = ["the", "string", "module", "xyzabc"]  # Last one unseen
 
 for word in test_words:
     count = freqdist.get(word, 0)
@@ -547,7 +550,7 @@ comparison_models = {
     "Bayesian (alpha=0.5)": optimal_bayesian,
 }
 
-for word in ["the", "cat", "elephant"]:
+for word in ["the", "string", "xyzabc"]:
     print(f"\nP('{word}'):")
     for name, model in comparison_models.items():
         prob = model(word)
@@ -675,9 +678,9 @@ print("The alpha parameter controls the strength of the uniform prior.")
 
 # Create test set
 test_corpus = [
-    "the elephant walks slowly through the dense jungle",
-    "wild animals search for food in the morning",
-    "cats climb trees to escape from dangerous predators",
+    "the function returns a string object from the module",
+    "pattern matching uses regular expressions for text processing",
+    "the module provides methods for searching and replacing strings",
 ]
 
 test_words = []
