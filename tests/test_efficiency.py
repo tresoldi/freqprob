@@ -77,8 +77,21 @@ class TestCaching:
 
     def test_sgt_caching(self) -> None:
         """Test that Simple Good-Turing uses caching."""
-        # Create a frequency distribution that SGT can handle
-        freqdist = {f"word_{i}": i for i in range(1, 50)}
+        # Create a Zipfian frequency distribution that SGT can handle
+        # Using Zipfian distribution instead of linear sequence to avoid slope > -1.0
+        freqdist = {
+            "word_1": 100,
+            "word_2": 50,
+            "word_3": 33,
+            "word_4": 25,
+            "word_5": 20,
+            "word_6": 16,
+            "word_7": 14,
+            "word_8": 12,
+            "word_9": 11,
+            "word_10": 10,
+            **{f"word_{i}": max(1, 100 // i) for i in range(11, 50)},
+        }
 
         clear_all_caches()
         initial_stats = get_cache_stats()
