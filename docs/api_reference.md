@@ -385,7 +385,7 @@ print(mkn(('the', 'cat')))
 
 ### InterpolatedSmoothing
 
-Linear interpolation between two models.
+Linear interpolation between two models with automatic n-gram mode detection.
 
 ```python
 class InterpolatedSmoothing(ScoringMethod)
@@ -393,29 +393,62 @@ class InterpolatedSmoothing(ScoringMethod)
 
 **Constructor:**
 ```python
-InterpolatedSmoothing(high_order_freqdist: FrequencyDistribution,
-                      low_order_freqdist: FrequencyDistribution,
+InterpolatedSmoothing(high_order_dist: FrequencyDistribution,
+                      low_order_dist: FrequencyDistribution,
                       lambda_weight: float = 0.7,
                       logprob: bool = True)
 ```
 
 **Parameters:**
-- `high_order_freqdist` - Higher-order model frequency distribution
-- `low_order_freqdist` - Lower-order model frequency distribution
-- `lambda_weight` - Interpolation weight (0 < λ < 1)
+- `high_order_dist` - Higher-order frequency distribution (e.g., trigrams)
+  - For n-gram interpolation, must have longer tuples than `low_order_dist`
+- `low_order_dist` - Lower-order frequency distribution (e.g., bigrams)
+- `lambda_weight` - Interpolation weight for higher-order model (0 ≤ λ ≤ 1, default: 0.7)
 - `logprob` - Return log probabilities if True
 
-**Example:**
+**Modes:**
+
+The method automatically detects the interpolation mode:
+
+1. **N-gram Interpolation** (different n-gram orders):
+   - Extracts lower-order context from higher-order n-grams
+   - Example: For trigram `('the', 'big', 'cat')` with bigram model, extracts `('big', 'cat')`
+   - Interpolates: `λ * P_high(trigram) + (1-λ) * P_low(context)`
+
+2. **Same-Type Interpolation** (same element types):
+   - Direct key matching between distributions
+   - Interpolates: `λ * P_high(elem) + (1-λ) * P_low(elem)`
+
+**Examples:**
+
+N-gram interpolation (trigrams + bigrams):
 ```python
-trigrams = {('the', 'big', 'cat'): 3}
-bigrams = {('big', 'cat'): 5}
-interpolated = freqprob.InterpolatedSmoothing(
-    trigrams, bigrams, lambda_weight=0.7, logprob=False
-)
+trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
+bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3, ('small', 'cat'): 2}
+interp = freqprob.InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.7, logprob=False)
+print(interp(('the', 'big', 'cat')))  # 0.5 = 0.7 * (3/5) + 0.3 * (5/10)
+print(interp(('unseen', 'big', 'cat')))  # 0.15 = 0.7 * 0 + 0.3 * (5/10)
 ```
 
-**Mathematical Formula:**
-$$P_{interp}(w|context) = \lambda P_{high}(w|context) + (1-\lambda) P_{low}(w|context)$$
+Same-type interpolation (strings):
+```python
+high_freq = {'cat': 10, 'dog': 5}
+low_freq = {'cat': 3, 'dog': 2, 'bird': 1}
+interp = freqprob.InterpolatedSmoothing(high_freq, low_freq, lambda_weight=0.8, logprob=False)
+```
+
+**Mathematical Formulas:**
+
+N-gram mode:
+$$P_{interp}(w_{n-k+1}...w_n) = \lambda P_{high}(w_{n-k+1}...w_n) + (1-\lambda) P_{low}(w_{n-k+2}...w_n)$$
+
+Same-type mode:
+$$P_{interp}(w) = \lambda P_{high}(w) + (1-\lambda) P_{low}(w)$$
+
+**Properties:**
+- All probabilities floored at `1e-10` for numerical stability
+- Unseen n-grams backoff to lower-order model probability
+- Automatic validation: high-order n must be ≥ low-order n for tuples
 
 ---
 
