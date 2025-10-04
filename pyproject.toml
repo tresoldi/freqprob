@@ -43,9 +43,9 @@ dependencies = [
 memory = [
     "psutil>=5.8.0",
 ]
-# All optional dependencies
+# All optional dependencies (runtime + development)
 all = [
-    "freqprob[memory]",
+    "freqprob[memory,dev]",
 ]
 # Development dependencies
 dev = [
