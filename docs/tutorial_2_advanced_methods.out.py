@@ -196,14 +196,16 @@ try:
     print("Simple Good-Turing model created successfully")
     print(f"Default bins: {len(freqdist)} (observed) + {freq_of_freqs.get(1, 0)} (singletons) = {len(freqdist) + freq_of_freqs.get(1, 0)}")
 
-    # Test on sample words
-    test_words = ["the", "cat", "forest", "elephant"]  # Last one is unseen
+    # Test on sample words from the corpus (sys/re module docstrings)
+    # Use common programming terms and one unseen word
+    test_words = ["the", "string", "pattern", "xyzabc"]  # Last one is unseen
 
     print("\nSimple Good-Turing probabilities:")
     for word in test_words:
         original_count = freqdist.get(word, 0)
         sgt_prob = sgt(word)
-        print(f"P({word}) = {sgt_prob:.6f} (original count: {original_count})")
+        status = "unseen" if original_count == 0 else f"count: {original_count}"
+        print(f"P({word:<10}) = {sgt_prob:.6f} ({status})")
 
     # Compare with MLE
     mle_comparison = freqprob.MLE(freqdist, logprob=False)
@@ -239,11 +241,11 @@ try:
     print("=" * 60)
 
     # Two different unseen words should have same probability
-    unseen1 = sgt("elephant")
-    unseen2 = sgt("giraffe")
-    print(f"\nP(elephant) = {unseen1:.6f}")
-    print(f"P(giraffe)  = {unseen2:.6f}")
-    print(f"P(elephant) + P(giraffe) = {unseen1 + unseen2:.6f}")
+    unseen1 = sgt("xyzabc")
+    unseen2 = sgt("qwerty")
+    print(f"\nP(xyzabc) = {unseen1:.6f}")
+    print(f"P(qwerty) = {unseen2:.6f}")
+    print(f"P(xyzabc) + P(qwerty) = {unseen1 + unseen2:.6f}")
     print(f"This sum is meaningful because each returns PER-WORD probability")
 
     # Demonstrate effect of bins parameter
@@ -265,7 +267,7 @@ try:
 
     for bins in bins_values:
         sgt_test = freqprob.SimpleGoodTuring(freqdist, bins=bins, logprob=False)
-        unseen_prob = sgt_test("elephant")
+        unseen_prob = sgt_test("xyzabc")
         est_unseen = int(sgt_test.total_unseen_mass / unseen_prob)
 
         if bins == bins_values[0]:
@@ -290,15 +292,16 @@ try:
     # Create log-probability version for perplexity
     sgt_log = freqprob.SimpleGoodTuring(freqdist, logprob=True)
 
-    # Small test set
-    test_sample = ["the", "cat", "walks", "slowly", "elephant"]
+    # Small test set with words relevant to sys/re documentation
+    test_sample = ["the", "string", "module", "function", "xyzabc"]
 
     print(f"\nTest words: {test_sample}")
     print(f"\nLog-probabilities:")
     for word in test_sample:
         logprob = sgt_log(word)
         prob = np.exp(logprob)
-        print(f"  {word:<10}: log P = {logprob:8.4f}, P = {prob:.6f}")
+        status = "(unseen)" if word == "xyzabc" else "(observed)"
+        print(f"  {word:<10}: log P = {logprob:8.4f}, P = {prob:.6f} {status}")
 
     # Calculate perplexity
     perp = freqprob.perplexity(sgt_log, test_sample)
@@ -317,18 +320,18 @@ Simple Good-Turing model created successfully
 Default bins: 1175 (observed) + 521 (singletons) = 1696
 
 Simple Good-Turing probabilities:
-P(the) = 0.077690 (original count: 589)
-P(cat) = 0.000134 (original count: 0)
-P(forest) = 0.000134 (original count: 0)
-P(elephant) = 0.000134 (original count: 0)
+P(the       ) = 0.077690 (count: 589)
+P(string    ) = 0.008869 (count: 68)
+P(pattern   ) = 0.002532 (count: 20)
+P(xyzabc    ) = 0.000134 (unseen)
 
 MLE vs Simple Good-Turing comparison:
 Word       MLE        SGT        Difference
 ----------------------------------------
 the        0.078954   0.077690   -0.001264 
-cat        0.000000   0.000134   0.000134  
-forest     0.000000   0.000134   0.000134  
-elephant   0.000000   0.000134   0.000134  
+string     0.009115   0.008869   -0.000246 
+pattern    0.002681   0.002532   -0.000149 
+xyzabc     0.000000   0.000134   0.000134  
 
 ============================================================
 TOTAL MASS vs PER-WORD PROBABILITY
@@ -346,9 +349,9 @@ Sum (should be ≈ 1.0): 1.000000
 VERIFYING PROBABILITY SEMANTICS
 ============================================================
 
-P(elephant) = 0.000134
-P(giraffe)  = 0.000134
-P(elephant) + P(giraffe) = 0.000268
+P(xyzabc) = 0.000134
+P(qwerty) = 0.000134
+P(xyzabc) + P(qwerty) = 0.000268
 This sum is meaningful because each returns PER-WORD probability
 
 ============================================================
@@ -372,16 +375,16 @@ Choose bins based on your domain knowledge of total vocabulary size
 COMPATIBILITY WITH PERPLEXITY
 ============================================================
 
-Test words: ['the', 'cat', 'walks', 'slowly', 'elephant']
+Test words: ['the', 'string', 'module', 'function', 'xyzabc']
 
 Log-probabilities:
-  the       : log P =  -2.5550, P = 0.077690
-  cat       : log P =  -8.9173, P = 0.000134
-  walks     : log P =  -8.9173, P = 0.000134
-  slowly    : log P =  -8.9173, P = 0.000134
-  elephant  : log P =  -8.9173, P = 0.000134
+  the       : log P =  -2.5550, P = 0.077690 (observed)
+  string    : log P =  -4.7252, P = 0.008869 (observed)
+  module    : log P =  -5.9279, P = 0.002664 (observed)
+  function  : log P =  -5.9279, P = 0.002664 (observed)
+  xyzabc    : log P =  -8.9173, P = 0.000134 (unseen)
 
-Perplexity: 2089.86
+Perplexity: 273.33
 Lower perplexity = better model fit to this test data
 ```
 
@@ -476,13 +479,13 @@ try:
     kn = freqprob.KneserNey(bigram_freqdist, discount=0.75, logprob=False)
     print("Kneser-Ney model created successfully")
 
-    # Test on various bigrams
+    # Test on various bigrams from programming documentation
     test_bigrams = [
-        ("the", "cat"),
-        ("the", "dog"),
+        ("the", "string"),
+        ("the", "function"),
         ("in", "the"),
-        ("of", "animals"),
-        ("elephant", "runs"),  # Unseen bigram
+        ("of", "module"),
+        ("xyzabc", "qwerty"),  # Unseen bigram
     ]
 
     print("\nKneser-Ney probabilities:")
@@ -514,7 +517,7 @@ try:
 
     # Demonstrate continuation probability concept
     print("\nContinuation probability insight:")
-    words_to_analyze = ["the", "cat", "forest"]
+    words_to_analyze = ["the", "string", "module"]
 
     for word in words_to_analyze:
         # Count how many different contexts this word appears in
@@ -534,16 +537,16 @@ Output:
 Kneser-Ney model created successfully
 
 Kneser-Ney probabilities:
-('the', 'cat')       (count=0): P = 0.000850
-('the', 'dog')       (count=0): P = 0.000850
+('the', 'string')    (count=13): P = 0.021935
+('the', 'function')  (count=0): P = 0.000850
 ('in', 'the')        (count=39): P = 0.444706
-('of', 'animals')    (count=0): P = 0.000850
-('elephant', 'runs') (count=0): P = 0.000850
+('of', 'module')     (count=1): P = 0.002457
+('xyzabc', 'qwerty') (count=0): P = 0.000850
 
 Continuation probability insight:
 'the': appears 589 times in 79 different contexts
-'cat': appears 0 times in 0 different contexts
-'forest': appears 0 times in 0 different contexts
+'string': appears 68 times in 13 different contexts
+'module': appears 21 times in 9 different contexts
 
 Kneser-Ney favors words that appear in many different contexts!
 ```
@@ -609,10 +612,10 @@ Modified Kneser-Ney model created successfully
 
 Comparison: Kneser-Ney vs Modified Kneser-Ney
 -------------------------------------------------------
-('the', 'cat')       (c=0): KN=0.000850, MKN=0.000850
-('the', 'dog')       (c=0): KN=0.000850, MKN=0.000850
+('the', 'string')    (c=13): KN=0.021935, MKN=0.020620
+('the', 'function')  (c=0): KN=0.000850, MKN=0.000850
 ('in', 'the')        (c=39): KN=0.444706, MKN=0.433860
-('of', 'animals')    (c=0): KN=0.000850, MKN=0.000850
+('of', 'module')     (c=1): KN=0.002457, MKN=0.003802
 
 Modified Kneser-Ney uses count-dependent discounts:
 - Different discount values for counts 1, 2, and 3+
@@ -676,12 +679,12 @@ try:
 
     print(f"\nInterpolated model created (λ = {lambda_weight})")
 
-    # Test on trigrams
+    # Test on trigrams from programming documentation
     test_trigrams = [
-        ("the", "cat", "sits"),
-        ("in", "the", "forest"),
-        ("<s>", "the", "quick"),
-        ("animals", "in", "the"),
+        ("the", "string", "object"),
+        ("in", "the", "module"),
+        ("<s>", "the", "function"),
+        ("pattern", "in", "the"),
     ]
 
     print("\nInterpolated smoothing probabilities:")
@@ -692,7 +695,7 @@ try:
 
     # Compare different lambda values
     lambda_values = [0.1, 0.3, 0.5, 0.7, 0.9]
-    test_trigram = ("in", "the", "forest")
+    test_trigram = ("in", "the", "module")
 
     probs_by_lambda = []
     for lam in lambda_values:
@@ -742,10 +745,10 @@ Most common trigrams:
 Interpolated model created (λ = 0.7)
 
 Interpolated smoothing probabilities:
-('the', 'cat', 'sits')    (count=0): P = 0.000000
-('in', 'the', 'forest')   (count=0): P = 0.000000
-('<s>', 'the', 'quick')   (count=0): P = 0.000000
-('animals', 'in', 'the')  (count=0): P = 0.000000
+('the', 'string', 'object') (count=0): P = 0.000000
+('in', 'the', 'module')   (count=0): P = 0.000000
+('<s>', 'the', 'function') (count=0): P = 0.000000
+('pattern', 'in', 'the')  (count=1): P = 0.000094
 
 As lambda increases, we rely more on trigram model (more specific context)
 As lambda decreases, we rely more on bigram model (more general, better coverage)
@@ -768,7 +771,7 @@ for alpha in alpha_values:
 print("Bayesian Smoothing with different alpha (concentration parameters):")
 print("=" * 65)
 
-test_words = ["the", "cat", "forest", "elephant"]  # Last one unseen
+test_words = ["the", "string", "module", "xyzabc"]  # Last one unseen
 
 for word in test_words:
     count = freqdist.get(word, 0)
@@ -822,7 +825,7 @@ comparison_models = {
     "Bayesian (alpha=0.5)": optimal_bayesian,
 }
 
-for word in ["the", "cat", "elephant"]:
+for word in ["the", "string", "xyzabc"]:
     print(f"\nP('{word}'):")
     for name, model in comparison_models.items():
         prob = model(word)
@@ -846,25 +849,25 @@ alpha  Probability  Effect
 2.0    0.060245     Strong uniform bias
 5.0    0.044544     Strong uniform bias
 
-Word: 'cat' (count = 0)
+Word: 'string' (count = 68)
 alpha  Probability  Effect              
 ----------------------------------------
-0.1    0.000013     Minimal smoothing
-0.5    0.000062     Light smoothing
-1.0    0.000116     Uniform prior (Laplace)
-2.0    0.000204     Strong uniform bias
-5.0    0.000375     Strong uniform bias
+0.1    0.008987     Minimal smoothing
+0.5    0.008512     Light smoothing
+1.0    0.007991     Uniform prior (Laplace)
+2.0    0.007136     Strong uniform bias
+5.0    0.005474     Strong uniform bias
 
-Word: 'forest' (count = 0)
+Word: 'module' (count = 21)
 alpha  Probability  Effect              
 ----------------------------------------
-0.1    0.000013     Minimal smoothing
-0.5    0.000062     Light smoothing
-1.0    0.000116     Uniform prior (Laplace)
-2.0    0.000204     Strong uniform bias
-5.0    0.000375     Strong uniform bias
+0.1    0.002785     Minimal smoothing
+0.5    0.002672     Light smoothing
+1.0    0.002548     Uniform prior (Laplace)
+2.0    0.002345     Strong uniform bias
+5.0    0.001950     Strong uniform bias
 
-Word: 'elephant' (count = 0)
+Word: 'xyzabc' (count = 0)
 alpha  Probability  Effect              
 ----------------------------------------
 0.1    0.000013     Minimal smoothing
@@ -881,12 +884,12 @@ P('the'):
   Bayesian (alpha=1.0): 0.068327
   Bayesian (alpha=0.5): 0.073253
 
-P('cat'):
-  Laplace           : 0.000118
-  Bayesian (alpha=1.0): 0.000116
-  Bayesian (alpha=0.5): 0.000062
+P('string'):
+  Laplace           : 0.008156
+  Bayesian (alpha=1.0): 0.007991
+  Bayesian (alpha=0.5): 0.008512
 
-P('elephant'):
+P('xyzabc'):
   Laplace           : 0.000118
   Bayesian (alpha=1.0): 0.000116
   Bayesian (alpha=0.5): 0.000062
@@ -1017,9 +1020,9 @@ if bigram_perplexities:
 
 # Create test set
 test_corpus = [
-    "the elephant walks slowly through the dense jungle",
-    "wild animals search for food in the morning",
-    "cats climb trees to escape from dangerous predators",
+    "the function returns a string object from the module",
+    "pattern matching uses regular expressions for text processing",
+    "the module provides methods for searching and replacing strings",
 ]
 
 test_words = []
@@ -1215,24 +1218,24 @@ print("\n  V = vocabulary size, N = total n-grams, k = number of models")
 
 Output:
 ```
-Test set: 24 words
-Words: ['the', 'elephant', 'walks', 'slowly', 'through', 'the', 'dense', 'jungle', 'wild', 'animals', 'search', 'for', 'food', 'in', 'the', 'morning', 'cats', 'climb', 'trees', 'to', 'escape', 'from', 'dangerous', 'predators']
+Test set: 26 words
+Words: ['the', 'function', 'returns', 'a', 'string', 'object', 'from', 'the', 'module', 'pattern', 'matching', 'uses', 'regular', 'expressions', 'for', 'text', 'processing', 'the', 'module', 'provides', 'methods', 'for', 'searching', 'and', 'replacing', 'strings']
 
 Unigram Model Evaluation (Perplexity):
 ========================================
-MLE                 : 5175566.74
-Laplace             : 1505.03
-Bayesian (alpha=0.5): 2183.78
-Simple Good-Turing  : 1381.54
+MLE                 : 2262.13
+Laplace             : 443.30
+Bayesian (alpha=0.5): 483.76
+Simple Good-Turing  : 540.13
 
 Bigram Model Evaluation (Perplexity):
 ========================================
-Bigram MLE          : 2641755664.90
-Kneser-Ney          : 783.93
-Modified Kneser-Ney : 784.48
+Bigram MLE          : 19279110.93
+Kneser-Ney          : 211.94
+Modified Kneser-Ney : 247.39
 
-Best unigram model: Simple Good-Turing (PP = 1381.54)
-Best bigram model: Kneser-Ney (PP = 783.93)
+Best unigram model: Laplace (PP = 443.30)
+Best bigram model: Kneser-Ney (PP = 211.94)
 ADVANCED SMOOTHING METHODS: KEY INSIGHTS
 ==================================================
 
