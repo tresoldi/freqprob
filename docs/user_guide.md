@@ -218,15 +218,34 @@ where $n_r$ is the number of elements that occur exactly $r$ times.
 1. Compute frequency-of-frequencies: $n_r = |\{w : c(w) = r\}|$
 2. Apply log-linear smoothing for reliable estimates
 3. Use confidence intervals to decide between empirical and smoothed estimates
+4. Estimate total unseen mass $p_0$ and distribute across unseen vocabulary
+
+**Per-Word Probability (v0.4.0+):**
+
+Good-Turing estimates $p_0$ (total mass for ALL unseen words). To get per-word probability:
+$$P_{SGT}(w_{unseen}) = \frac{p_0}{\text{bins} - V}$$
+
+where `bins` is the estimated total vocabulary size (default: $V + N_1$).
 
 **Implementation:**
 ```python
-sgt = freqprob.SimpleGoodTuring(freqdist, p_value=0.05, logprob=False)
+# Basic usage with automatic bins estimation
+sgt = freqprob.SimpleGoodTuring(freqdist, logprob=False)
+print(sgt('word'))              # Per-word probability
+print(sgt.total_unseen_mass)    # Access p₀
+
+# Custom vocabulary size
+sgt_large = freqprob.SimpleGoodTuring(freqdist, bins=10000, logprob=False)
 ```
 
 **Parameters:**
-- `p_value`: Confidence level for smoothing threshold
-- `allow_fail`: Whether to raise errors on invalid assumptions
+- `p_value`: Confidence level for smoothing threshold (default: 0.05)
+- `bins`: Total vocabulary size for per-word probability (default: $V + N_1$)
+- `allow_fail`: Whether to raise errors on invalid assumptions (default: True)
+- `default_p0`: Fallback $p_0$ if estimation fails (default: None)
+
+**Version Note:**
+Starting from v0.4.0, SimpleGoodTuring returns **per-word probability** for unseen elements instead of total mass $p_0$. Use the `total_unseen_mass` property to access $p_0$.
 
 ### Certainty Degree Estimation
 
@@ -303,26 +322,62 @@ mkn = freqprob.ModifiedKneserNey(bigram_counts, logprob=False)
 
 ### Interpolated Smoothing
 
-Combines estimates from multiple models using weighted linear interpolation.
+Combines estimates from multiple models using weighted linear interpolation with automatic n-gram mode detection.
 
-**Formula:**
-$$P_{interp}(w|context) = \lambda P_{high}(w|context) + (1-\lambda) P_{low}(w|context)$$
+**Dual-Mode Operation:**
+
+The method automatically detects the interpolation mode based on element types:
+
+1. **N-gram Interpolation** (different n-gram orders):
+   - Extracts lower-order context from higher-order n-grams
+   - For trigram `('the', 'big', 'cat')` with bigram model, extracts `('big', 'cat')`
+   - Formula: $P_{interp} = \lambda P_{high}(\text{ngram}) + (1-\lambda) P_{low}(\text{context})$
+
+2. **Same-Type Interpolation** (same element types):
+   - Direct key matching between distributions
+   - Formula: $P_{interp}(w) = \lambda P_{high}(w) + (1-\lambda) P_{low}(w)$
+
+**Mathematical Formulas:**
+
+N-gram mode:
+$$P_{interp}(w_{n-k+1}...w_n) = \lambda P_{high}(w_{n-k+1}...w_n) + (1-\lambda) P_{low}(w_{n-k+2}...w_n)$$
+
+Same-type mode:
+$$P_{interp}(w) = \lambda P_{high}(w) + (1-\lambda) P_{low}(w)$$
 
 **Use Cases:**
-- Combining different n-gram orders
+- Combining different n-gram orders (trigrams + bigrams)
 - Blending domain-specific and general models
 - Ensemble methods
 
 **Implementation:**
 ```python
-# Combine trigram and bigram models
+# N-gram interpolation (automatic mode detection)
 trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
-bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3}
+bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3, ('small', 'cat'): 2}
 
 interpolated = freqprob.InterpolatedSmoothing(
     trigrams, bigrams, lambda_weight=0.7, logprob=False
 )
+
+# Observed trigram: 0.7 * (3/5) + 0.3 * (5/10) = 0.57
+print(interpolated(('the', 'big', 'cat')))
+
+# Unseen trigram with observed context: 0.7 * 0 + 0.3 * (5/10) = 0.15
+print(interpolated(('unseen', 'big', 'cat')))
+
+# Same-type interpolation (strings)
+high_freq = {'cat': 10, 'dog': 5}
+low_freq = {'cat': 3, 'dog': 2, 'bird': 1}
+interp_str = freqprob.InterpolatedSmoothing(
+    high_freq, low_freq, lambda_weight=0.8, logprob=False
+)
 ```
+
+**Properties:**
+- All probabilities floored at `1e-10` for numerical stability
+- Unseen n-grams backoff to lower-order model probability
+- Automatic validation: high-order n must be ≥ low-order n for tuples
 
 ### Bayesian Smoothing
 
