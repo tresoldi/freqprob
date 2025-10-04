@@ -146,10 +146,12 @@ cython_debug/
 # Ruff
 .ruff_cache/
 
-# Benchmark results
+# Benchmark and validation results
 benchmark_results*/
 *_benchmark_results/
 benchmark-results/
+validation_results*/
+*_validation_results/
 
 # Security reports
 bandit-report.json
