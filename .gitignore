@@ -188,3 +188,7 @@ __pypackages__/
 
 # Coverage reports
 cover/
+
+# Nhandu intermediate files
+docs/*.out.py
+docs/*.out.html
