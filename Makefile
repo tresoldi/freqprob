@@ -1,7 +1,7 @@
 # FreqProb Makefile
 # POSIX-compatible development commands
 
-.PHONY: help quality format test test-cov test-fast bump-version build build-release clean install install-dev validate validate-quick bench bench-all docs docs-clean
+.PHONY: help quality format test test-cov test-fast bump-version build build-release clean install install-dev bench bench-all docs docs-clean
 
 # Default target: show help
 .DEFAULT_GOAL := help
@@ -112,16 +112,6 @@ install-dev: ## Install package with development dependencies (includes all Make
 	@echo "  - ruff, mypy (code quality)"
 	@echo "  - build, twine (build/release)"
 	@echo "  - nhandu (documentation generation)"
-
-validate: ## Run full validation suite
-	@echo "==> Running validation suite..."
-	$(PYTHON) scripts/validation.py --output-dir validation_results
-	@echo "✓ Validation complete! Results in validation_results/"
-
-validate-quick: ## Run quick validation checks
-	@echo "==> Running quick validation..."
-	$(PYTHON) scripts/validation.py --quick --output-dir validation_results_quick
-	@echo "✓ Quick validation complete!"
 
 bench: ## Run quick performance benchmarks
 	@echo "==> Running quick benchmarks..."
