@@ -4,8 +4,15 @@
 This script provides comprehensive performance benchmarks for FreqProb
 smoothing methods across different scenarios and datasets.
 
+Benchmarks v0.4.0 features:
+- SimpleGoodTuring with bins parameter (per-word probability)
+- InterpolatedSmoothing with n-gram mode (trigram + bigram)
+- KneserNey and ModifiedKneserNey methods
+- Cross-entropy evaluation
+- N-gram datasets (bigrams, trigrams)
+
 Usage:
-    python benchmarks.py [--output OUTPUT_DIR] [--format FORMAT]
+    python benchmarks.py [--output OUTPUT_DIR] [--format FORMAT] [--quick]
 
 Formats: json, csv, html, all
 """
@@ -154,6 +161,59 @@ class DatasetGenerator:
 
         return dict(zip(words, frequencies, strict=False))
 
+    @staticmethod
+    def create_bigram_distribution(
+        vocab_size: int, total_count: int, alpha: float = 1.2
+    ) -> dict[tuple[str, str], int]:
+        """Create a bigram frequency distribution following Zipf's law."""
+        np.random.seed(42)
+
+        # Generate vocabulary
+        words = [f"word_{i:06d}" for i in range(vocab_size)]
+
+        # Generate bigrams with Zipfian frequencies
+        num_bigrams = min(vocab_size * vocab_size, total_count // 10)
+        frequencies = np.random.zipf(alpha, num_bigrams)
+        frequencies = (frequencies / frequencies.sum()) * total_count
+        frequencies = frequencies.astype(int)
+        frequencies[frequencies == 0] = 1
+
+        # Create bigrams
+        bigrams = []
+        for _ in range(num_bigrams):
+            w1 = words[np.random.randint(0, vocab_size)]
+            w2 = words[np.random.randint(0, vocab_size)]
+            bigrams.append((w1, w2))
+
+        return dict(zip(bigrams, frequencies[: len(bigrams)], strict=False))
+
+    @staticmethod
+    def create_trigram_distribution(
+        vocab_size: int, total_count: int, alpha: float = 1.2
+    ) -> dict[tuple[str, str, str], int]:
+        """Create a trigram frequency distribution following Zipf's law."""
+        np.random.seed(42)
+
+        # Generate vocabulary
+        words = [f"word_{i:06d}" for i in range(vocab_size)]
+
+        # Generate trigrams with Zipfian frequencies
+        num_trigrams = min(vocab_size * vocab_size, total_count // 20)
+        frequencies = np.random.zipf(alpha, num_trigrams)
+        frequencies = (frequencies / frequencies.sum()) * total_count
+        frequencies = frequencies.astype(int)
+        frequencies[frequencies == 0] = 1
+
+        # Create trigrams
+        trigrams = []
+        for _ in range(num_trigrams):
+            w1 = words[np.random.randint(0, vocab_size)]
+            w2 = words[np.random.randint(0, vocab_size)]
+            w3 = words[np.random.randint(0, vocab_size)]
+            trigrams.append((w1, w2, w3))
+
+        return dict(zip(trigrams, frequencies[: len(trigrams)], strict=False))
+
 
 class PerformanceBenchmark:
     """Main benchmarking class."""
@@ -164,7 +224,7 @@ class PerformanceBenchmark:
         self.datasets: dict[str, dict[str, int]] = {}
         self.test_datasets: dict[str, dict[str, int]] = {}
 
-        # Smoothing methods to benchmark
+        # Smoothing methods to benchmark (unigram methods)
         self.smoothing_methods = {
             "MLE": lambda freq: freqprob.MLE(freq, logprob=True),
             "Laplace": lambda freq: freqprob.Laplace(freq, bins=len(freq) * 2, logprob=True),
@@ -179,14 +239,45 @@ class PerformanceBenchmark:
             "Bayesian_1.0": lambda freq: freqprob.BayesianSmoothing(freq, alpha=1.0, logprob=True),
         }
 
-        # Add advanced methods if they work
+        # Add SimpleGoodTuring with different bins configurations (v0.4.0)
         def try_sgt(freq: dict[str, int]) -> Any:
             try:
                 return freqprob.SimpleGoodTuring(freq, logprob=True)  # type: ignore[arg-type]
-            except Exception:
+            except Exception as e:
+                print(f"  Warning: SimpleGoodTuring failed: {e}")
+                return None
+
+        def try_sgt_custom_bins(freq: dict[str, int]) -> Any:
+            try:
+                # Test with custom bins parameter (v0.4.0 feature)
+                return freqprob.SimpleGoodTuring(freq, bins=len(freq) * 3, logprob=True)  # type: ignore[arg-type]
+            except Exception as e:
+                print(f"  Warning: SimpleGoodTuring (custom bins) failed: {e}")
                 return None
 
         self.smoothing_methods["SimpleGoodTuring"] = try_sgt
+        self.smoothing_methods["SimpleGoodTuring_3x"] = try_sgt_custom_bins
+
+        # N-gram methods (for bigram/trigram datasets)
+        self.ngram_methods: dict[str, Any] = {
+            "KneserNey_0.75": lambda freq: self._try_method(
+                lambda: freqprob.KneserNey(freq, discount=0.75, logprob=True), "KneserNey_0.75"
+            ),
+            "KneserNey_0.5": lambda freq: self._try_method(
+                lambda: freqprob.KneserNey(freq, discount=0.5, logprob=True), "KneserNey_0.5"
+            ),
+            "ModifiedKneserNey": lambda freq: self._try_method(
+                lambda: freqprob.ModifiedKneserNey(freq, logprob=True), "ModifiedKneserNey"
+            ),
+        }
+
+    def _try_method(self, method_func: Any, method_name: str) -> Any:
+        """Try to create a method, return None if it fails."""
+        try:
+            return method_func()
+        except Exception as e:
+            print(f"  Warning: {method_name} failed: {e}")
+            return None
 
     def generate_datasets(self) -> None:
         """Generate benchmark datasets."""
@@ -210,6 +301,12 @@ class PerformanceBenchmark:
             if np.random.random() < 0.1:  # Only 10% of words have counts
                 sparse_data[f"word_{i:06d}"] = max(1, int(np.random.exponential(2)))
         self.datasets["sparse"] = sparse_data
+
+        # N-gram datasets (for KneserNey, ModifiedKneserNey, InterpolatedSmoothing)
+        self.datasets["bigram_small"] = DatasetGenerator.create_bigram_distribution(50, 500)
+        self.datasets["bigram_medium"] = DatasetGenerator.create_bigram_distribution(100, 2000)
+        self.datasets["trigram_small"] = DatasetGenerator.create_trigram_distribution(30, 300)
+        self.datasets["trigram_medium"] = DatasetGenerator.create_trigram_distribution(50, 1000)
 
         # Generate test datasets (held-out data)
         for dataset_name in ["small_zipf", "medium_zipf", "large_zipf"]:
@@ -424,6 +521,136 @@ class PerformanceBenchmark:
                     # Some methods might fail on certain datasets
                     pass
 
+    def benchmark_ngram_methods(self) -> None:
+        """Benchmark n-gram specific methods (KneserNey, ModifiedKneserNey, InterpolatedSmoothing)."""
+        print("Benchmarking n-gram methods...")
+
+        # Benchmark KneserNey and ModifiedKneserNey on bigram datasets
+        ngram_dataset_names = [name for name in self.datasets.keys() if "bigram" in name or "trigram" in name]
+
+        for dataset_name in ngram_dataset_names:
+            dataset = self.datasets[dataset_name]
+            print(f"  Dataset: {dataset_name} ({len(dataset)} n-grams)")
+
+            for method_name, method_func in self.ngram_methods.items():
+                times = []
+
+                # Run multiple times
+                for _ in range(3):
+                    start_time = time.perf_counter()
+                    try:
+                        model = method_func(dataset)  # type: ignore[no-untyped-call]
+                        end_time = time.perf_counter()
+                        if model is not None:
+                            times.append(end_time - start_time)
+                        else:
+                            times.append(float("inf"))
+                    except Exception as e:
+                        print(f"    Warning: {method_name} failed on {dataset_name}: {e}")
+                        times.append(float("inf"))
+
+                # Calculate statistics
+                valid_times = [t for t in times if t != float("inf")]
+                if valid_times:
+                    mean_time = statistics.mean(valid_times)
+
+                    result = BenchmarkResult(
+                        method=method_name,
+                        dataset=dataset_name,
+                        metric="creation_time",
+                        value=mean_time,
+                        unit="seconds",
+                        metadata={
+                            "ngram_count": len(dataset),
+                            "total_count": sum(dataset.values()),
+                        },
+                    )
+                    self.results.append(result)
+
+        # Benchmark InterpolatedSmoothing (trigram + bigram)
+        print("  Benchmarking InterpolatedSmoothing...")
+        for lambda_weight in [0.5, 0.7, 0.9]:
+            # Find matching trigram and bigram datasets
+            if "trigram_small" in self.datasets and "bigram_small" in self.datasets:
+                trigram_data = self.datasets["trigram_small"]
+                bigram_data = self.datasets["bigram_small"]
+
+                times = []
+                for _ in range(3):
+                    start_time = time.perf_counter()
+                    try:
+                        model = freqprob.InterpolatedSmoothing(
+                            trigram_data, bigram_data, lambda_weight=lambda_weight, logprob=True
+                        )
+                        end_time = time.perf_counter()
+                        times.append(end_time - start_time)
+                    except Exception as e:
+                        print(f"    Warning: InterpolatedSmoothing λ={lambda_weight} failed: {e}")
+                        times.append(float("inf"))
+
+                valid_times = [t for t in times if t != float("inf")]
+                if valid_times:
+                    mean_time = statistics.mean(valid_times)
+
+                    result = BenchmarkResult(
+                        method=f"InterpolatedSmoothing_λ{lambda_weight}",
+                        dataset="trigram_small+bigram_small",
+                        metric="creation_time",
+                        value=mean_time,
+                        unit="seconds",
+                        metadata={
+                            "lambda_weight": lambda_weight,
+                            "high_order_count": len(trigram_data),
+                            "low_order_count": len(bigram_data),
+                        },
+                    )
+                    self.results.append(result)
+
+    def benchmark_cross_entropy(self) -> None:
+        """Benchmark cross-entropy on test data."""
+        print("Benchmarking cross-entropy...")
+
+        for dataset_name, dataset in self.datasets.items():
+            # Skip n-gram datasets for unigram methods
+            if "bigram" in dataset_name or "trigram" in dataset_name:
+                continue
+
+            if dataset_name not in self.test_datasets:
+                continue
+
+            test_data = self.test_datasets[dataset_name]
+            test_words = []
+            for word, count in test_data.items():
+                test_words.extend([word] * count)
+
+            print(f"  Dataset: {dataset_name} (test set: {len(test_words)} words)")
+
+            for method_name, method_func in self.smoothing_methods.items():
+                try:
+                    model = method_func(dataset)  # type: ignore[no-untyped-call]
+                    if model is None:
+                        continue  # type: ignore[unreachable]
+
+                    # Calculate cross-entropy
+                    ce = freqprob.cross_entropy(model, test_words)
+
+                    result = BenchmarkResult(
+                        method=method_name,
+                        dataset=dataset_name,
+                        metric="cross_entropy",
+                        value=ce,
+                        unit="bits",
+                        metadata={
+                            "test_words": len(test_words),
+                            "unique_test_words": len(set(test_words)),
+                        },
+                    )
+                    self.results.append(result)
+
+                except Exception as e:
+                    print(f"    Warning: {method_name} cross-entropy failed: {e}")
+                    pass
+
     def benchmark_scaling(self) -> None:
         """Benchmark scaling behavior."""
         print("Benchmarking scaling behavior...")
@@ -480,6 +707,8 @@ class PerformanceBenchmark:
         self.benchmark_query_performance()
         self.benchmark_memory_usage()
         self.benchmark_perplexity()
+        self.benchmark_cross_entropy()
+        self.benchmark_ngram_methods()
         self.benchmark_scaling()
 
         print(f"\nCompleted benchmarks: {len(self.results)} results")
@@ -788,6 +1017,7 @@ def main() -> None:
 
     if args.quick:
         # Reduce datasets for quick testing
+        print("Running quick benchmarks...")
         benchmark.datasets = {
             "small_zipf": DatasetGenerator.create_zipf_distribution(50, 500),
             "medium_zipf": DatasetGenerator.create_zipf_distribution(200, 2000),
@@ -796,17 +1026,14 @@ def main() -> None:
             "small_zipf": DatasetGenerator.create_zipf_distribution(25, 100),
             "medium_zipf": DatasetGenerator.create_zipf_distribution(100, 500),
         }
-        print("Running quick benchmarks...")
-    else:
-        benchmark.run_all_benchmarks()
-
-    if not args.quick:
-        benchmark.run_all_benchmarks()
-    else:
         # Run limited benchmarks
         benchmark.benchmark_creation_time()
         benchmark.benchmark_query_performance()
         benchmark.benchmark_perplexity()
+        benchmark.benchmark_cross_entropy()
+    else:
+        # Run comprehensive benchmarks
+        benchmark.run_all_benchmarks()
 
     benchmark.print_summary()
     benchmark.save_results(args.output, args.format)
