@@ -51,20 +51,17 @@ notebook = [
 ]
 # All optional dependencies
 all = [
-    "freqprob[memory,notebook,validation]",
-]
-# Validation and testing dependencies
-validation = [
-    "hypothesis>=6.0.0",
-    "nltk>=3.8",
-    "scikit-learn>=1.0.0",
+    "freqprob[memory,notebook]",
 ]
 # Development dependencies
 dev = [
-    # Testing (required by Makefile)
+    # Testing (required by Makefile and tests/)
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "pytest-xdist>=3.0.0",
+    "hypothesis>=6.0.0",
+    "nltk>=3.8",
+    "scikit-learn>=1.0.0",
 
     # Code quality (required by Makefile)
     "ruff>=0.1.0",
@@ -81,9 +78,6 @@ dev = [
     "nhandu>=0.1.0",
     "matplotlib>=3.5.0",
     "seaborn>=0.11.0",
-
-    # Include validation dependencies
-    "freqprob[validation]",
 ]
 
 [project.urls]
@@ -165,11 +159,6 @@ ignore = [
     "PLR0912", # Too many branches
     "PLR0915", # Too many statements
     "C901",    # Complex function
-]
-"scripts/validation.py" = [
-    "T201",    # Allow print statements in validation script
-    "PLR0912", # Too many branches
-    "PLR0915", # Too many statements
 ]
 "docs/tutorial_*.py" = [
     "D100",   # Missing module docstring (Nhandu files are self-documenting)
