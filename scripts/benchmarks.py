@@ -221,8 +221,8 @@ class PerformanceBenchmark:
     def __init__(self) -> None:
         """Initialize performance benchmark."""
         self.results: list[BenchmarkResult] = []
-        self.datasets: dict[str, dict[str, int]] = {}
-        self.test_datasets: dict[str, dict[str, int]] = {}
+        self.datasets: dict[str, Any] = {}
+        self.test_datasets: dict[str, Any] = {}
 
         # Smoothing methods to benchmark (unigram methods)
         self.smoothing_methods = {
@@ -240,17 +240,17 @@ class PerformanceBenchmark:
         }
 
         # Add SimpleGoodTuring with different bins configurations (v0.4.0)
-        def try_sgt(freq: dict[str, int]) -> Any:
+        def try_sgt(freq: Any) -> Any:
             try:
-                return freqprob.SimpleGoodTuring(freq, logprob=True)  # type: ignore[arg-type]
+                return freqprob.SimpleGoodTuring(freq, logprob=True)
             except Exception as e:
                 print(f"  Warning: SimpleGoodTuring failed: {e}")
                 return None
 
-        def try_sgt_custom_bins(freq: dict[str, int]) -> Any:
+        def try_sgt_custom_bins(freq: Any) -> Any:
             try:
                 # Test with custom bins parameter (v0.4.0 feature)
-                return freqprob.SimpleGoodTuring(freq, bins=len(freq) * 3, logprob=True)  # type: ignore[arg-type]
+                return freqprob.SimpleGoodTuring(freq, bins=len(freq) * 3, logprob=True)
             except Exception as e:
                 print(f"  Warning: SimpleGoodTuring (custom bins) failed: {e}")
                 return None
@@ -345,12 +345,10 @@ class PerformanceBenchmark:
                 for _ in range(5):
                     start_time = time.perf_counter()
                     try:
-                        model = method_func(dataset)  # type: ignore[no-untyped-call]  # type: ignore[no-untyped-call]
+                        model = method_func(dataset)
                         end_time = time.perf_counter()
                         if model is not None:
                             times.append(end_time - start_time)
-                        else:
-                            times.append(float("inf"))  # type: ignore[unreachable]  # Failed
                     except Exception:
                         times.append(float("inf"))  # Failed
 
@@ -403,11 +401,7 @@ class PerformanceBenchmark:
             for method_name, method_func in self.smoothing_methods.items():
                 try:
                     # Create model
-                    model = method_func(dataset)  # type: ignore[no-untyped-call]
-                    if model is None:
-                        continue  # type: ignore[unreachable]
-
-                    # Benchmark individual queries
+                    model = method_func(dataset)
                     times = []
                     for _ in range(5):  # Multiple runs
                         start_time = time.perf_counter()
@@ -453,11 +447,7 @@ class PerformanceBenchmark:
                     memory_before = process.memory_info().rss
 
                     # Create model
-                    model = method_func(dataset)  # type: ignore[no-untyped-call]
-                    if model is None:
-                        continue  # type: ignore[unreachable]
-
-                    # Measure memory after
+                    model = method_func(dataset)
                     memory_after = process.memory_info().rss
                     memory_delta = (memory_after - memory_before) / 1024 / 1024  # MB
 
@@ -497,11 +487,7 @@ class PerformanceBenchmark:
 
             for method_name, method_func in self.smoothing_methods.items():
                 try:
-                    model = method_func(dataset)  # type: ignore[no-untyped-call]
-                    if model is None:
-                        continue  # type: ignore[unreachable]
-
-                    # Calculate perplexity
+                    model = method_func(dataset)
                     perplexity = freqprob.perplexity(model, test_words)
 
                     result = BenchmarkResult(
@@ -526,7 +512,9 @@ class PerformanceBenchmark:
         print("Benchmarking n-gram methods...")
 
         # Benchmark KneserNey and ModifiedKneserNey on bigram datasets
-        ngram_dataset_names = [name for name in self.datasets.keys() if "bigram" in name or "trigram" in name]
+        ngram_dataset_names = [
+            name for name in self.datasets if "bigram" in name or "trigram" in name
+        ]
 
         for dataset_name in ngram_dataset_names:
             dataset = self.datasets[dataset_name]
@@ -539,7 +527,7 @@ class PerformanceBenchmark:
                 for _ in range(3):
                     start_time = time.perf_counter()
                     try:
-                        model = method_func(dataset)  # type: ignore[no-untyped-call]
+                        model = method_func(dataset)
                         end_time = time.perf_counter()
                         if model is not None:
                             times.append(end_time - start_time)
@@ -627,11 +615,7 @@ class PerformanceBenchmark:
 
             for method_name, method_func in self.smoothing_methods.items():
                 try:
-                    model = method_func(dataset)  # type: ignore[no-untyped-call]
-                    if model is None:
-                        continue  # type: ignore[unreachable]
-
-                    # Calculate cross-entropy
+                    model = method_func(dataset)
                     ce = freqprob.cross_entropy(model, test_words)
 
                     result = BenchmarkResult(
@@ -649,7 +633,6 @@ class PerformanceBenchmark:
 
                 except Exception as e:
                     print(f"    Warning: {method_name} cross-entropy failed: {e}")
-                    pass
 
     def benchmark_scaling(self) -> None:
         """Benchmark scaling behavior."""
@@ -678,7 +661,7 @@ class PerformanceBenchmark:
 
                 try:
                     start_time = time.perf_counter()
-                    model = method_func(dataset)  # type: ignore[no-untyped-call]
+                    model = method_func(dataset)
                     end_time = time.perf_counter()
 
                     if model is not None:

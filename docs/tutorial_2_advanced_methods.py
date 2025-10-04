@@ -30,8 +30,8 @@ np.random.seed(1305)
 #' language text with realistic frequency distributions.
 
 # Create corpus from built-in Python module docstrings
-import sys
 import re
+import sys
 
 # Collect docstrings from sys and re modules
 corpus_text = ""
@@ -93,7 +93,9 @@ try:
     # Default behavior: bins = V + N₁ (observed types + singleton count)
     sgt = freqprob.SimpleGoodTuring(freqdist, logprob=False)
     print("Simple Good-Turing model created successfully")
-    print(f"Default bins: {len(freqdist)} (observed) + {freq_of_freqs.get(1, 0)} (singletons) = {len(freqdist) + freq_of_freqs.get(1, 0)}")
+    print(
+        f"Default bins: {len(freqdist)} (observed) + {freq_of_freqs.get(1, 0)} (singletons) = {len(freqdist) + freq_of_freqs.get(1, 0)}"
+    )
 
     # Test on sample words from the corpus (sys/re module docstrings)
     # Use common programming terms and one unseen word
@@ -145,7 +147,7 @@ try:
     print(f"\nP(xyzabc) = {unseen1:.6f}")
     print(f"P(qwerty) = {unseen2:.6f}")
     print(f"P(xyzabc) + P(qwerty) = {unseen1 + unseen2:.6f}")
-    print(f"This sum is meaningful because each returns PER-WORD probability")
+    print("This sum is meaningful because each returns PER-WORD probability")
 
     # Demonstrate effect of bins parameter
     print("\n" + "=" * 60)
@@ -154,9 +156,9 @@ try:
 
     bins_values = [
         len(freqdist) + freq_of_freqs.get(1, 0),  # Default: V + N₁
-        len(freqdist) * 2,                         # 2x observed vocabulary
-        len(freqdist) * 5,                         # 5x observed vocabulary
-        10000,                                     # Fixed large vocabulary
+        len(freqdist) * 2,  # 2x observed vocabulary
+        len(freqdist) * 5,  # 5x observed vocabulary
+        10000,  # Fixed large vocabulary
     ]
 
     print(f"\nObserved vocabulary size (V): {len(freqdist)}")
@@ -195,7 +197,7 @@ try:
     test_sample = ["the", "string", "module", "function", "xyzabc"]
 
     print(f"\nTest words: {test_sample}")
-    print(f"\nLog-probabilities:")
+    print("\nLog-probabilities:")
     for word in test_sample:
         logprob = sgt_log(word)
         prob = np.exp(logprob)
@@ -219,6 +221,7 @@ except Exception as e:
 # Generate bigrams from our corpus
 # We'll use sentence boundaries based on punctuation
 
+
 def generate_bigrams(words):
     """Generate bigrams from a list of words, treating periods as sentence boundaries."""
     bigrams = []
@@ -226,7 +229,7 @@ def generate_bigrams(words):
     prev_word = "<s>"
     for word in words:
         # Check if this word ends with sentence-ending punctuation
-        if word.endswith(('.', '!', '?', ':', ';')):
+        if word.endswith((".", "!", "?", ":", ";")):
             # Add bigram with current word
             bigrams.append((prev_word, word))
             # Next bigram starts a new sentence
@@ -396,12 +399,8 @@ def generate_trigrams(words):
         trigrams.append((context[0], context[1], word))
 
         # Check if this word ends with sentence-ending punctuation
-        if word.endswith((".", "!", "?", ":", ";")):
-            # Reset context for new sentence
-            context = ["<s>", "<s>"]
-        else:
-            # Shift context window
-            context = [context[1], word]
+        # Reset context for new sentence, or shift context window
+        context = ["<s>", "<s>"] if word.endswith((".", "!", "?", ":", ";")) else [context[1], word]
 
     # Add final trigrams with sentence end markers
     trigrams.append((context[0], context[1], "</s>"))
@@ -448,7 +447,9 @@ try:
         # Extract bigram context for display
         bigram_context = (trigram[1], trigram[2])
         bigram_count = bigram_freqdist.get(bigram_context, 0)
-        print(f"{trigram!s:<25} (count={count}, context {bigram_context} count={bigram_count}): P = {prob:.6f}")
+        print(
+            f"{trigram!s:<25} (count={count}, context {bigram_context} count={bigram_count}): P = {prob:.6f}"
+        )
 
     # Compare different lambda values
     lambda_values = [0.1, 0.3, 0.5, 0.7, 0.9]
@@ -755,4 +756,3 @@ print("\n  V = vocabulary size, N = total n-grams, k = number of models")
 #'   1. Use interpolated smoothing for robustness
 #'   2. Consider computational costs
 #'   3. Validate on domain-specific data
-

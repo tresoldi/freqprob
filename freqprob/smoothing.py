@@ -612,7 +612,11 @@ class InterpolatedSmoothing(ScoringMethod):
             and self._high_order_n > self._low_order_n
         )
 
-        if is_ngram_interpolation and isinstance(element, tuple) and len(element) == self._high_order_n:
+        if (
+            is_ngram_interpolation
+            and isinstance(element, tuple)
+            and len(element) == self._high_order_n
+        ):
             # Extract lower-order context
             low_context = self._extract_lower_context(element)
 
