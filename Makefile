@@ -31,7 +31,7 @@ quality: ## Run code quality checks (ruff format --check, ruff check, mypy)
 	@echo "==> Running ruff linter..."
 	ruff check .
 	@echo "==> Running mypy type checker..."
-	mypy freqprob/ tests/
+	mypy freqprob/ tests/ scripts/
 	@echo "✓ All quality checks passed!"
 
 format: ## Auto-format code with ruff

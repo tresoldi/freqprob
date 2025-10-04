@@ -139,7 +139,9 @@ class ScoringMethod(ABC):
 
         self._unobs: Probability | LogProbability = 1e-10  # Default value to avoid domain errors
         self._prob: dict[Element, Probability | LogProbability] = {}
-        self._total_unseen_mass: float | None = None  # For methods that track total unseen mass (e.g., SGT)
+        self._total_unseen_mass: float | None = (
+            None  # For methods that track total unseen mass (e.g., SGT)
+        )
         self.logprob: bool | None = config.logprob
         self.name: str | None = None
 

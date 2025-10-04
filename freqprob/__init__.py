@@ -49,22 +49,8 @@ from .utils import (
 )
 from .vectorized import BatchScorer, VectorizedScorer, create_vectorized_batch_scorer
 
-# Validation and profiling tools (optional import)
-try:
-    from .validation import (
-        BenchmarkSuite,
-        PerformanceMetrics,
-        PerformanceProfiler,
-        ValidationResult,
-        ValidationSuite,
-        compare_method_performance,
-        profile_method_performance,
-        quick_validate_method,
-    )
-
-    HAS_VALIDATION = True
-except ImportError:
-    HAS_VALIDATION = False
+# Validation module was removed - use pytest tests instead
+HAS_VALIDATION = False
 
 # Build the namespace
 __all__ = [
