@@ -140,7 +140,6 @@ select = [
 ignore = [
     "E501",   # Line too long (ruff format handles this)
     "B008",   # Do not perform function calls in argument defaults
-    "T201",   # Allow print statements in benchmark scripts
     "RET504", # Unnecessary variable assignment before return
     "ARG002", # Unused method argument (common in abstract methods)
     "D202",   # No blank lines allowed after function docstring
@@ -164,9 +163,21 @@ ignore = [
     "D100",   # Missing module docstring (Nhandu files are self-documenting)
     "E402",   # Module level import not at top (pedagogical import placement)
     "RUF003", # Ambiguous Greek characters (mathematical notation)
+    "T201",   # Allow print statements in tutorials
+]
+"freqprob/profiling.py" = [
+    "T201",   # Allow print statements for monitoring alerts
 ]
 "docs/*.ipynb" = [
     "E402",    # Module level import not at top of file (common in notebooks)
+    "T201",    # Allow print statements in notebooks
+]
+"docs/archive/*.ipynb" = [
+    "E402",    # Module level import not at top of file (common in notebooks)
+    "T201",    # Allow print statements in notebooks
+]
+"tests/test_efficiency.py" = [
+    "T201",    # Allow print statements for manual inspection
 ]
 
 [tool.ruff.lint.isort]
@@ -174,7 +185,7 @@ known-first-party = ["freqprob"]
 known-third-party = ["numpy", "scipy", "psutil", "pytest"]
 
 [tool.ruff.lint.pydocstyle]
-convention = "google"
+convention = "google"  # Keep existing convention; full Epytext migration requires extensive refactoring
 
 # MyPy type checking
 [tool.mypy]
@@ -211,10 +222,6 @@ ignore_missing_imports = true
 module = ["tests.*"]
 disable_error_code = ["misc", "no-untyped-def", "method-assign"]
 
-[[tool.mypy.overrides]]
-module = ["tests.test_statistical_correctness", "tests.test_regression_reference", "tests.test_numerical_stability"]
-disable_error_code = ["misc", "no-untyped-def", "method-assign"]
-
 # Pytest configuration
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -236,7 +243,6 @@ markers = [
     "statistical: marks statistical correctness tests",
     "regression: marks regression tests against reference implementations",
     "property: marks property-based tests with hypothesis",
-    "validation: marks comprehensive validation tests",
 ]
 filterwarnings = [
     "error",
