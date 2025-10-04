@@ -169,6 +169,126 @@ def test_interpolated_smoothing_validation() -> None:
         InterpolatedSmoothing(high_order, low_order, lambda_weight=1.1)  # type: ignore[arg-type]
 
 
+def test_interpolated_ngram_trigram_bigram() -> None:
+    """Test trigram-bigram interpolation (main fix for n-gram support)."""
+    trigrams = {
+        ("the", "big", "cat"): 3,
+        ("a", "big", "dog"): 2,
+        ("the", "small", "cat"): 1,
+    }
+    bigrams = {
+        ("big", "cat"): 5,
+        ("big", "dog"): 3,
+        ("small", "cat"): 2,
+    }
+
+    interp = InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.7, logprob=False)  # type: ignore[arg-type]
+
+    # Test observed trigram with observed bigram context
+    prob_observed = interp(("the", "big", "cat"))
+    assert prob_observed > 0
+    # Should be: 0.7 * (3/6) + 0.3 * (5/10) = 0.35 + 0.15 = 0.5
+    assert abs(prob_observed - 0.5) < 0.01
+
+    # Test unseen trigram with observed bigram context
+    prob_unseen_tri = interp(("unseen", "big", "cat"))
+    assert prob_unseen_tri > 0
+    # Should be: 0.7 * 0 + 0.3 * (5/10) = 0.15
+    assert abs(prob_unseen_tri - 0.15) < 0.01
+
+    # Test unseen trigram with unseen bigram context
+    prob_unseen_both = interp(("unseen", "unseen", "word"))
+    assert prob_unseen_both > 0
+    # Should be: 0.7 * 0 + 0.3 * 1e-10 ≈ 1e-10 (floored)
+    assert prob_unseen_both == 1e-10
+
+
+def test_interpolated_ngram_4gram_trigram() -> None:
+    """Test 4-gram + trigram interpolation (generalization to higher orders)."""
+    fourgrams = {
+        ("the", "big", "red", "cat"): 2,
+        ("a", "big", "red", "dog"): 1,
+    }
+    trigrams = {
+        ("big", "red", "cat"): 4,
+        ("big", "red", "dog"): 2,
+    }
+
+    interp = InterpolatedSmoothing(fourgrams, trigrams, lambda_weight=0.6, logprob=False)  # type: ignore[arg-type]
+
+    prob = interp(("the", "big", "red", "cat"))
+    assert prob > 0
+    # Should be: 0.6 * (2/3) + 0.4 * (4/6) = 0.4 + 0.267 = 0.667
+    assert abs(prob - 0.667) < 0.01
+
+
+def test_interpolated_same_type_backward_compat() -> None:
+    """Test same-type interpolation with strings (backward compatibility)."""
+    # String keys (existing test behavior)
+    high_order = {"word1": 3, "word2": 2}
+    low_order = {"word1": 1, "word3": 4}
+
+    interp = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.7, logprob=False)  # type: ignore[arg-type]
+
+    # word1 appears in both
+    prob_word1 = interp("word1")
+    assert prob_word1 > 0
+    # Should be: 0.7 * (3/5) + 0.3 * (1/5) = 0.42 + 0.06 = 0.48
+    assert abs(prob_word1 - 0.48) < 0.01
+
+
+def test_interpolated_same_length_tuples() -> None:
+    """Test same-length tuple interpolation (backward compatibility)."""
+    high_order = {("a", "b"): 3, ("c", "d"): 2}
+    low_order = {("a", "b"): 1, ("e", "f"): 4}
+
+    interp = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.5, logprob=False)  # type: ignore[arg-type]
+
+    prob = interp(("a", "b"))
+    assert prob > 0
+    # Should be: 0.5 * (3/5) + 0.5 * (1/5) = 0.3 + 0.1 = 0.4
+    assert abs(prob - 0.4) < 0.01
+
+
+def test_interpolated_ngram_order_validation() -> None:
+    """Test that high-order > low-order validation works."""
+    bigrams = {("a", "b"): 3}
+    trigrams = {("a", "b", "c"): 2}
+
+    # Should raise: high-order (2) must be > low-order (3)
+    with pytest.raises(ValueError, match=r"must be greater than"):
+        InterpolatedSmoothing(bigrams, trigrams, lambda_weight=0.7)  # type: ignore[arg-type]
+
+
+def test_interpolated_inconsistent_lengths() -> None:
+    """Test that inconsistent tuple lengths are detected."""
+    mixed = {("a", "b"): 1, ("c", "d", "e"): 2}  # 2-grams and 3-grams mixed
+    other = {("x", "y"): 1}
+
+    with pytest.raises(ValueError, match=r"Inconsistent tuple lengths"):
+        InterpolatedSmoothing(mixed, other, lambda_weight=0.7)  # type: ignore[arg-type]
+
+
+def test_interpolated_ngram_lambda_effect() -> None:
+    """Test that lambda parameter works correctly with n-grams."""
+    trigrams = {("a", "b", "c"): 4}
+    bigrams = {("b", "c"): 6}
+
+    # High lambda: favor trigrams
+    interp_high = InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.9, logprob=False)  # type: ignore[arg-type]
+    prob_high = interp_high(("a", "b", "c"))
+    # Should be: 0.9 * (4/4) + 0.1 * (6/6) = 0.9 + 0.1 = 1.0
+
+    # Low lambda: favor bigrams
+    interp_low = InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.1, logprob=False)  # type: ignore[arg-type]
+    prob_low = interp_low(("a", "b", "c"))
+    # Should be: 0.1 * (4/4) + 0.9 * (6/6) = 0.1 + 0.9 = 1.0
+
+    # Both should be 1.0 in this balanced case
+    assert abs(prob_high - 1.0) < 0.01
+    assert abs(prob_low - 1.0) < 0.01
+
+
 def test_bayesian_smoothing_basic() -> None:
     """Test basic Bayesian smoothing functionality."""
     bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]

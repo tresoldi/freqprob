@@ -21,10 +21,7 @@ import freqprob
 # Set up plotting
 plt.style.use("default")
 sns.set_palette("husl")
-np.random.seed(42)
-
-print("Advanced Smoothing Methods Tutorial")
-print("===================================")
+np.random.seed(1305)
 
 #' ## Dataset Preparation
 #'
@@ -382,6 +379,8 @@ except Exception as e:
 #' ## Interpolated Smoothing
 #'
 #' Interpolated smoothing combines multiple models (e.g., trigram with bigram fallback).
+#' The method automatically detects n-gram interpolation mode when distributions have
+#' different tuple lengths, extracting lower-order context from higher-order n-grams.
 
 # Generate trigrams for interpolation example
 
@@ -442,10 +441,14 @@ try:
     ]
 
     print("\nInterpolated smoothing probabilities:")
+    print("(Using n-gram mode: extracts bigram context from trigrams)")
     for trigram in test_trigrams:
         count = trigram_freqdist.get(trigram, 0)
         prob = interpolated(trigram)
-        print(f"{trigram!s:<25} (count={count}): P = {prob:.6f}")
+        # Extract bigram context for display
+        bigram_context = (trigram[1], trigram[2])
+        bigram_count = bigram_freqdist.get(bigram_context, 0)
+        print(f"{trigram!s:<25} (count={count}, context {bigram_context} count={bigram_count}): P = {prob:.6f}")
 
     # Compare different lambda values
     lambda_values = [0.1, 0.3, 0.5, 0.7, 0.9]
@@ -822,7 +825,8 @@ print()
 
 print("🔴 INTERPOLATED SMOOTHING:")
 print("   • Combines multiple models (e.g., trigram + bigram)")
-print("   • Linear interpolation: lambda*P_high + (1-lambda)*P_low")
+print("   • Automatic n-gram mode: extracts lower-order context from higher-order n-grams")
+print("   • Linear interpolation: lambda*P_high(ngram) + (1-lambda)*P_low(context)")
 print("   • Balances specificity with coverage")
 print("   • Essential for practical n-gram systems")
 print()
