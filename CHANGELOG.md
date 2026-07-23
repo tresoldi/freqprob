@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (ruff lint, ruff format, mypy).
 - **`test` optional-dependency extra**: Lightweight testing dependency set used by the CI
   test matrix (`pip install -e ".[test]"`); `dev` now includes it.
+- **`CITATION.cff`**: Machine-readable citation metadata, enabling GitHub's native
+  "Cite this repository" support.
+- **`CONTRIBUTING.md`** and **`SECURITY.md`**: Contributor setup/quality-check guide and
+  a vulnerability reporting policy.
+- **Codecov integration**: `codecov.yml` configuration and a coverage badge in the README.
+- **`make security` target**: Runs the (already configured) `bandit` static security
+  analysis; `bandit[toml]` added to the `dev` extra.
 
 ### Changed
 

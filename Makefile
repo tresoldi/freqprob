@@ -1,7 +1,7 @@
 # FreqProb Makefile
 # POSIX-compatible development commands
 
-.PHONY: help quality format test test-cov test-fast bump-version build build-release clean install install-dev bench bench-all docs docs-clean
+.PHONY: help quality security format test test-cov test-fast bump-version build build-release clean install install-dev bench bench-all docs docs-clean
 
 # Default target: show help
 .DEFAULT_GOAL := help
@@ -33,6 +33,11 @@ quality: ## Run code quality checks (ruff format --check, ruff check, mypy)
 	@echo "==> Running mypy type checker..."
 	mypy freqprob/ tests/ scripts/
 	@echo "✓ All quality checks passed!"
+
+security: ## Run bandit static security analysis
+	@echo "==> Running bandit security scan..."
+	bandit -c pyproject.toml -r freqprob/
+	@echo "✓ Security scan passed!"
 
 format: ## Auto-format code with ruff
 	@echo "==> Formatting code with ruff..."
