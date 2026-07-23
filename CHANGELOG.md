@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **CI test matrix**: Tests now run across Python 3.10/3.11/3.12 on Linux, macOS, and
+  Windows, matching the platforms and versions advertised in the metadata.
+- **Automated release workflow**: Tag-triggered GitHub Actions workflow that builds and
+  publishes to PyPI via trusted publishing (OIDC), removing the need for stored tokens.
+- **Pre-commit configuration** (`.pre-commit-config.yaml`) mirroring the CI quality gates
+  (ruff lint, ruff format, mypy).
+- **`test` optional-dependency extra**: Lightweight testing dependency set used by the CI
+  test matrix (`pip install -e ".[test]"`); `dev` now includes it.
+
+### Changed
+
+- **CI**: The quality job now installs `.[dev]` so the Hypothesis, NLTK, and scikit-learn
+  test suites actually execute (previously skipped because those dependencies were not
+  installed), and type checking now also covers `scripts/`.
+
+### Fixed
+
+- **Documentation URL** in package metadata pointed to `docs/user_guide.md` (wrong case);
+  corrected to `docs/USER_GUIDE.md`.
+- **Dead code**: Removed the unreachable `HAS_VALIDATION` block in `freqprob/__init__.py`
+  that referenced a removed module.
+
 ## [0.4.0] - 2025-10-04
 
 ### Changed - BREAKING

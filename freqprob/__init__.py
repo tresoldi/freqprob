@@ -49,9 +49,6 @@ from .utils import (
 )
 from .vectorized import BatchScorer, VectorizedScorer, create_vectorized_batch_scorer
 
-# Validation module was removed - use pytest tests instead
-HAS_VALIDATION = False
-
 # Build the namespace
 __all__ = [
     "ELE",
@@ -96,16 +93,3 @@ __all__ = [
     "perplexity",
     "word_frequency",
 ]
-
-# Add validation tools to __all__ if available
-if HAS_VALIDATION:
-    __all__ += [
-        "BenchmarkSuite",
-        "PerformanceMetrics",
-        "PerformanceProfiler",
-        "ValidationResult",
-        "ValidationSuite",
-        "compare_method_performance",
-        "profile_method_performance",
-        "quick_validate_method",
-    ]

@@ -13,7 +13,7 @@ FreqProb provides state-of-the-art smoothing techniques for converting frequency
 ## **Comprehensive & Accurate**
 - **10+ smoothing methods**: From basic Laplace to advanced Kneser-Ney and Simple Good-Turing
 - **Mathematically rigorous**: Implementations validated against reference sources (NLTK, SciPy)
-- **Production-ready**: Extensive testing with 400+ test cases and property-based validation
+- **Production-ready**: Extensive testing with 200+ test cases and property-based validation
 
 ## **High Performance**
 - **Vectorized operations**: Batch processing with NumPy acceleration
@@ -119,7 +119,7 @@ smoothed_dist = freqprob.ELE(observed_frequencies, bins=total_categories)
 ## Quality & Reliability
 
 ### **Rigorous Testing**
-- **400+ test cases** covering edge cases and normal operations
+- **200+ test cases** covering edge cases and normal operations
 - **Property-based testing** with Hypothesis for mathematical correctness
 - **Regression testing** against reference implementations (NLTK, SciPy)
 - **Numerical stability** validation for extreme inputs
