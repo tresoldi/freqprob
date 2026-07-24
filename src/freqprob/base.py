@@ -5,7 +5,7 @@ for all smoothing methods in the freqprob library.
 """
 
 from abc import ABC, abstractmethod
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any, TypeVar
 
@@ -243,3 +243,45 @@ class ScoringMethod(ABC):
         self._compute_probabilities(freqdist)
 
         return self
+
+    def score(self, element: Element) -> Probability | LogProbability:
+        """Score a single element (scikit-learn-style alias for ``__call__``).
+
+        Parameters
+        ----------
+        element : Element
+            Element to be scored
+
+        Returns:
+        -------
+        Probability | LogProbability
+            The probability (or log-probability) of the element
+
+        Examples:
+        --------
+        >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
+        >>> scorer.score('a')
+        0.6666666666666666
+        """
+        return self(element)
+
+    def predict(self, elements: Iterable[Element]) -> list[Probability | LogProbability]:
+        """Score many elements at once (scikit-learn-style batch alias).
+
+        Parameters
+        ----------
+        elements : Iterable[Element]
+            Elements to be scored
+
+        Returns:
+        -------
+        list[Probability | LogProbability]
+            One probability (or log-probability) per input element, in order
+
+        Examples:
+        --------
+        >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
+        >>> scorer.predict(['a', 'b', 'c'])
+        [0.6666666666666666, 0.3333333333333333, 0.0]
+        """
+        return [self(element) for element in elements]
