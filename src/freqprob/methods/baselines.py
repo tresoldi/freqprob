@@ -10,7 +10,7 @@ import math
 import random
 from dataclasses import dataclass
 
-from .base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
+from freqprob.base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
 
 
 @dataclass

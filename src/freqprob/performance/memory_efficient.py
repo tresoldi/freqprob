@@ -12,7 +12,7 @@ import sys
 from collections import defaultdict
 from collections.abc import Iterator
 
-from .base import Element, FrequencyDistribution
+from freqprob.base import Element, FrequencyDistribution
 
 
 class CompressedFrequencyDistribution:

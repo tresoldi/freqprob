@@ -163,7 +163,7 @@ ignore = [
     "RUF003", # Ambiguous Greek characters (mathematical notation)
     "T201",   # Allow print statements in tutorials
 ]
-"src/freqprob/profiling.py" = [
+"src/freqprob/performance/profiling.py" = [
     "T201",   # Allow print statements for monitoring alerts
 ]
 "docs/*.ipynb" = [

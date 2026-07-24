@@ -13,7 +13,7 @@ from collections import defaultdict
 from collections.abc import Iterator
 from typing import Any
 
-from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
+from freqprob.base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
 
 class StreamingFrequencyDistribution:

@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Internal module organization**: Regrouped the package internals for
+  maintainability, with **no change to the public API** (`import freqprob` and every
+  `freqprob.<Name>` continue to work unchanged). Estimators now live under
+  `freqprob/methods/` grouped by family (`baselines`, `additive`, `goodturing`,
+  `certainty`, `kneser_ney`, `interpolated`, `bayesian`); the lazy/streaming/
+  vectorized/memory/profiling infrastructure moved under `freqprob/performance/`;
+  and the old `utils.py` junk drawer was split into `metrics.py` (model evaluation)
+  and `text.py` (n-gram/frequency helpers). `base.py` and `cache.py` remain
+  top-level as shared foundations. Direct imports of the old internal module paths
+  (e.g. `from freqprob.smoothing import KneserNey`) have changed; import from the
+  top-level `freqprob` namespace instead.
 - **Project layout**: Moved the package to a `src/` layout (`src/freqprob/`). This
   prevents accidental imports of the working-tree package instead of the installed
   one and is the modern packaging standard. The import path is unchanged

@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable, Iterator
 from typing import Any
 
-from .base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
+from freqprob.base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
 
 class LazyProbabilityComputer(ABC):
@@ -162,7 +162,7 @@ class LazyScoringMethod(ScoringMethod):
 
     Examples:
     --------
-    >>> from freqprob.lazy import LazyScoringMethod, LazyMLEComputer
+    >>> from freqprob.performance.lazy import LazyScoringMethod, LazyMLEComputer
     >>> computer = LazyMLEComputer()
     >>> config = ScoringMethodConfig(logprob=False)
     >>> lazy_scorer = LazyScoringMethod(computer, config, "Lazy MLE")
@@ -444,7 +444,7 @@ def create_lazy_mle(
     LazyScoringMethod
         Lazy MLE scorer
     """
-    from .base import ScoringMethodConfig
+    from freqprob.base import ScoringMethodConfig
 
     config = ScoringMethodConfig(unobs_prob=unobs_prob, logprob=logprob)
     computer = LazyMLEComputer()
@@ -472,7 +472,7 @@ def create_lazy_laplace(
     LazyScoringMethod
         Lazy Laplace scorer
     """
-    from .base import ScoringMethodConfig
+    from freqprob.base import ScoringMethodConfig
 
     config = ScoringMethodConfig(bins=bins, logprob=logprob)
     computer = LazyLaplaceComputer()

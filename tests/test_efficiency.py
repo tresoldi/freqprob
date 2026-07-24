@@ -18,8 +18,8 @@ from freqprob import (
     get_cache_stats,
 )
 from freqprob.cache import ComputationCache, MemoizedProperty
-from freqprob.lazy import LazyLaplaceComputer, LazyMLEComputer
-from freqprob.vectorized import (
+from freqprob.performance.lazy import LazyLaplaceComputer, LazyMLEComputer
+from freqprob.performance.vectorized import (
     elements_to_numpy,
     normalize_scores,
     scores_to_probabilities,
