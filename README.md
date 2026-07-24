@@ -44,11 +44,17 @@ distribution, then **call it** to score an element.
 
 ```python
 scorer = freqprob.KneserNey(bigram_counts, discount=0.75)
-scorer(("the", "cat"))          # log-probability of a bigram
+scorer(("the", "cat"))                              # score one element
+scorer.predict([("the", "cat"), ("a", "dog")])      # score many (scikit-learn-style)
 
-# Evaluate a model
-freqprob.perplexity(scorer, test_bigrams)
+freqprob.perplexity(scorer, test_bigrams)           # evaluate a model
+
+scorer.save("model.pkl")                            # persist a fitted model...
+scorer = freqprob.KneserNey.load("model.pkl")       # ...and load it back
 ```
+
+`fit`/`predict`/`score` aliases are available for scikit-learn familiarity, and
+any fitted estimator can be saved and reloaded without re-fitting.
 
 ## Choosing a method
 
@@ -96,7 +102,7 @@ If you use FreqProb in academic research, please cite:
   author = {Tresoldi, Tiago},
   title = {FreqProb: A Python library for probability smoothing and frequency-based estimation},
   url = {https://github.com/tresoldi/freqprob},
-  version = {0.4.0},
+  version = {0.6.0},
   publisher = {Department of Linguistics and Philology, Uppsala University},
   address = {Uppsala},
   year = {2025}
