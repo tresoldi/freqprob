@@ -383,17 +383,17 @@ print(mkn(('the', 'cat')))
 
 ---
 
-### InterpolatedSmoothing
+### Interpolated
 
 Linear interpolation between two models with automatic n-gram mode detection.
 
 ```python
-class InterpolatedSmoothing(ScoringMethod)
+class Interpolated(ScoringMethod)
 ```
 
 **Constructor:**
 ```python
-InterpolatedSmoothing(high_order_dist: FrequencyDistribution,
+Interpolated(high_order_dist: FrequencyDistribution,
                       low_order_dist: FrequencyDistribution,
                       lambda_weight: float = 0.7,
                       logprob: bool = True)
@@ -425,7 +425,7 @@ N-gram interpolation (trigrams + bigrams):
 ```python
 trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
 bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3, ('small', 'cat'): 2}
-interp = freqprob.InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.7, logprob=False)
+interp = freqprob.Interpolated(trigrams, bigrams, lambda_weight=0.7, logprob=False)
 print(interp(('the', 'big', 'cat')))  # 0.57 = 0.7 * (3/5) + 0.3 * (5/10)
 print(interp(('unseen', 'big', 'cat')))  # 0.15 = 0.7 * 0 + 0.3 * (5/10)
 ```
@@ -434,7 +434,7 @@ Same-type interpolation (strings):
 ```python
 high_freq = {'cat': 10, 'dog': 5}
 low_freq = {'cat': 3, 'dog': 2, 'bird': 1}
-interp = freqprob.InterpolatedSmoothing(high_freq, low_freq, lambda_weight=0.8, logprob=False)
+interp = freqprob.Interpolated(high_freq, low_freq, lambda_weight=0.8, logprob=False)
 ```
 
 **Mathematical Formulas:**
@@ -452,17 +452,17 @@ $$P_{interp}(w) = \lambda P_{high}(w) + (1-\lambda) P_{low}(w)$$
 
 ---
 
-### BayesianSmoothing
+### Bayesian
 
 Bayesian smoothing with Dirichlet prior.
 
 ```python
-class BayesianSmoothing(ScoringMethod)
+class Bayesian(ScoringMethod)
 ```
 
 **Constructor:**
 ```python
-BayesianSmoothing(freqdist: FrequencyDistribution,
+Bayesian(freqdist: FrequencyDistribution,
                   alpha: float = 1.0,
                   logprob: bool = True)
 ```
@@ -475,7 +475,7 @@ BayesianSmoothing(freqdist: FrequencyDistribution,
 **Example:**
 ```python
 freqdist = {'cat': 3, 'dog': 2, 'bird': 1}
-bayesian = freqprob.BayesianSmoothing(freqdist, alpha=0.5, logprob=False)
+bayesian = freqprob.Bayesian(freqdist, alpha=0.5, logprob=False)
 print(bayesian('cat'))
 ```
 

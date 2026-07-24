@@ -4,10 +4,14 @@ This module provides the abstract base class and common functionality
 for all smoothing methods in the freqprob library.
 """
 
+import pickle
 from abc import ABC, abstractmethod
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, TypeVar
+
+from typing_extensions import Self
 
 # Type aliases for clarity
 Element = str | int | float | tuple[Any, ...] | frozenset[Any]
@@ -243,3 +247,111 @@ class ScoringMethod(ABC):
         self._compute_probabilities(freqdist)
 
         return self
+
+    def score(self, element: Element) -> Probability | LogProbability:
+        """Score a single element (scikit-learn-style alias for ``__call__``).
+
+        Parameters
+        ----------
+        element : Element
+            Element to be scored
+
+        Returns:
+        -------
+        Probability | LogProbability
+            The probability (or log-probability) of the element
+
+        Examples:
+        --------
+        >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
+        >>> scorer.score('a')
+        0.6666666666666666
+        """
+        return self(element)
+
+    def predict(self, elements: Iterable[Element]) -> list[Probability | LogProbability]:
+        """Score many elements at once (scikit-learn-style batch alias).
+
+        Parameters
+        ----------
+        elements : Iterable[Element]
+            Elements to be scored
+
+        Returns:
+        -------
+        list[Probability | LogProbability]
+            One probability (or log-probability) per input element, in order
+
+        Examples:
+        --------
+        >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
+        >>> scorer.predict(['a', 'b', 'c'])
+        [0.6666666666666666, 0.3333333333333333, 0.0]
+        """
+        return [self(element) for element in elements]
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Collect all ``__slots__`` values across the class hierarchy for pickling."""
+        state: dict[str, Any] = {}
+        for klass in type(self).__mro__:
+            for slot in getattr(klass, "__slots__", ()):
+                if hasattr(self, slot):
+                    state[slot] = getattr(self, slot)
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore ``__slots__`` values from a pickled state."""
+        for slot, value in state.items():
+            setattr(self, slot, value)
+
+    def save(self, path: str | Path) -> None:
+        """Serialize this fitted scorer to a file.
+
+        The scorer can be restored later with :meth:`load`, avoiding the cost of
+        re-fitting. Serialization uses :mod:`pickle`.
+
+        Parameters
+        ----------
+        path : str | Path
+            Destination file path
+
+        Examples:
+        --------
+        >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
+        >>> scorer.save('model.pkl')                 # doctest: +SKIP
+        >>> restored = MLE.load('model.pkl')         # doctest: +SKIP
+        >>> restored('a') == scorer('a')             # doctest: +SKIP
+        True
+        """
+        with Path(path).open("wb") as fh:
+            pickle.dump(self, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+    @classmethod
+    def load(cls, path: str | Path) -> Self:
+        """Load a scorer previously written with :meth:`save`.
+
+        Parameters
+        ----------
+        path : str | Path
+            Path to a file created by :meth:`save`
+
+        Returns:
+        -------
+        ScoringMethod
+            The restored scorer
+
+        Raises:
+        ------
+        TypeError
+            If the file does not contain a compatible scorer
+
+        Warning:
+        -------
+        Only load files you trust: unpickling executes arbitrary code from the
+        file, so never load a scorer from an untrusted source.
+        """
+        with Path(path).open("rb") as fh:
+            obj = pickle.load(fh)
+        if not isinstance(obj, cls):
+            raise TypeError(f"File does not contain a {cls.__name__}: got {type(obj).__name__}")
+        return obj

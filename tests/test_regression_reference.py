@@ -320,7 +320,7 @@ class TestScipyRegression:
         # FreqProb Bayesian smoothing (using same alpha values)
         # Note: Our alpha parameter is applied per category
         for i, category in enumerate(categories):
-            bayesian = freqprob.BayesianSmoothing(
+            bayesian = freqprob.Bayesian(
                 cast("FrequencyDistribution", freq_counts),
                 alpha=alpha[i],
                 logprob=False,

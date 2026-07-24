@@ -425,7 +425,7 @@ try:
     # Lambda weight controls interpolation: λ * P_high + (1-λ) * P_low
     lambda_weight = 0.7  # Favor trigrams
 
-    interpolated = freqprob.InterpolatedSmoothing(
+    interpolated = freqprob.Interpolated(
         trigram_freqdist, bigram_freqdist, lambda_weight=lambda_weight, logprob=False
     )
 
@@ -457,7 +457,7 @@ try:
 
     probs_by_lambda = []
     for lam in lambda_values:
-        interp_model = freqprob.InterpolatedSmoothing(
+        interp_model = freqprob.Interpolated(
             trigram_freqdist, bigram_freqdist, lambda_weight=lam, logprob=False
         )
         prob = interp_model(test_trigram)
@@ -495,7 +495,7 @@ alpha_values = [0.1, 0.5, 1.0, 2.0, 5.0]
 bayesian_models = {}
 
 for alpha in alpha_values:
-    bayesian_models[alpha] = freqprob.BayesianSmoothing(freqdist, alpha=alpha, logprob=False)
+    bayesian_models[alpha] = freqprob.Bayesian(freqdist, alpha=alpha, logprob=False)
 
 print("Bayesian Smoothing with different alpha (concentration parameters):")
 print("=" * 65)
@@ -593,7 +593,7 @@ print("=" * 40)
 unigram_models = {
     "MLE": freqprob.MLE(freqdist, logprob=True),
     "Laplace": freqprob.Laplace(freqdist, bins=1000, logprob=True),
-    "Bayesian (alpha=0.5)": freqprob.BayesianSmoothing(freqdist, alpha=0.5, logprob=True),
+    "Bayesian (alpha=0.5)": freqprob.Bayesian(freqdist, alpha=0.5, logprob=True),
 }
 
 if sgt is not None:

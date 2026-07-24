@@ -439,7 +439,7 @@ class TestNumericalStabilityAdvanced:
             ("Laplace", {"bins": 1000}),
             ("ELE", {"bins": 1000}),
             ("Lidstone", {"gamma": 0.5, "bins": 1000}),
-            ("BayesianSmoothing", {"alpha": 0.5}),
+            ("Bayesian", {"alpha": 0.5}),
         ],
     )
     def test_method_numerical_stability(self, method_name: str, params: dict[str, Any]) -> None:

@@ -7,8 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-24
+
+### Changed - BREAKING
+
+- **Renamed estimator classes** (dropped the inconsistent `Smoothing` suffix):
+  `BayesianSmoothing` → `Bayesian`, `InterpolatedSmoothing` → `Interpolated`.
+  Constructor parameters and behavior are unchanged. Additionally, direct imports of
+  the old internal module paths changed during the internal reorganization; import
+  from the top-level `freqprob` namespace instead. Full details in `MIGRATION.md`.
+
 ### Added
 
+- **scikit-learn-style API**: `fit()` / `predict()` / `score()` methods on every
+  estimator, alongside the existing callable contract. `score` is a single-element
+  alias for `__call__`; `predict` scores an iterable in one call.
+- **Model serialization**: `save(path)` / `load(path)` on `ScoringMethod` to persist
+  and restore a fitted estimator without re-fitting (pickle-based). `load()` validates
+  the object type and documents the trust requirement of unpickling.
+- **Public `ScoringMethod` base type**: exported from `freqprob` for `isinstance`
+  checks and type annotations.
 - **Documentation site** (MkDocs-Material + mkdocstrings): `mkdocs.yml`, a landing
   page, and an API reference generated from docstrings (so it can't drift from the
   code). Build with `make site` / preview with `make site-serve`; a new `docs` extra

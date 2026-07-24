@@ -44,5 +44,5 @@ distribution, then call it to score an element.
 | `Laplace` / `Lidstone` / `ELE` | simple additive smoothing | `bins`, `gamma` |
 | `SimpleGoodTuring` | heavy-tailed count data | `p_value` |
 | `KneserNey` / `ModifiedKneserNey` | n-gram language models | `discount` |
-| `BayesianSmoothing` | Dirichlet-prior smoothing | `alpha` |
-| `InterpolatedSmoothing` | combining models of different orders | `lambda_weight` |
+| `Bayesian` | Dirichlet-prior smoothing | `alpha` |
+| `Interpolated` | combining models of different orders | `lambda_weight` |

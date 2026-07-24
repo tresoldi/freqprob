@@ -28,7 +28,7 @@ class InterpolatedConfig(ScoringMethodConfig):
     lambda_weight: float = 0.7
 
 
-class InterpolatedSmoothing(ScoringMethod):
+class Interpolated(ScoringMethod):
     """Linear interpolation smoothing between multiple models.
 
     Combines probability estimates from different models using weighted linear
@@ -75,7 +75,7 @@ class InterpolatedSmoothing(ScoringMethod):
 
     >>> trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
     >>> bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3, ('small', 'cat'): 2}
-    >>> interp = InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.7, logprob=False)
+    >>> interp = Interpolated(trigrams, bigrams, lambda_weight=0.7, logprob=False)
     >>> interp(('the', 'big', 'cat'))
     0.5  # 0.7 * (3/5) + 0.3 * (5/10)
     >>> interp(('unseen', 'big', 'cat'))
@@ -85,7 +85,7 @@ class InterpolatedSmoothing(ScoringMethod):
 
     >>> model1 = {'word1': 10, 'word2': 5}
     >>> model2 = {'word1': 3, 'word3': 7}
-    >>> interp = InterpolatedSmoothing(model1, model2, lambda_weight=0.6, logprob=False)
+    >>> interp = Interpolated(model1, model2, lambda_weight=0.6, logprob=False)
     >>> interp('word1')
     0.48  # 0.6 * (10/15) + 0.4 * (3/10)
 

@@ -218,10 +218,10 @@ lidstone = freqprob.Lidstone(counts, gamma=0.5, bins=5000, logprob=True)
 counts = {"positive": 20, "negative": 5, "neutral": 2}
 
 # Weak prior (α = 0.5)
-weak_prior = freqprob.BayesianSmoothing(counts, alpha=0.5, logprob=False)
+weak_prior = freqprob.Bayesian(counts, alpha=0.5, logprob=False)
 
 # Strong prior (α = 10.0) - assumes uniform distribution
-strong_prior = freqprob.BayesianSmoothing(counts, alpha=10.0, logprob=False)
+strong_prior = freqprob.Bayesian(counts, alpha=10.0, logprob=False)
 
 # Strong prior pulls probabilities toward uniform
 print(weak_prior("positive"))    # Closer to MLE
@@ -318,7 +318,7 @@ mle_model = freqprob.MLE(counts, logprob=True)
 laplace_model = freqprob.Laplace(counts, bins=5000, logprob=True)
 
 # Interpolate with custom weights
-interpolated = freqprob.InterpolatedSmoothing(
+interpolated = freqprob.Interpolated(
     [mle_model, laplace_model],
     weights=[0.7, 0.3],  # 70% MLE, 30% Laplace
     logprob=True
@@ -625,7 +625,7 @@ models = {
     "mle": freqprob.MLE(train_counts, logprob=True),
     "laplace": freqprob.Laplace(train_counts, bins=1000, logprob=True),
     "ele": freqprob.ELE(train_counts, bins=1000, logprob=True),
-    "bayesian": freqprob.BayesianSmoothing(train_counts, alpha=1.0, logprob=True),
+    "bayesian": freqprob.Bayesian(train_counts, alpha=1.0, logprob=True),
 }
 
 comparison = freqprob.model_comparison(models, test_data)
@@ -782,8 +782,8 @@ def select_best_model(train_data, validation_data, vocab_size):
     models = {
         "laplace": freqprob.Laplace(train_counts, bins=vocab_size, logprob=True),
         "ele": freqprob.ELE(train_counts, bins=vocab_size, logprob=True),
-        "bayesian_0.5": freqprob.BayesianSmoothing(train_counts, alpha=0.5, logprob=True),
-        "bayesian_1.0": freqprob.BayesianSmoothing(train_counts, alpha=1.0, logprob=True),
+        "bayesian_0.5": freqprob.Bayesian(train_counts, alpha=0.5, logprob=True),
+        "bayesian_1.0": freqprob.Bayesian(train_counts, alpha=1.0, logprob=True),
     }
 
     # Evaluate on validation set
@@ -846,7 +846,7 @@ def adapt_model(general_counts, domain_counts, domain_weight=0.7):
     domain_model = freqprob.ELE(domain_counts, bins=5000, logprob=True)
 
     # Interpolate with domain preference
-    adapted = freqprob.InterpolatedSmoothing(
+    adapted = freqprob.Interpolated(
         [domain_model, general_model],
         weights=[domain_weight, 1 - domain_weight],
         logprob=True
@@ -1044,10 +1044,10 @@ log_sum = logsumexp(log_probs)
 # Main classes
 from freqprob import (
     MLE, Laplace, Lidstone, ELE,
-    BayesianSmoothing, SimpleGoodTuring,
+    Bayesian, SimpleGoodTuring,
     KneserNey, ModifiedKneserNey,
     WittenBell, CertaintyDegree,
-    InterpolatedSmoothing,
+    Interpolated,
 )
 
 # Utilities
@@ -1142,7 +1142,7 @@ class TextCategorizer:
                     counts, bins=self.vocab_size, logprob=True
                 )
             elif self.smoothing == "bayesian":
-                model = freqprob.BayesianSmoothing(
+                model = freqprob.Bayesian(
                     counts, alpha=1.0, logprob=True
                 )
             else:

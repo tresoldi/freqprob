@@ -1,19 +1,22 @@
 """FreqProb: frequency-based probability estimation library."""
 
 # Version of the freqprob package
-__version__ = "0.4.0"
+__version__ = "0.6.0"
 __author__ = "Tiago Tresoldi"
 __email__ = "tiago.tresoldi@lingfil.uu.se"
 
+
+# Base type (useful for isinstance checks and type annotations)
+from .base import ScoringMethod
 
 # Core estimators, grouped by family under methods/
 from .cache import clear_all_caches, get_cache_stats
 from .methods.additive import ELE, Laplace, Lidstone
 from .methods.baselines import MLE, Random, Uniform
-from .methods.bayesian import BayesianSmoothing
+from .methods.bayesian import Bayesian
 from .methods.certainty import CertaintyDegree
 from .methods.goodturing import SimpleGoodTuring, WittenBell
-from .methods.interpolated import InterpolatedSmoothing
+from .methods.interpolated import Interpolated
 from .methods.kneser_ney import KneserNey, ModifiedKneserNey
 
 # Model-evaluation metrics and (NLP) text helpers
@@ -48,11 +51,11 @@ __all__ = [
     "ELE",
     "MLE",
     "BatchScorer",
-    "BayesianSmoothing",
+    "Bayesian",
     "CertaintyDegree",
     "CompressedFrequencyDistribution",
     "DistributionMemoryAnalyzer",
-    "InterpolatedSmoothing",
+    "Interpolated",
     "KneserNey",
     "Laplace",
     "LazyBatchScorer",
@@ -63,6 +66,7 @@ __all__ = [
     "ModifiedKneserNey",
     "QuantizedProbabilityTable",
     "Random",
+    "ScoringMethod",
     "SimpleGoodTuring",
     "SparseFrequencyDistribution",
     "StreamingDataProcessor",
