@@ -12,23 +12,6 @@ from freqprob.base import FrequencyDistribution, ScoringMethod, ScoringMethodCon
 from freqprob.cache import cached_computation, cached_sgt_computation
 
 
-@dataclass
-class WittenBellConfig(ScoringMethodConfig):
-    """Configuration for Witten-Bell smoothing.
-
-    Attributes:
-    ----------
-    bins : int | None
-        Total number of possible bins/elements (default: vocabulary size)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    bins: int | None = None
-
-    logprob: bool = True
-
-
 class WittenBell(ScoringMethod):
     """Returns a Witten-Bell estimate probability distribution.
 
@@ -68,7 +51,7 @@ class WittenBell(ScoringMethod):
         logprob: bool = True,
     ) -> None:
         """Initialize Witten-Bell smoothing."""
-        config = WittenBellConfig(bins=bins, logprob=logprob)
+        config = ScoringMethodConfig(bins=bins, logprob=logprob)
         super().__init__(config)
         self.name = "Witten-Bell"
         self.fit(freqdist)
@@ -120,8 +103,6 @@ class SimpleGoodTuringConfig(ScoringMethodConfig):
     p_value: float = 0.05
 
     default_p0: float | None = None
-    bins: int | None = None
-    logprob: bool = True
     allow_fail: bool = True
 
 

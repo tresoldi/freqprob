@@ -27,8 +27,6 @@ class InterpolatedConfig(ScoringMethodConfig):
 
     lambda_weight: float = 0.7
 
-    logprob: bool = True
-
 
 class InterpolatedSmoothing(ScoringMethod):
     """Linear interpolation smoothing between multiple models.

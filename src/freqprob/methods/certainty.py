@@ -1,30 +1,9 @@
 """Certainty-degree probability estimation."""
 
 import math
-from dataclasses import dataclass
 
 from freqprob.base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
 from freqprob.cache import cached_computation
-
-
-@dataclass
-class CertaintyDegreeConfig(ScoringMethodConfig):
-    """Configuration for Certainty Degree estimation.
-
-    Attributes:
-    ----------
-    bins : int | None
-        Total number of possible bins/elements (default: vocabulary size)
-    unobs_prob : Probability
-        Reserved probability mass for unobserved elements (default: 0.0)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    bins: int | None = None
-
-    unobs_prob: Probability = 0.0
-    logprob: bool = True
 
 
 class CertaintyDegree(ScoringMethod):
@@ -67,7 +46,7 @@ class CertaintyDegree(ScoringMethod):
         logprob: bool = True,
     ) -> None:
         """Initialize Certainty Degree estimation."""
-        config = CertaintyDegreeConfig(bins=bins, unobs_prob=unobs_prob, logprob=logprob)
+        config = ScoringMethodConfig(bins=bins, unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "Certainty Degree"
         self.fit(freqdist)

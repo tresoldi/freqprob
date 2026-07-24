@@ -24,8 +24,6 @@ class BayesianConfig(ScoringMethodConfig):
 
     alpha: float = 1.0
 
-    logprob: bool = True
-
 
 class BayesianSmoothing(ScoringMethod):
     """Bayesian smoothing with Dirichlet prior.
