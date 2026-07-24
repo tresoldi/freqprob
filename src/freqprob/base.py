@@ -11,8 +11,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar
 
-from typing_extensions import Self
-
 # Type aliases for clarity
 Element = str | int | float | tuple[Any, ...] | frozenset[Any]
 Count = int
@@ -327,7 +325,7 @@ class ScoringMethod(ABC):
             pickle.dump(self, fh, protocol=pickle.HIGHEST_PROTOCOL)
 
     @classmethod
-    def load(cls, path: str | Path) -> Self:
+    def load(cls: type[T], path: str | Path) -> T:  # noqa: PYI019  (Self needs typing_extensions on 3.10)
         """Load a scorer previously written with :meth:`save`.
 
         Parameters

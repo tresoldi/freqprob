@@ -1,5 +1,7 @@
 """Tests for save()/load() serialization of fitted estimators."""
 
+# mypy: disable-error-code="arg-type,no-untyped-def"
+
 import pickle
 
 import pytest
