@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+title: "FreqProb: A Python library for probability smoothing and frequency-based language modeling"
+abstract: >-
+  FreqProb is a Python library for scoring observation probabilities from
+  frequency counts, providing a range of smoothing methods (from Laplace and
+  Lidstone to Simple Good-Turing and Kneser-Ney) for natural language
+  processing, information retrieval, and statistical modeling.
+type: software
+authors:
+  - family-names: Tresoldi
+    given-names: Tiago
+    affiliation: "Department of Linguistics and Philology, Uppsala University"
+    email: tiago.tresoldi@lingfil.uu.se
+version: 0.4.0
+license: MIT
+repository-code: "https://github.com/tresoldi/freqprob"
+url: "https://github.com/tresoldi/freqprob"
+keywords:
+  - nlp
+  - smoothing
+  - frequency
+  - probability
+  - language-model
