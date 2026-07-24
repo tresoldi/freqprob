@@ -356,7 +356,7 @@ $$P_{interp}(w) = \lambda P_{high}(w) + (1-\lambda) P_{low}(w)$$
 trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
 bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3, ('small', 'cat'): 2}
 
-interpolated = freqprob.InterpolatedSmoothing(
+interpolated = freqprob.Interpolated(
     trigrams, bigrams, lambda_weight=0.7, logprob=False
 )
 
@@ -369,7 +369,7 @@ print(interpolated(('unseen', 'big', 'cat')))
 # Same-type interpolation (strings)
 high_freq = {'cat': 10, 'dog': 5}
 low_freq = {'cat': 3, 'dog': 2, 'bird': 1}
-interp_str = freqprob.InterpolatedSmoothing(
+interp_str = freqprob.Interpolated(
     high_freq, low_freq, lambda_weight=0.8, logprob=False
 )
 ```
@@ -395,7 +395,7 @@ where $\alpha$ is the Dirichlet concentration parameter.
 
 **Implementation:**
 ```python
-bayesian = freqprob.BayesianSmoothing(freqdist, alpha=1.0, logprob=False)
+bayesian = freqprob.Bayesian(freqdist, alpha=1.0, logprob=False)
 ```
 
 ## Computational Efficiency
@@ -855,7 +855,7 @@ print(f"Feature vectors: {len(features)} x {len(features[0])}")
 ```python
 def build_document_language_model(document, background_model, lambda_mix=0.8):
     """Build a smoothed document language model."""
-    from freqprob import word_frequency, InterpolatedSmoothing
+    from freqprob import word_frequency, Interpolated
 
     # Document term frequencies
     doc_freqdist = word_frequency(document.split())
@@ -864,7 +864,7 @@ def build_document_language_model(document, background_model, lambda_mix=0.8):
     doc_model = freqprob.MLE(doc_freqdist, logprob=True)
 
     # Interpolate with background model
-    interpolated = InterpolatedSmoothing(
+    interpolated = Interpolated(
         doc_freqdist, background_model._freqdist,
         lambda_weight=lambda_mix, logprob=True
     )

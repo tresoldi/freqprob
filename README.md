@@ -58,8 +58,8 @@ freqprob.perplexity(scorer, test_bigrams)
 | `Laplace` / `Lidstone` / `ELE` | simple, robust additive smoothing | `bins`, `gamma` |
 | `SimpleGoodTuring` | heavy-tailed count data (many rare items) | `p_value` |
 | `KneserNey` / `ModifiedKneserNey` | n-gram language models | `discount` |
-| `BayesianSmoothing` | Dirichlet-prior smoothing | `alpha` |
-| `InterpolatedSmoothing` | combining models of different orders | `lambda_weight` |
+| `Bayesian` | Dirichlet-prior smoothing | `alpha` |
+| `Interpolated` | combining models of different orders | `lambda_weight` |
 | `WittenBell`, `CertaintyDegree`, `Uniform`, `Random` | baselines & specialized cases | — |
 
 For large or streaming data, FreqProb also provides vectorized batch scoring,

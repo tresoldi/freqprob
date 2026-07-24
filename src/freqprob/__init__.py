@@ -10,10 +10,10 @@ __email__ = "tiago.tresoldi@lingfil.uu.se"
 from .cache import clear_all_caches, get_cache_stats
 from .methods.additive import ELE, Laplace, Lidstone
 from .methods.baselines import MLE, Random, Uniform
-from .methods.bayesian import BayesianSmoothing
+from .methods.bayesian import Bayesian
 from .methods.certainty import CertaintyDegree
 from .methods.goodturing import SimpleGoodTuring, WittenBell
-from .methods.interpolated import InterpolatedSmoothing
+from .methods.interpolated import Interpolated
 from .methods.kneser_ney import KneserNey, ModifiedKneserNey
 
 # Model-evaluation metrics and (NLP) text helpers
@@ -48,11 +48,11 @@ __all__ = [
     "ELE",
     "MLE",
     "BatchScorer",
-    "BayesianSmoothing",
+    "Bayesian",
     "CertaintyDegree",
     "CompressedFrequencyDistribution",
     "DistributionMemoryAnalyzer",
-    "InterpolatedSmoothing",
+    "Interpolated",
     "KneserNey",
     "Laplace",
     "LazyBatchScorer",

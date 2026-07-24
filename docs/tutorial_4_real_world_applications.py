@@ -434,7 +434,7 @@ class ProbabilisticTextClassifier:
                     frequencies, bins=vocab_size, logprob=True
                 )
             elif self.smoothing_method == "bayesian":
-                self.class_models[class_label] = freqprob.BayesianSmoothing(
+                self.class_models[class_label] = freqprob.Bayesian(
                     frequencies, alpha=0.5, logprob=True
                 )
             else:  # MLE
@@ -1097,7 +1097,7 @@ class SentimentAnalyzer:
 
         for sentiment, frequencies in sentiment_frequencies.items():
             if self.smoothing == "bayesian":
-                self.sentiment_models[sentiment] = freqprob.BayesianSmoothing(
+                self.sentiment_models[sentiment] = freqprob.Bayesian(
                     frequencies, alpha=0.5, logprob=True
                 )
             elif self.smoothing == "laplace":

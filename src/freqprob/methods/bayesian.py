@@ -25,7 +25,7 @@ class BayesianConfig(ScoringMethodConfig):
     alpha: float = 1.0
 
 
-class BayesianSmoothing(ScoringMethod):
+class Bayesian(ScoringMethod):
     """Bayesian smoothing with Dirichlet prior.
 
     Uses a Dirichlet prior distribution to provide Bayesian probability estimates.
@@ -61,7 +61,7 @@ class BayesianSmoothing(ScoringMethod):
     --------
     Basic Bayesian smoothing with uniform prior:
     >>> freqdist = {'apple': 8, 'banana': 4, 'cherry': 1}
-    >>> bayes = BayesianSmoothing(freqdist, alpha=1.0, logprob=False)
+    >>> bayes = Bayesian(freqdist, alpha=1.0, logprob=False)
     >>> bayes('apple')     # (8+1)/(13+3*1) = 9/16
     0.5625
     >>> bayes('banana')    # (4+1)/(13+3*1) = 5/16
@@ -71,14 +71,14 @@ class BayesianSmoothing(ScoringMethod):
 
     Effect of different alpha values:
     >>> # Stronger smoothing (alpha = 2)
-    >>> bayes_smooth = BayesianSmoothing(freqdist, alpha=2.0, logprob=False)
+    >>> bayes_smooth = Bayesian(freqdist, alpha=2.0, logprob=False)
     >>> bayes_smooth('apple')    # (8+2)/(13+3*2) = 10/19
     0.5263157894736842
     >>> bayes_smooth('unseen')   # 2/(13+3*2) = 2/19
     0.10526315789473684
 
     >>> # Minimal smoothing (alpha = 0.1)
-    >>> bayes_minimal = BayesianSmoothing(freqdist, alpha=0.1, logprob=False)
+    >>> bayes_minimal = Bayesian(freqdist, alpha=0.1, logprob=False)
     >>> bayes_minimal('apple')   # (8+0.1)/(13+3*0.1) ≈ 8.1/13.3
     0.6090226699248121
 
