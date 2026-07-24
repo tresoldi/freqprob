@@ -21,7 +21,7 @@ try:
 except ImportError:
     HAS_PSUTIL = False
 
-from .base import FrequencyDistribution, ScoringMethod
+from freqprob.base import FrequencyDistribution, ScoringMethod
 
 
 class ProfiledFunction(Protocol):
@@ -484,11 +484,11 @@ class DistributionMemoryAnalyzer:
                 scorer: ScoringMethod
                 with self.profiler.profile_operation(f"create_{method_name}"):
                     if method_name == "MLE":
-                        from .basic import MLE
+                        from freqprob.methods.baselines import MLE
 
                         scorer = MLE(freqdist)
                     elif method_name == "Laplace":
-                        from .lidstone import Laplace
+                        from freqprob.methods.additive import Laplace
 
                         scorer = Laplace(freqdist)
                     elif method_name == "StreamingMLE":

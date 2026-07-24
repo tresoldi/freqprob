@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from .base import Element, ScoringMethod
+from freqprob.base import Element, ScoringMethod
 
 
 class VectorizedScorer:

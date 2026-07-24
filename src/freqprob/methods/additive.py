@@ -9,7 +9,7 @@ counts to observed data to handle the zero probability problem.
 import math
 from dataclasses import dataclass
 
-from .base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
+from freqprob.base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
 
 @dataclass

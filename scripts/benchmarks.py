@@ -114,7 +114,7 @@ class DatasetGenerator:
         np.random.seed(42)  # For reproducibility
 
         # Generate Zipfian frequencies
-        frequencies = np.random.zipf(alpha, vocab_size)
+        frequencies: np.ndarray = np.random.zipf(alpha, vocab_size)
 
         # Normalize to desired total count
         frequencies = (frequencies / frequencies.sum()) * total_count
@@ -173,7 +173,7 @@ class DatasetGenerator:
 
         # Generate bigrams with Zipfian frequencies
         num_bigrams = min(vocab_size * vocab_size, total_count // 10)
-        frequencies = np.random.zipf(alpha, num_bigrams)
+        frequencies: np.ndarray = np.random.zipf(alpha, num_bigrams)
         frequencies = (frequencies / frequencies.sum()) * total_count
         frequencies = frequencies.astype(int)
         frequencies[frequencies == 0] = 1
@@ -199,7 +199,7 @@ class DatasetGenerator:
 
         # Generate trigrams with Zipfian frequencies
         num_trigrams = min(vocab_size * vocab_size, total_count // 20)
-        frequencies = np.random.zipf(alpha, num_trigrams)
+        frequencies: np.ndarray = np.random.zipf(alpha, num_trigrams)
         frequencies = (frequencies / frequencies.sum()) * total_count
         frequencies = frequencies.astype(int)
         frequencies[frequencies == 0] = 1

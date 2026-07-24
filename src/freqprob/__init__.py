@@ -6,48 +6,42 @@ __author__ = "Tiago Tresoldi"
 __email__ = "tiago.tresoldi@lingfil.uu.se"
 
 
-from .advanced import CertaintyDegree, SimpleGoodTuring, WittenBell
-
-# Import from local modules
-from .basic import MLE, Random, Uniform
+# Core estimators, grouped by family under methods/
 from .cache import clear_all_caches, get_cache_stats
-from .lazy import (
+from .methods.additive import ELE, Laplace, Lidstone
+from .methods.baselines import MLE, Random, Uniform
+from .methods.bayesian import BayesianSmoothing
+from .methods.certainty import CertaintyDegree
+from .methods.goodturing import SimpleGoodTuring, WittenBell
+from .methods.interpolated import InterpolatedSmoothing
+from .methods.kneser_ney import KneserNey, ModifiedKneserNey
+
+# Model-evaluation metrics and (NLP) text helpers
+from .metrics import cross_entropy, kl_divergence, model_comparison, perplexity
+
+# Performance infrastructure (lazy/streaming/vectorized/memory/profiling)
+from .performance.lazy import (
     LazyBatchScorer,
     LazyScoringMethod,
     create_lazy_laplace,
     create_lazy_mle,
 )
-from .lidstone import ELE, Laplace, Lidstone
-from .memory_efficient import (
+from .performance.memory_efficient import (
     CompressedFrequencyDistribution,
     QuantizedProbabilityTable,
     SparseFrequencyDistribution,
     create_compressed_distribution,
     create_sparse_distribution,
 )
-from .profiling import DistributionMemoryAnalyzer, MemoryMonitor, MemoryProfiler
-from .smoothing import (
-    BayesianSmoothing,
-    InterpolatedSmoothing,
-    KneserNey,
-    ModifiedKneserNey,
-)
-from .streaming import (
+from .performance.profiling import DistributionMemoryAnalyzer, MemoryMonitor, MemoryProfiler
+from .performance.streaming import (
     StreamingDataProcessor,
     StreamingFrequencyDistribution,
     StreamingLaplace,
     StreamingMLE,
 )
-from .utils import (
-    cross_entropy,
-    generate_ngrams,
-    kl_divergence,
-    model_comparison,
-    ngram_frequency,
-    perplexity,
-    word_frequency,
-)
-from .vectorized import BatchScorer, VectorizedScorer, create_vectorized_batch_scorer
+from .performance.vectorized import BatchScorer, VectorizedScorer, create_vectorized_batch_scorer
+from .text import generate_ngrams, ngram_frequency, word_frequency
 
 # Build the namespace
 __all__ = [

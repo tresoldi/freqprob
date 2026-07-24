@@ -4,7 +4,7 @@
 import pytest
 
 # Import the library to test
-from freqprob.smoothing import (
+from freqprob import (
     BayesianSmoothing,
     InterpolatedSmoothing,
     KneserNey,
