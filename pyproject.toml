@@ -87,7 +87,7 @@ Changelog = "https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md"
 version = {attr = "freqprob.__version__"}
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["freqprob*"]
 
 
@@ -161,7 +161,7 @@ ignore = [
     "RUF003", # Ambiguous Greek characters (mathematical notation)
     "T201",   # Allow print statements in tutorials
 ]
-"freqprob/profiling.py" = [
+"src/freqprob/profiling.py" = [
     "T201",   # Allow print statements for monitoring alerts
 ]
 "docs/*.ipynb" = [
@@ -186,6 +186,7 @@ convention = "google"  # Keep existing convention; full Epytext migration requir
 # MyPy type checking
 [tool.mypy]
 python_version = "3.10"
+files = ["src/freqprob", "tests", "scripts"]
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

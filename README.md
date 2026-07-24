@@ -139,24 +139,24 @@ smoothed_dist = freqprob.ELE(observed_frequencies, bins=total_categories)
 
 ## Documentation & Learning
 
-Learn FreqProb through comprehensive, executable tutorials with visualizations. Tutorials are written using [Nhandu](https://pypi.org/project/nhandu) literate programming format.
+Learn FreqProb through comprehensive, executable tutorials with visualizations. Tutorials are written using [Nhandu](https://pypi.org/project/nhandu) literate programming format; the rendered HTML is built from these sources (`make docs`) and published to the documentation site.
 
-1. **[Basic Smoothing Methods](docs/tutorial_1_basic_smoothing.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_1_basic_smoothing.html))
+1. **[Basic Smoothing Methods](docs/tutorial_1_basic_smoothing.py)**
    - Introduction to probability smoothing
    - MLE, Laplace, Lidstone, and ELE methods
    - Model evaluation with perplexity
 
-2. **[Advanced Methods](docs/tutorial_2_advanced_methods.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_2_advanced_methods.html))
+2. **[Advanced Methods](docs/tutorial_2_advanced_methods.py)**
    - Simple Good-Turing smoothing
    - Kneser-Ney and Modified Kneser-Ney
    - Bayesian and interpolated methods
 
-3. **[Efficiency & Memory](docs/tutorial_3_efficiency_memory.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_3_efficiency_memory.html))
+3. **[Efficiency & Memory](docs/tutorial_3_efficiency_memory.py)**
    - Vectorized batch processing
    - Streaming algorithms
    - Memory-efficient representations
 
-4. **[Real-World Applications](docs/tutorial_4_real_world_applications.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_4_real_world_applications.html))
+4. **[Real-World Applications](docs/tutorial_4_real_world_applications.py)**
    - Language modeling
    - Text classification
    - Information retrieval

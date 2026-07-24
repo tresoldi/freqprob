@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Project layout**: Moved the package to a `src/` layout (`src/freqprob/`). This
+  prevents accidental imports of the working-tree package instead of the installed
+  one and is the modern packaging standard. The import path is unchanged
+  (`import freqprob`); only the on-disk location moved. Build/type-check/test configs
+  updated accordingly (`packages.find` → `src`, `mypy` uses `[tool.mypy] files`).
+
+### Removed
+
+- **Committed documentation artifacts**: Removed the generated tutorial HTML and
+  figure PNGs (~17 MB) from version control. They are build outputs (`make docs`)
+  and are now git-ignored; rendered docs will be published to the documentation site.
+
 ### Added
 
 - **CI test matrix**: Tests now run across Python 3.10/3.11/3.12 on Linux, macOS, and
