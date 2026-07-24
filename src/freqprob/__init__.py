@@ -6,6 +6,9 @@ __author__ = "Tiago Tresoldi"
 __email__ = "tiago.tresoldi@lingfil.uu.se"
 
 
+# Base type (useful for isinstance checks and type annotations)
+from .base import ScoringMethod
+
 # Core estimators, grouped by family under methods/
 from .cache import clear_all_caches, get_cache_stats
 from .methods.additive import ELE, Laplace, Lidstone
@@ -63,6 +66,7 @@ __all__ = [
     "ModifiedKneserNey",
     "QuantizedProbabilityTable",
     "Random",
+    "ScoringMethod",
     "SimpleGoodTuring",
     "SparseFrequencyDistribution",
     "StreamingDataProcessor",
