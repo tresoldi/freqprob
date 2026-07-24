@@ -49,7 +49,7 @@ class Uniform(ScoringMethod):
     ----------
     freqdist : FrequencyDistribution
         Frequency distribution mapping elements to their observed counts.
-        Note: counts are ignored, only vocabulary size matters.
+        Note: counts are ignored, only support size matters.
     unobs_prob : Probability, default=0.0
         Reserved probability mass for unobserved elements (0.0 ≤ p₀ ≤ 1.0)
     logprob : bool, default=True
@@ -100,7 +100,7 @@ class Uniform(ScoringMethod):
         Parameters
         ----------
         freqdist : FrequencyDistribution
-            Frequency distribution (counts are ignored, only vocabulary size used)
+            Frequency distribution (counts are ignored, only support size used)
         """
         unobs_prob = self.config.unobs_prob or 0.0
 

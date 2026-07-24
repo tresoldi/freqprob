@@ -40,7 +40,7 @@ class Bayesian(ScoringMethod):
     - cᵢ is the observed count for word wᵢ
     - alpha is the Dirichlet concentration parameter (pseudocount)
     - N is the total observed count
-    - V is the vocabulary size
+    - V is the support size
 
     This is equivalent to adding alpha pseudocounts to each possible outcome
     and corresponds to the posterior mean under a symmetric Dirichlet prior.

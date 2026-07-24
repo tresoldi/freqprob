@@ -197,7 +197,7 @@ class CompressedFrequencyDistribution:
         return self._total_count
 
     def get_vocabulary_size(self) -> int:
-        """Get vocabulary size."""
+        """Get support size."""
         return len(self._element_to_id)
 
     def items(self) -> Iterator[tuple[Element, int]]:

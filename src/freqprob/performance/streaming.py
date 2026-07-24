@@ -25,7 +25,7 @@ class StreamingFrequencyDistribution:
     Parameters
     ----------
     max_vocabulary_size : Optional[int]
-        Maximum vocabulary size to maintain (None for unlimited)
+        Maximum support size to maintain (None for unlimited)
     min_count_threshold : int, default=1
         Minimum count for elements to be retained
     decay_factor : Optional[float]
@@ -57,7 +57,7 @@ class StreamingFrequencyDistribution:
         Parameters
         ----------
         max_vocabulary_size : Optional[int]
-            Maximum vocabulary size (None for unlimited)
+            Maximum support size (None for unlimited)
         min_count_threshold : int, default=1
             Minimum count threshold for retention
         decay_factor : Optional[float]
@@ -191,7 +191,7 @@ class StreamingFrequencyDistribution:
         self._total_count -= removed_count
 
     def _enforce_vocabulary_limit(self) -> None:
-        """Enforce maximum vocabulary size by removing least important elements."""
+        """Enforce maximum support size by removing least important elements."""
         if not self._max_vocab_size or len(self._counts) <= self._max_vocab_size:
             return
 
@@ -259,7 +259,7 @@ class StreamingFrequencyDistribution:
             return self._total_count
 
     def get_vocabulary_size(self) -> int:
-        """Get current vocabulary size."""
+        """Get current support size."""
         with self._lock:
             return len(self._counts)
 
@@ -280,7 +280,7 @@ class StreamingFrequencyDistribution:
             return iter(list(self._counts.values()))
 
     def __len__(self) -> int:
-        """Return vocabulary size."""
+        """Return support size."""
         return self.get_vocabulary_size()
 
     def __contains__(self, element: Element) -> bool:
@@ -377,7 +377,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
     initial_freqdist : Optional[Dict[Element, int]]
         Initial frequency distribution
     max_vocabulary_size : Optional[int]
-        Maximum vocabulary size to maintain
+        Maximum support size to maintain
     unobs_prob : Optional[float]
         Probability mass for unobserved elements
     logprob : bool, default=True
@@ -606,7 +606,7 @@ class StreamingLaplace(StreamingMLE):
     initial_freqdist : Optional[Dict[Element, int]]
         Initial frequency distribution
     max_vocabulary_size : Optional[int]
-        Maximum vocabulary size to maintain
+        Maximum support size to maintain
     bins : Optional[int]
         Total number of possible bins
     logprob : bool, default=True
@@ -637,7 +637,7 @@ class StreamingLaplace(StreamingMLE):
         bins = getattr(self.config, "bins", None)
 
         # For Laplace smoothing, if bins is not specified, we need to consider
-        # the original vocabulary size, not just the current one
+        # the original support size, not just the current one
         if bins is None:
             bins = vocab_size
 

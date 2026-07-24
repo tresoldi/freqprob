@@ -91,7 +91,7 @@ class SimpleGoodTuringConfig(ScoringMethodConfig):
     default_p0 : float | None
         Fallback probability for unobserved elements (default: None)
     bins : int | None
-        Total vocabulary size for per-word probability calculation (default: None).
+        Total support size for per-word probability calculation (default: None).
         If None, uses heuristic: bins = V_observed + N1 (singletons).
         This determines how p0 (total unseen mass) is distributed across unseen words.
     logprob : bool
@@ -150,10 +150,10 @@ class SimpleGoodTuring(ScoringMethod):
         for the current frequency distribution. Please note that this is
         intended change from the reference implementation by Gale and Sampson.
     bins : int | None
-        Total vocabulary size for calculating per-word unseen probabilities.
+        Total support size for calculating per-word unseen probabilities.
         If None (default), uses heuristic: bins = V_observed + N1, where N1 is
         the number of singleton words. This assumes approximately as many unseen
-        types as singletons. Users can specify exact vocabulary size if known.
+        types as singletons. Users can specify exact support size if known.
     logprob : bool
         Whether to return the log-probabilities (default) or the
         probabilities themselves. When using the log-probabilities, the
@@ -342,7 +342,8 @@ class SimpleGoodTuring(ScoringMethod):
         # Validate bins value
         if bins <= len(freqdist):
             raise ValueError(
-                f"bins ({bins}) must be greater than observed vocabulary size ({len(freqdist)}). "
+                f"bins ({bins}) must be greater than the number of observed elements "
+                f"({len(freqdist)}). "
                 f"Consider bins = {len(freqdist) + max(freqs_of_freqs.get(1, 0), 1)} (V + N1 heuristic)"
             )
 

@@ -39,7 +39,7 @@ class Lidstone(ScoringMethod):
         - gamma = 0.5: Jeffreys prior (Expected Likelihood Estimation)
         - gamma → 0: Approaches MLE
     bins : int | None, default=None
-        Total number of possible elements. If None, uses vocabulary size |V|
+        Total number of possible elements. If None, uses support size |V|
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
@@ -89,7 +89,7 @@ class Lidstone(ScoringMethod):
     - Small gamma: Low bias but high variance (closer to MLE)
     - Large gamma: Higher bias but lower variance (more uniform)
 
-    When bins > vocabulary size, the method reserves more probability
+    When bins > support size, the method reserves more probability
     mass for potential unseen elements.
     """
 
@@ -103,7 +103,7 @@ class Lidstone(ScoringMethod):
         logprob: bool = True,
     ) -> None:
         """Initialize Lidstone smoothing."""
-        # Default bins to vocabulary size if not specified
+        # Default bins to support size if not specified
         if bins is None:
             bins = len(freqdist)
 
@@ -162,7 +162,7 @@ class Laplace(Lidstone):
     freqdist : FrequencyDistribution
         Frequency distribution mapping elements to their observed counts
     bins : int | None, default=None
-        Total number of possible elements. If None, uses vocabulary size |V|
+        Total number of possible elements. If None, uses support size |V|
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
@@ -219,7 +219,7 @@ class ELE(Lidstone):
     freqdist : FrequencyDistribution
         Frequency distribution mapping elements to their observed counts
     bins : int | None, default=None
-        Total number of possible elements. If None, uses vocabulary size |V|
+        Total number of possible elements. If None, uses support size |V|
     logprob : bool, default=True
         Whether to return log-probabilities or probabilities
 
