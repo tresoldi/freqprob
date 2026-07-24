@@ -1,7 +1,7 @@
 # FreqProb Makefile
 # POSIX-compatible development commands
 
-.PHONY: help quality security format test test-cov test-fast bump-version build build-release clean install install-dev bench bench-all docs docs-clean
+.PHONY: help quality security format test test-cov test-fast bump-version build build-release clean install install-dev bench bench-all docs docs-clean site site-serve
 
 # Default target: show help
 .DEFAULT_GOAL := help
@@ -142,3 +142,12 @@ docs-clean: ## Remove generated HTML documentation
 	@echo "==> Cleaning generated documentation..."
 	rm -f docs/tutorial_*.html
 	@echo "✓ Documentation cleaned!"
+
+site: ## Build the MkDocs documentation site (strict) into site/
+	@echo "==> Building documentation site..."
+	mkdocs build --strict
+	@echo "✓ Site built in site/"
+
+site-serve: ## Serve the docs site locally with live reload
+	@echo "==> Serving docs at http://127.0.0.1:8000 ..."
+	mkdocs serve

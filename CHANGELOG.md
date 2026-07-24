@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Documentation site** (MkDocs-Material + mkdocstrings): `mkdocs.yml`, a landing
+  page, and an API reference generated from docstrings (so it can't drift from the
+  code). Build with `make site` / preview with `make site-serve`; a new `docs` extra
+  provides the toolchain. Intended to be published to GitHub Pages.
+
 ### Changed
+
+- **README**: Rewritten to lead with the core value (counts → probabilities) and a
+  single motivating example, add a method-selection table, frame the library as
+  general-purpose (not NLP-only), and collapse the previously repeated testing
+  sections. Documentation links now point to the docs site.
 
 - **Collapsed redundant configuration classes**: Removed eight per-method `*Config`
   dataclasses that only restated fields already defined on the base

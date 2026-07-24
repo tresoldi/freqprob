@@ -52,9 +52,14 @@ test = [
     "nltk>=3.8",
     "scikit-learn>=1.0.0",
 ]
+# Documentation site (MkDocs + mkdocstrings)
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+]
 # All optional dependencies (runtime + development)
 all = [
-    "freqprob[memory,dev]",
+    "freqprob[memory,dev,docs]",
 ]
 # Development dependencies
 dev = [
@@ -89,7 +94,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/tresoldi/freqprob"
-Documentation = "https://github.com/tresoldi/freqprob/blob/main/docs/USER_GUIDE.md"
+Documentation = "https://tresoldi.github.io/freqprob/"
 Repository = "https://github.com/tresoldi/freqprob.git"
 Issues = "https://github.com/tresoldi/freqprob/issues"
 Changelog = "https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md"
