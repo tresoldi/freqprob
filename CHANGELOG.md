@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **mypy target**: Set mypy `python_version` to `3.12` so it can parse modern
+  dependency stubs (e.g. numpy's PEP 695 `type` statements). Source-level 3.10
+  compatibility is still enforced by ruff (`target-version = "py310"`) and validated
+  by the Python 3.10 CI test-matrix leg.
+
 - **Internal module organization**: Regrouped the package internals for
   maintainability, with **no change to the public API** (`import freqprob` and every
   `freqprob.<Name>` continue to work unchanged). Estimators now live under

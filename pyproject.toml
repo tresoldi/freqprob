@@ -187,7 +187,10 @@ convention = "google"  # Keep existing convention; full Epytext migration requir
 
 # MyPy type checking
 [tool.mypy]
-python_version = "3.10"
+# Target 3.12 so mypy can parse modern dependency stubs (e.g. numpy's PEP 695
+# `type` statements). Our 3.10 syntax compatibility is enforced by ruff
+# (target-version = "py310") and validated by the 3.10 CI test matrix leg.
+python_version = "3.12"
 files = ["src/freqprob", "tests", "scripts"]
 warn_return_any = true
 warn_unused_configs = true
