@@ -31,12 +31,12 @@ quality: ## Run code quality checks (ruff format --check, ruff check, mypy)
 	@echo "==> Running ruff linter..."
 	ruff check .
 	@echo "==> Running mypy type checker..."
-	mypy freqprob/ tests/ scripts/
+	mypy
 	@echo "✓ All quality checks passed!"
 
 security: ## Run bandit static security analysis
 	@echo "==> Running bandit security scan..."
-	bandit -c pyproject.toml -r freqprob/
+	bandit -c pyproject.toml -r src/freqprob/
 	@echo "✓ Security scan passed!"
 
 format: ## Auto-format code with ruff
@@ -60,7 +60,7 @@ test-fast: ## Run tests in parallel (faster)
 	@echo "✓ Tests passed!"
 
 bump-version: ## Bump version (TYPE=patch|minor|major), commit, and tag
-	@CURRENT=$$(grep -o "__version__ = \"[^\"]*\"" freqprob/__init__.py | cut -d'"' -f2); \
+	@CURRENT=$$(grep -o "__version__ = \"[^\"]*\"" src/freqprob/__init__.py | cut -d'"' -f2); \
 	echo "==> Current version: $$CURRENT"; \
 	IFS='.' read -r major minor patch <<< "$$CURRENT"; \
 	if [ "$(TYPE)" = "major" ]; then NEW="$$((major + 1)).0.0"; \
@@ -68,12 +68,12 @@ bump-version: ## Bump version (TYPE=patch|minor|major), commit, and tag
 	elif [ "$(TYPE)" = "patch" ]; then NEW="$$major.$$minor.$$((patch + 1))"; \
 	else echo "Error: TYPE must be patch, minor, or major"; exit 1; fi; \
 	echo "==> Bumping $(TYPE) version to $$NEW..."; \
-	sed -i "s/__version__ = \"$$CURRENT\"/__version__ = \"$$NEW\"/" freqprob/__init__.py; \
+	sed -i "s/__version__ = \"$$CURRENT\"/__version__ = \"$$NEW\"/" src/freqprob/__init__.py; \
 	echo ""; \
 	echo "⚠️  Please update CHANGELOG.md manually before committing!"; \
 	echo ""; \
 	read -p "Press Enter to commit and tag, or Ctrl+C to cancel..."; \
-	git add freqprob/__init__.py; \
+	git add src/freqprob/__init__.py; \
 	git commit -m "chore: bump version to $$NEW"; \
 	git tag -a "v$$NEW" -m "Release v$$NEW"; \
 	echo "✓ Version bumped to $$NEW and tagged!"; \

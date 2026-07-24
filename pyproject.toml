@@ -61,9 +61,11 @@ dev = [
     # Testing (required by Makefile and tests/)
     "freqprob[test]",
 
-    # Code quality (required by Makefile)
-    "ruff>=0.1.0",
-    "mypy>=1.5.0",
+    # Code quality (required by Makefile).
+    # ruff/mypy pinned exactly so local, CI, and pre-commit run identical linter
+    # versions (unpinned ruff/mypy drift silently changes check results).
+    "ruff==0.15.8",
+    "mypy==1.19.1",
     "bandit[toml]>=1.7.0",
 
     # Build and release (required by Makefile)
@@ -87,7 +89,7 @@ Changelog = "https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md"
 version = {attr = "freqprob.__version__"}
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["freqprob*"]
 
 
@@ -161,7 +163,7 @@ ignore = [
     "RUF003", # Ambiguous Greek characters (mathematical notation)
     "T201",   # Allow print statements in tutorials
 ]
-"freqprob/profiling.py" = [
+"src/freqprob/profiling.py" = [
     "T201",   # Allow print statements for monitoring alerts
 ]
 "docs/*.ipynb" = [
@@ -186,6 +188,7 @@ convention = "google"  # Keep existing convention; full Epytext migration requir
 # MyPy type checking
 [tool.mypy]
 python_version = "3.10"
+files = ["src/freqprob", "tests", "scripts"]
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

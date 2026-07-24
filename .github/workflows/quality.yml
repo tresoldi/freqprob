@@ -25,7 +25,7 @@ jobs:
       - name: Lint with ruff
         run: ruff check .
       - name: Type check with mypy
-        run: mypy freqprob/ tests/ scripts/
+        run: mypy
 
   test:
     name: Tests (Python ${{ matrix.python-version }} / ${{ matrix.os }})
