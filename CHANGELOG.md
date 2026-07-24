@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   one and is the modern packaging standard. The import path is unchanged
   (`import freqprob`); only the on-disk location moved. Build/type-check/test configs
   updated accordingly (`packages.find` → `src`, `mypy` uses `[tool.mypy] files`).
+- **Pinned linters**: `ruff` and `mypy` are now pinned to exact versions in the `dev`
+  extra and in `.pre-commit-config.yaml`, so local, CI, and pre-commit run identical
+  versions. Unpinned versions had drifted (e.g. a newer `ruff` began formatting code
+  blocks inside Markdown), silently changing check results between runs.
 
 ### Removed
 
