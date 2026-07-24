@@ -14,23 +14,6 @@ from freqprob.base import FrequencyDistribution, Probability, ScoringMethod, Sco
 
 
 @dataclass
-class UniformConfig(ScoringMethodConfig):
-    """Configuration for Uniform distribution.
-
-    Attributes:
-    ----------
-    unobs_prob : Probability
-        Reserved probability mass for unobserved elements (default: 0.0)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    unobs_prob: Probability = 0.0
-
-    logprob: bool = True
-
-
-@dataclass
 class RandomConfig(ScoringMethodConfig):
     """Configuration for Random distribution.
 
@@ -44,27 +27,7 @@ class RandomConfig(ScoringMethodConfig):
         Random seed for reproducible results (default: None)
     """
 
-    unobs_prob: Probability = 0.0
-
-    logprob: bool = True
     seed: int | None = None
-
-
-@dataclass
-class MLEConfig(ScoringMethodConfig):
-    """Configuration for Maximum Likelihood Estimation.
-
-    Attributes:
-    ----------
-    unobs_prob : Probability
-        Reserved probability mass for unobserved elements (default: 0.0)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    unobs_prob: Probability = 0.0
-
-    logprob: bool = True
 
 
 class Uniform(ScoringMethod):
@@ -126,7 +89,7 @@ class Uniform(ScoringMethod):
         logprob: bool = True,
     ) -> None:
         """Initialize Uniform distribution."""
-        config = UniformConfig(unobs_prob=unobs_prob, logprob=logprob)
+        config = ScoringMethodConfig(unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "Uniform"
         self.fit(freqdist)
@@ -339,7 +302,7 @@ class MLE(ScoringMethod):
         logprob: bool = True,
     ) -> None:
         """Initialize MLE distribution."""
-        config = MLEConfig(unobs_prob=unobs_prob, logprob=logprob)
+        config = ScoringMethodConfig(unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
         self.name = "MLE"
         self.fit(freqdist)

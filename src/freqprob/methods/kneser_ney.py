@@ -26,8 +26,6 @@ class KneserNeyConfig(ScoringMethodConfig):
 
     discount: float = 0.75
 
-    logprob: bool = True
-
 
 class KneserNey(ScoringMethod):
     """Kneser-Ney smoothing probability distribution.
@@ -185,19 +183,6 @@ class KneserNey(ScoringMethod):
             self._unobs = avg_continuation
 
 
-@dataclass
-class ModifiedKneserNeyConfig(ScoringMethodConfig):
-    """Configuration for Modified Kneser-Ney smoothing.
-
-    Attributes:
-    ----------
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    logprob: bool = True
-
-
 class ModifiedKneserNey(ScoringMethod):
     """Modified Kneser-Ney smoothing probability distribution.
 
@@ -258,7 +243,7 @@ class ModifiedKneserNey(ScoringMethod):
 
     def __init__(self, freqdist: FrequencyDistribution, logprob: bool = True) -> None:
         """Initialize Modified Kneser-Ney smoothing."""
-        config = ModifiedKneserNeyConfig(logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
         self.name = "Modified Kneser-Ney"
         self.fit(freqdist)

@@ -7,63 +7,8 @@ counts to observed data to handle the zero probability problem.
 """
 
 import math
-from dataclasses import dataclass
 
 from freqprob.base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
-
-
-@dataclass
-class LidstoneConfig(ScoringMethodConfig):
-    """Configuration for Lidstone smoothing.
-
-    Attributes:
-    ----------
-    gamma : float
-        Additive smoothing parameter (gamma ≥ 0, default: 1.0)
-    bins : int | None
-        Total number of possible bins/elements (default: vocabulary size)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    gamma: float = 1.0
-
-    bins: int | None = None
-    logprob: bool = True
-
-
-@dataclass
-class LaplaceConfig(ScoringMethodConfig):
-    """Configuration for Laplace smoothing (Lidstone with gamma=1).
-
-    Attributes:
-    ----------
-    bins : int | None
-        Total number of possible bins/elements (default: vocabulary size)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    bins: int | None = None
-
-    logprob: bool = True
-
-
-@dataclass
-class ELEConfig(ScoringMethodConfig):
-    """Configuration for Expected Likelihood Estimation (Lidstone with gamma=0.5).
-
-    Attributes:
-    ----------
-    bins : int | None
-        Total number of possible bins/elements (default: vocabulary size)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    bins: int | None = None
-
-    logprob: bool = True
 
 
 class Lidstone(ScoringMethod):
@@ -162,7 +107,7 @@ class Lidstone(ScoringMethod):
         if bins is None:
             bins = len(freqdist)
 
-        config = LidstoneConfig(gamma=gamma, bins=bins, logprob=logprob)
+        config = ScoringMethodConfig(gamma=gamma, bins=bins, logprob=logprob)
         super().__init__(config)
         self.name = "Lidstone"
         self.fit(freqdist)
@@ -179,8 +124,8 @@ class Lidstone(ScoringMethod):
         bins = self.config.bins
 
         # Ensure gamma and bins are not None (they are set in __init__)
-        assert gamma is not None, "Gamma must be set in LidstoneConfig"
-        assert bins is not None, "Bins must be set in LidstoneConfig"
+        assert gamma is not None, "Gamma must be set before computing probabilities"
+        assert bins is not None, "Bins must be set before computing probabilities"
 
         # Calculate normalization factors
         total_count = sum(freqdist.values())

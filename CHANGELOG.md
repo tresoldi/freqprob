@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Collapsed redundant configuration classes**: Removed eight per-method `*Config`
+  dataclasses that only restated fields already defined on the base
+  `ScoringMethodConfig` (`UniformConfig`, `MLEConfig`, `LidstoneConfig`,
+  `LaplaceConfig`, `ELEConfig`, `WittenBellConfig`, `CertaintyDegreeConfig`,
+  `ModifiedKneserNeyConfig` — the last three of which were never even instantiated).
+  Those methods now build the base `ScoringMethodConfig` directly. The five configs
+  that add a genuine parameter are kept but trimmed to just that field
+  (`RandomConfig.seed`, `KneserNeyConfig.discount`, `BayesianConfig.alpha`,
+  `InterpolatedConfig.lambda_weight`, `SimpleGoodTuringConfig.p_value`/`default_p0`/
+  `allow_fail`). No public API or behavior change — all constructor parameters work
+  exactly as before.
+
 - **mypy target**: Set mypy `python_version` to `3.12` so it can parse modern
   dependency stubs (e.g. numpy's PEP 695 `type` statements). Source-level 3.10
   compatibility is still enforced by ruff (`target-version = "py310"`) and validated
