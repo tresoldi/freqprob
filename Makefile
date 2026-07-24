@@ -36,7 +36,7 @@ quality: ## Run code quality checks (ruff format --check, ruff check, mypy)
 
 security: ## Run bandit static security analysis
 	@echo "==> Running bandit security scan..."
-	bandit -c pyproject.toml -r freqprob/
+	bandit -c pyproject.toml -r src/freqprob/
 	@echo "✓ Security scan passed!"
 
 format: ## Auto-format code with ruff
