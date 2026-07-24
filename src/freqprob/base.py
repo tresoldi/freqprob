@@ -18,6 +18,11 @@ Probability = float
 LogProbability = float
 FrequencyDistribution = Mapping[Element, Count]
 
+# Smallest probability used as a floor to avoid log(0) domain errors. Kept as a
+# module constant so methods can use it directly rather than reading `_unobs`
+# (which holds the *output* value and would be wrong on a second fit()).
+MIN_PROBABILITY: Probability = 1e-10
+
 # Generic type variable for method chaining
 T = TypeVar("T", bound="ScoringMethod")
 
@@ -139,7 +144,7 @@ class ScoringMethod(ABC):
         """
         self.config: ScoringMethodConfig = config
 
-        self._unobs: Probability | LogProbability = 1e-10  # Default value to avoid domain errors
+        self._unobs: Probability | LogProbability = MIN_PROBABILITY  # avoid domain errors
         self._prob: dict[Element, Probability | LogProbability] = {}
         self._total_unseen_mass: float | None = (
             None  # For methods that track total unseen mass (e.g., SGT)
@@ -242,6 +247,13 @@ class ScoringMethod(ABC):
         >>> scorer('a')
         0.6666666666666666
         """
+        # Reset state so re-fitting an already-fitted scorer behaves like a
+        # fresh fit: methods that assign into self._prob incrementally would
+        # otherwise leave stale keys, and self._unobs (which holds the previous
+        # output) would otherwise pollute epsilon floors on a second fit.
+        self._prob = {}
+        self._unobs = MIN_PROBABILITY
+        self._total_unseen_mass = None
         self._compute_probabilities(freqdist)
 
         return self

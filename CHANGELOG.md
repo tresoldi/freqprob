@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.0] - 2026-07-24
 
+### Fixed
+
+- **Re-fitting an estimator**: Calling `fit()` a second time on an already-fitted
+  estimator now behaves identically to a fresh fit. Previously, log-space methods
+  (`MLE`, `Uniform`, `Random`, `CertaintyDegree`) could raise a `math domain error`
+  because `self._unobs` — which holds the previous *output* — was reused as an epsilon
+  floor; and methods that build `self._prob` incrementally (`KneserNey`,
+  `SimpleGoodTuring`) left stale keys from the previous data. `fit()` now resets state
+  first, and the additive-floor methods use a fixed `MIN_PROBABILITY` constant.
+
 ### Changed - BREAKING
 
 - **Renamed estimator classes** (dropped the inconsistent `Smoothing` suffix):
