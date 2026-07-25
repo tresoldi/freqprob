@@ -10,7 +10,13 @@ import math
 import random
 from dataclasses import dataclass
 
-from freqprob.base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
+from freqprob.base import (
+    MIN_PROBABILITY,
+    FrequencyDistribution,
+    Probability,
+    ScoringMethod,
+    ScoringMethodConfig,
+)
 
 
 @dataclass
@@ -108,7 +114,7 @@ class Uniform(ScoringMethod):
 
         if self.logprob:
             # Avoid domain errors by ensuring unobs_prob >= machine epsilon
-            unobs_prob = max(unobs_prob, self._unobs)
+            unobs_prob = max(unobs_prob, MIN_PROBABILITY)
             uniform_prob = (1.0 - unobs_prob) / vocab_size
             log_uniform_prob = math.log(uniform_prob)
             self._prob = dict.fromkeys(freqdist, log_uniform_prob)
@@ -208,7 +214,7 @@ class Random(ScoringMethod):
         total_random_counts = sum(random_counts.values())
 
         if self.logprob:
-            unobs_prob = max(unobs_prob, self._unobs)  # Avoid domain errors
+            unobs_prob = max(unobs_prob, MIN_PROBABILITY)  # Avoid domain errors
             available_mass = 1.0 - unobs_prob
             self._prob = {
                 elem: math.log((count / total_random_counts) * available_mass)
@@ -327,7 +333,7 @@ class MLE(ScoringMethod):
         available_mass = 1.0 - unobs_prob
 
         if self.logprob:
-            unobs_prob = max(unobs_prob, self._unobs)  # Avoid domain errors
+            unobs_prob = max(unobs_prob, MIN_PROBABILITY)  # Avoid domain errors
             self._prob = {
                 elem: math.log((count / total_count) * available_mass)
                 for elem, count in freqdist.items()

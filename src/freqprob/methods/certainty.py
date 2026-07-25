@@ -2,7 +2,13 @@
 
 import math
 
-from freqprob.base import FrequencyDistribution, Probability, ScoringMethod, ScoringMethodConfig
+from freqprob.base import (
+    MIN_PROBABILITY,
+    FrequencyDistribution,
+    Probability,
+    ScoringMethod,
+    ScoringMethodConfig,
+)
 from freqprob.cache import cached_computation
 
 
@@ -74,10 +80,9 @@ class CertaintyDegree(ScoringMethod):
         # between 1.0 discounted the calculated mass and 1.0 discounted the
         # minimum mass probability reserved.
         if self.logprob:
-            # Ensure unobs_prob is not None and handle self._unobs initialization
-            unobs_prob = unobs_prob or 0.0
-            current_unobs = getattr(self, "_unobs", 0.0) or 0.0
-            unobs_prob = max(unobs_prob, current_unobs)
+            # Floor the reserved mass with a fixed epsilon (not self._unobs, which
+            # holds the previous output and would be stale on a second fit()).
+            unobs_prob = max(unobs_prob or 0.0, MIN_PROBABILITY)
             prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
             self._prob = {
                 sample: math.log((count / n) * prob_space) for sample, count in freqdist.items()
