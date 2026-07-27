@@ -14,17 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   branches of `performance/profiling.py` (69% → 96%), `performance/vectorized.py`
   (70% → 100%), and `performance/lazy.py` (78% → 99%), raising overall coverage
   from ~84% to ~91%.
-- **CI security scanning**: the quality workflow now runs `bandit` against
-  `src/` on every push and pull request (configuration already lived in
-  `pyproject.toml`).
-- **CI coverage reporting**: the test workflow uploads coverage to Codecov once
-  per run (from the Ubuntu / Python 3.12 matrix cell), using the existing
-  `codecov.yml` configuration.
 
 ### Changed
 
-- Raised the enforced coverage floor from 80% to 88% (in both `pyproject.toml`
-  and the CI workflow) to lock in the higher coverage.
+- Raised the enforced coverage floor in `pyproject.toml` from 80% to 88% to lock
+  in the higher coverage.
 
 ## [0.6.0] - 2026-07-24
 
