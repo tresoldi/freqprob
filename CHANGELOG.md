@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Test coverage for the performance helpers**: new `tests/test_profiling.py`
+  and `tests/test_performance_edge_cases.py` cover the previously under-tested
+  branches of `performance/profiling.py` (69% → 96%), `performance/vectorized.py`
+  (70% → 100%), and `performance/lazy.py` (78% → 99%), raising overall coverage
+  from ~84% to ~91%.
+
+### Changed
+
+- Raised the enforced coverage floor in `pyproject.toml` from 80% to 88% to lock
+  in the higher coverage.
+
 ## [0.6.0] - 2026-07-24
 
 ### Fixed
