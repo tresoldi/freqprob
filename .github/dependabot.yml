@@ -14,9 +14,6 @@ updates:
     commit-message:
       prefix: "deps"
       include: "scope"
-    labels:
-      - "dependencies"
-      - "python"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
@@ -30,6 +27,3 @@ updates:
       - "tresoldi"
     commit-message:
       prefix: "ci"
-    labels:
-      - "dependencies"
-      - "github-actions"
