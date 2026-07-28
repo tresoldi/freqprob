@@ -8,27 +8,26 @@
 <link rel="canonical" href="{{ config.site_url }}">
 <style>
   :root {
-    --paper: #faf9f6;
-    --ink: #1b1b18;
-    --ink-2: #55534c;
-    --ink-3: #86837a;
-    --rule: #e4e1d9;
-    --rule-2: #efece5;
-    --link: #33477e;
-    --figure-bar: #3a3a34;
-    --figure-curve: #33477e;
-    --figure-unseen: #9a6b34;
-    --code-bg: #f3f1ea;
-    --serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, "Iowan Old Style", Georgia, serif;
-    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
-    --measure: 44rem;
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --ink-2: #474747;
+    --ink-3: #737373;
+    --rule: #d8d8d8;
+    --rule-2: #ececec;
+    --link: #234a86;
+    --code-bg: #f6f6f6;
+    --fig-ink: #1a1a1a;
+    --fig-grey: #8f8f8f;
+    --fig-light: #c9c9c9;
+    --serif: "Times New Roman", Times, Georgia, "Nimbus Roman", serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    --measure: 42rem;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --paper: #14140f; --ink: #ece9e1; --ink-2: #b0ada2; --ink-3: #827f74;
-      --rule: #2a2a22; --rule-2: #201f19; --link: #97a8d8;
-      --figure-bar: #b8b5a8; --figure-curve: #97a8d8; --figure-unseen: #cf9d5f;
-      --code-bg: #1c1c15;
+      --paper: #121212; --ink: #e6e6e6; --ink-2: #b2b2b2; --ink-3: #8a8a8a;
+      --rule: #2d2d2d; --rule-2: #242424; --link: #8fb0e6;
+      --code-bg: #1a1a1a; --fig-ink: #e6e6e6; --fig-grey: #969696; --fig-light: #575757;
     }
   }
 
@@ -36,63 +35,65 @@
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0; background: var(--paper); color: var(--ink);
-    font-family: var(--serif); font-size: 18px; line-height: 1.62;
-    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    font-family: var(--serif); font-size: 18px; line-height: 1.55;
+    text-rendering: optimizeLegibility;
   }
-  .page { max-width: var(--measure); margin: 0 auto; padding: 0 26px 96px; }
-  a { color: var(--link); text-underline-offset: 2px; text-decoration-thickness: 0.06em; }
-  a:hover { text-decoration-thickness: 0.12em; }
-  a:focus-visible { outline: 2px solid var(--link); outline-offset: 3px; border-radius: 2px; }
+  .page { max-width: var(--measure); margin: 0 auto; padding: 0 26px 80px; }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 
-  header.mast { padding: 68px 0 26px; border-bottom: 1px solid var(--rule); }
-  .title { font-size: 2.2rem; font-weight: 600; letter-spacing: -0.012em; margin: 0 0 8px; }
-  .title .mono { font-family: var(--mono); font-weight: 600; }
-  .dek { font-size: 1.16rem; color: var(--ink-2); margin: 0 0 20px; max-width: 34em; }
-  .meta { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+  header.mast { padding: 60px 0 22px; border-bottom: 1px solid var(--ink); }
+  .title { font-size: 1.9rem; font-weight: 700; margin: 0 0 8px; }
+  .title .mono { font-family: var(--mono); font-weight: 600; letter-spacing: -0.02em; }
+  .dek { font-size: 1.05rem; color: var(--ink-2); margin: 0 0 18px; max-width: 34em; }
+  .meta { font-size: 0.9rem; color: var(--ink-3); }
   .meta a { color: var(--ink-2); }
-  .meta .sep { color: var(--rule); }
+  .meta .sep { padding: 0 6px; color: var(--rule); }
 
-  main > section { padding: 32px 0; border-bottom: 1px solid var(--rule-2); }
+  main > section { padding: 26px 0; border-bottom: 1px solid var(--rule-2); }
   main > section:last-of-type { border-bottom: 0; }
-  h2 { font-size: 0.82rem; font-weight: 700; font-family: var(--mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 16px; }
-  p { margin: 0 0 16px; } p:last-child { margin-bottom: 0; }
-  .lead { font-size: 1.16rem; } .lead b { font-weight: 600; }
+  h2 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin: 0 0 12px; }
+  p { margin: 0 0 14px; } p:last-child { margin-bottom: 0; }
+  .lead { font-size: 1.08rem; } .lead b { font-weight: 700; }
 
-  code { font-family: var(--mono); font-size: 0.86em; }
-  pre { margin: 4px 0 0; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px; padding: 16px 18px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.7; color: var(--ink); }
-  pre.install { padding: 12px 16px; font-size: 14px; }
-  .c-com { color: var(--ink-3); } .c-kw { color: var(--link); }
-  .c-str { color: #5f7a45; } .c-num { color: var(--figure-unseen); }
-  @media (prefers-color-scheme: dark) { .c-str { color: #97b06f; } }
-  .after-code { font-size: 0.98rem; color: var(--ink-2); margin-top: 14px; }
+  code { font-family: var(--mono); font-size: 0.84em; }
+  pre {
+    margin: 4px 0 0; background: var(--code-bg); border: 1px solid var(--rule);
+    padding: 14px 16px; overflow-x: auto; font-family: var(--mono);
+    font-size: 13.5px; line-height: 1.65; color: var(--ink);
+  }
+  pre.install { padding: 10px 14px; }
+  .c-com { color: var(--ink-3); }
+  .after-code { font-size: 0.96rem; color: var(--ink-2); margin-top: 12px; }
 
-  figure { margin: 6px 0 0; }
-  .fig-frame { border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); padding: 14px 16px 8px; }
-  canvas { width: 100%; height: 200px; display: block; }
-  .fig-legend { font-family: var(--mono); font-size: 11px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 16px; margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--rule-2); }
+  figure { margin: 4px 0 0; }
+  .fig-frame { border: 1px solid var(--rule); background: var(--paper); padding: 12px 14px 6px; }
+  canvas { width: 100%; height: 190px; display: block; }
+  .fig-legend { font-size: 0.8rem; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--rule-2); }
   .fig-legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .fig-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-  figcaption { font-size: 0.9rem; color: var(--ink-2); line-height: 1.5; margin-top: 12px; }
-  figcaption b { font-weight: 600; color: var(--ink); }
+  .fig-legend i { width: 14px; height: 10px; display: inline-block; border: 1px solid var(--fig-ink); }
+  .fig-legend i.solid { background: var(--fig-grey); border-color: var(--fig-grey); }
+  .fig-legend i.line { height: 0; border: 0; border-top: 2px solid var(--fig-ink); }
+  .fig-legend i.open { background: var(--paper); border-color: var(--fig-light); }
+  figcaption { font-size: 0.9rem; color: var(--ink-2); line-height: 1.5; margin-top: 10px; }
+  figcaption b { font-weight: 700; color: var(--ink); }
 
-  table { width: 100%; border-collapse: collapse; font-size: 0.94rem; }
-  thead th { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; text-align: left; padding: 0 14px 8px 0; border-bottom: 1.5px solid var(--ink-3); }
-  tbody td { padding: 9px 14px 9px 0; border-bottom: 1px solid var(--rule-2); vertical-align: baseline; }
-  tbody tr:last-child td { border-bottom: 1px solid var(--ink-3); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  thead th { font-size: 0.82rem; color: var(--ink-2); font-weight: 700; text-align: left; padding: 0 14px 7px 0; border-bottom: 1px solid var(--ink); }
+  tbody td { padding: 8px 14px 8px 0; border-bottom: 1px solid var(--rule-2); vertical-align: baseline; }
+  tbody tr:last-child td { border-bottom: 1px solid var(--ink); }
   td.m { font-family: var(--mono); font-size: 0.82rem; color: var(--ink); white-space: nowrap; }
   td.k { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-3); white-space: nowrap; }
   .tbl-scroll { overflow-x: auto; }
 
   ul.plain { margin: 0; padding: 0; list-style: none; }
-  ul.plain li { padding: 7px 0; border-bottom: 1px solid var(--rule-2); }
+  ul.plain li { padding: 6px 0; border-bottom: 1px solid var(--rule-2); }
   ul.plain li:last-child { border-bottom: 0; }
-  ul.plain b { font-weight: 600; } ul.plain .d { color: var(--ink-2); }
+  ul.plain b { font-weight: 700; } ul.plain .d { color: var(--ink-2); }
 
-  .links-row { display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 1rem; }
+  .links-row { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 0.98rem; }
 
-  footer { padding-top: 30px; margin-top: 8px; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-
-  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  footer { padding-top: 24px; margin-top: 6px; border-top: 1px solid var(--ink); font-size: 0.85rem; color: var(--ink-3); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -102,11 +103,7 @@
     <p class="dek">Frequency-based probability estimation with smoothing — a small,
       well-tested Python library.</p>
     <div class="meta">
-      <span>MIT</span><span class="sep">·</span>
-      <span>Python 3.10–3.12</span><span class="sep">·</span>
-      <a href="https://github.com/tresoldi/freqprob">GitHub</a><span class="sep">·</span>
-      <a href="https://pypi.org/project/freqprob/">PyPI</a><span class="sep">·</span>
-      <a href="{{ base_url }}/USER_GUIDE/">Documentation</a>
+      MIT<span class="sep">·</span>Python 3.10–3.12<span class="sep">·</span><a href="https://github.com/tresoldi/freqprob">GitHub</a><span class="sep">·</span><a href="https://pypi.org/project/freqprob/">PyPI</a><span class="sep">·</span><a href="{{ base_url }}/USER_GUIDE/">Documentation</a>
     </div>
   </header>
 
@@ -128,13 +125,13 @@
 
     <section>
       <h2>Example</h2>
-<pre><span class="c-kw">import</span> freqprob
+<pre>import freqprob
 
-counts = {<span class="c-str">"the"</span>: <span class="c-num">100</span>, <span class="c-str">"cat"</span>: <span class="c-num">50</span>, <span class="c-str">"dog"</span>: <span class="c-num">30</span>, <span class="c-str">"bird"</span>: <span class="c-num">10</span>}
-model = freqprob.Laplace(counts, bins=<span class="c-num">10_000</span>, logprob=<span class="c-kw">False</span>)
+counts = {"the": 100, "cat": 50, "dog": 30, "bird": 10}
+model = freqprob.Laplace(counts, bins=10_000, logprob=False)
 
-model(<span class="c-str">"cat"</span>)       <span class="c-com"># 0.0050   observed element</span>
-model(<span class="c-str">"elephant"</span>)  <span class="c-com"># 0.0001   unobserved, yet non-zero</span></pre>
+model("cat")       <span class="c-com"># 0.0050   observed element</span>
+model("elephant")  <span class="c-com"># 0.0001   unobserved, yet non-zero</span></pre>
       <p class="after-code">A maximum-likelihood estimate would assign probability
         zero to <code>"elephant"</code>, which is undefined under a logarithm and
         collapses any product of probabilities. Smoothing reserves a small amount of
@@ -146,11 +143,11 @@ model(<span class="c-str">"elephant"</span>)  <span class="c-com"># 0.0001   uno
       <h2>The estimate</h2>
       <figure>
         <div class="fig-frame">
-          <canvas id="viz" width="720" height="200"></canvas>
+          <canvas id="viz" width="720" height="190"></canvas>
           <div class="fig-legend">
-            <span><i style="background:var(--figure-bar)"></i>observed counts</span>
-            <span><i style="background:var(--figure-curve)"></i>smoothed probability</span>
-            <span><i style="background:var(--figure-unseen)"></i>reserved for unobserved</span>
+            <span><i class="solid"></i>observed counts</span>
+            <span><i class="line"></i>smoothed probability</span>
+            <span><i class="open"></i>reserved for unobserved</span>
           </div>
         </div>
         <figcaption><b>Figure 1.</b> Observed counts (bars) are normalised into a
@@ -170,9 +167,12 @@ model(<span class="c-str">"elephant"</span>)  <span class="c-com"># 0.0001   uno
             <tr><td class="m">MLE</td><td>relative frequencies are wanted, without smoothing</td><td class="k">—</td></tr>
             <tr><td class="m">Laplace, Lidstone, ELE</td><td>simple additive smoothing suffices</td><td class="k">bins, gamma</td></tr>
             <tr><td class="m">SimpleGoodTuring</td><td>the distribution is heavy-tailed with many rare types</td><td class="k">p_value</td></tr>
+            <tr><td class="m">WittenBell</td><td>a parameter-free discount tied to the number of distinct types is wanted</td><td class="k">bins</td></tr>
             <tr><td class="m">KneserNey, ModifiedKneserNey</td><td>estimating an n-gram language model</td><td class="k">discount</td></tr>
             <tr><td class="m">Bayesian</td><td>a Dirichlet prior is assumed</td><td class="k">alpha</td></tr>
             <tr><td class="m">Interpolated</td><td>a specific and a general model are combined</td><td class="k">lambda_weight</td></tr>
+            <tr><td class="m">CertaintyDegree</td><td>mass is reserved by how fully the support has been observed (experimental)</td><td class="k">bins</td></tr>
+            <tr><td class="m">Uniform, Random</td><td>a non-informative baseline is needed</td><td class="k">—</td></tr>
           </tbody>
         </table>
       </div>
@@ -225,7 +225,6 @@ model(<span class="c-str">"elephant"</span>)  <span class="c-com"># 0.0001   uno
     var canvas = document.getElementById("viz");
     if (!canvas) return;
     var ctx = canvas.getContext("2d");
-    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
     var counts = [100, 50, 30, 22, 14, 9, 6, 4, 3, 2];
@@ -239,71 +238,54 @@ model(<span class="c-str">"elephant"</span>)  <span class="c-com"># 0.0001   uno
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       return { w: w, h: h };
     }
-    function topRect(x, y, w, h, r) {
-      r = Math.min(r, w / 2, Math.max(h, 0));
-      ctx.beginPath(); ctx.moveTo(x, y + h); ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y); ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r); ctx.lineTo(x + w, y + h); ctx.closePath();
-    }
-    function draw(t) {
+    function draw() {
       var d = dims(), w = d.w, h = d.h;
       ctx.clearRect(0, 0, w, h);
-      var bar = css("--figure-bar"), curve = css("--figure-curve"),
-          unseen = css("--figure-unseen"), rule = css("--rule");
+      var fig = css("--fig-ink"), grey = css("--fig-grey"),
+          light = css("--fig-light"), paper = css("--paper"), rule = css("--rule");
       var padL = 4, padR = 4, padB = 22, padT = 14;
       var plotH = h - padT - padB, plotW = w - padL - padR;
       var n = counts.length, slot = plotW / (n + 1.5), barW = slot * 0.5;
-      var norm = counts[0] / total;
+      var norm = counts[0] / total, i;
 
       ctx.strokeStyle = rule; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(padL, padT + plotH + 0.5); ctx.lineTo(w - padR, padT + plotH + 0.5); ctx.stroke();
 
-      var i;
+      // observed counts — solid grey bars
+      ctx.fillStyle = grey;
       for (i = 0; i < n; i++) {
-        var bh = (counts[i] / counts[0]) * plotH * t;
+        var bh = (counts[i] / counts[0]) * plotH;
         var x = padL + slot * (i + 0.5) - barW / 2;
-        ctx.fillStyle = bar; ctx.globalAlpha = 0.78;
-        topRect(x, padT + plotH - bh, barW, bh, 1.5); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
-      var ce = Math.max(0, (t - 0.4) / 0.6);
-      if (ce > 0) {
-        var pts = [];
-        for (i = 0; i < n; i++) {
-          var px = padL + slot * (i + 0.5);
-          var py = padT + plotH - ((counts[i] / total) / norm) * plotH * 0.9;
-          pts.push([px, py]);
-        }
-        pts.push([padL + slot * (n + 0.6), padT + plotH - (unseenMass / norm) * plotH * 0.9]);
-        var drawN = Math.max(2, Math.floor(pts.length * ce));
-        ctx.strokeStyle = curve; ctx.lineWidth = 1.75; ctx.beginPath();
-        ctx.moveTo(pts[0][0], pts[0][1]);
-        for (i = 1; i < drawN; i++) {
-          var p0 = pts[i - 1], p1 = pts[i];
-          ctx.quadraticCurveTo((p0[0] + p1[0]) / 2, p0[1], p1[0], p1[1]);
-        }
-        ctx.stroke();
+        ctx.fillRect(x, padT + plotH - bh, barW, bh);
       }
 
-      var uh = (unseenMass / norm) * plotH * 0.9 * t;
+      // reserved-for-unobserved — open (outlined) bar
+      var uh = (unseenMass / norm) * plotH * 0.9;
       var xu = padL + slot * (n + 0.6) - barW / 2;
-      ctx.fillStyle = unseen; ctx.globalAlpha = 0.9;
-      topRect(xu, padT + plotH - Math.max(uh, 1.5), barW, Math.max(uh, 1.5), 1.5); ctx.fill();
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = unseen; ctx.font = "10px " + css("--mono"); ctx.textAlign = "center";
+      ctx.fillStyle = paper; ctx.fillRect(xu, padT + plotH - Math.max(uh, 2), barW, Math.max(uh, 2));
+      ctx.strokeStyle = light; ctx.lineWidth = 1;
+      ctx.strokeRect(xu + 0.5, padT + plotH - Math.max(uh, 2) + 0.5, barW - 1, Math.max(uh, 2) - 1);
+      ctx.fillStyle = css("--ink-3"); ctx.font = "10px " + css("--mono"); ctx.textAlign = "center";
       ctx.fillText("unseen", xu + barW / 2, padT + plotH + 15);
-    }
 
-    var start = null;
-    function frame(ts) {
-      if (start === null) start = ts;
-      var t = Math.min(1, (ts - start) / 900);
-      draw(1 - Math.pow(1 - t, 3));
-      if (t < 1) requestAnimationFrame(frame);
+      // smoothed probability — black curve
+      var pts = [];
+      for (i = 0; i < n; i++) {
+        var px = padL + slot * (i + 0.5);
+        var py = padT + plotH - ((counts[i] / total) / norm) * plotH * 0.9;
+        pts.push([px, py]);
+      }
+      pts.push([padL + slot * (n + 0.6), padT + plotH - (unseenMass / norm) * plotH * 0.9]);
+      ctx.strokeStyle = fig; ctx.lineWidth = 1.75; ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < pts.length; i++) {
+        var p0 = pts[i - 1], p1 = pts[i];
+        ctx.quadraticCurveTo((p0[0] + p1[0]) / 2, p0[1], p1[0], p1[1]);
+      }
+      ctx.stroke();
     }
-    if (reduce) { draw(1); } else { requestAnimationFrame(frame); }
-    window.addEventListener("resize", function () { draw(1); });
+    draw();
+    window.addEventListener("resize", draw);
   })();
 </script>
 </body>
