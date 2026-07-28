@@ -16,8 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Removed the publisher/address (Uppsala University) fields from the README
-  citation entry.
+- Removed the University of Uppsala affiliation/publisher references (README
+  citation, `CITATION.cff` affiliation) and updated the maintainer contact email
+  to `freqprob@tresoldi.org` across `pyproject.toml`, `CITATION.cff`, the package
+  metadata, and `SECURITY.md`.
 - **Documentation rebuilt from scratch.** The docs site is now a focused
   three-page set — Home, a single flowing **User Guide** (concepts → choosing a
   method → the methods → evaluation → worked examples in text, ecology, genomics,
