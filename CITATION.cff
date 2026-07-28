@@ -12,7 +12,8 @@ authors:
     given-names: Tiago
     affiliation: "Department of Linguistics and Philology, Uppsala University"
     email: tiago.tresoldi@lingfil.uu.se
-version: 0.6.0
+version: 0.6.1
+date-released: 2026-07-28
 license: MIT
 repository-code: "https://github.com/tresoldi/freqprob"
 url: "https://github.com/tresoldi/freqprob"
