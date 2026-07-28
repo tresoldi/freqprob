@@ -30,68 +30,43 @@ class KneserNeyConfig(ScoringMethodConfig):
 class KneserNey(ScoringMethod):
     """Kneser-Ney smoothing probability distribution.
 
-    Kneser-Ney smoothing is one of the most effective smoothing methods for
-    language modeling. It uses absolute discounting combined with interpolation
-    and considers the diversity of contexts in which words appear.
+    One of the most effective smoothing methods for language modeling. It
+    combines absolute discounting with interpolation and, crucially, weights a
+    word by the diversity of contexts it appears in (its continuation
+    probability) rather than its raw frequency. Each observed bigram scores
+    ``max(c - d, 0) / c(context) + backoff(context) * P_cont(word)``, and
+    unseen bigrams fall back to the average continuation probability.
 
-    Mathematical Formulation
-    ------------------------
-    For bigram model P(wᵢ|wᵢ₋₁):
-
-    P_KN(wᵢ|wᵢ₋₁) = max(c(wᵢ₋₁,wᵢ) - d, 0) / c(wᵢ₋₁) + λ(wᵢ₋₁) * P_cont(wᵢ)
-
-    Where:
-    - d is the discount parameter (0 < d < 1)
-    - λ(wᵢ₋₁) = d * |{w : c(wᵢ₋₁,w) > 0}| / c(wᵢ₋₁) is the backoff weight
-    - P_cont(wᵢ) = |{w : c(w,wᵢ) > 0}| / |{(w,w') : c(w,w') > 0}| is the continuation probability
-
-    The key insight is that P_cont models how likely a word is to appear in
-    novel contexts, based on the diversity of contexts it has been seen in.
-
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Frequency distribution mapping bigrams to their observed counts.
-        Expected format: {(context, word): count}
-    discount : float, default=0.75
-        Absolute discounting parameter (0 < d < 1). Common values: 0.5-0.8
-    logprob : bool, default=True
-        Whether to return log-probabilities or probabilities
+    Args:
+        freqdist: Frequency distribution mapping bigrams to their observed
+            counts, in the form ``{(context, word): count}``. Non-bigram keys
+            are ignored.
+        discount: Absolute discounting parameter ``0 < d < 1``. Common values
+            are ``0.5``-``0.8``. Defaults to ``0.75``.
+        logprob: Return log-probabilities if ``True`` (the default), otherwise
+            plain probabilities.
 
     Examples:
-    --------
-    Basic Kneser-Ney smoothing:
-    >>> bigram_counts = {
-    ...     ('the', 'cat'): 5, ('the', 'dog'): 3, ('a', 'cat'): 2,
-    ...     ('a', 'dog'): 1, ('big', 'cat'): 1, ('small', 'dog'): 1
-    ... }
-    >>> kn = KneserNey(bigram_counts, discount=0.75, logprob=False)
-    >>> kn(('the', 'cat'))  # High-frequency bigram
-    0.4583333333333333
-    >>> kn(('the', 'mouse'))  # Unseen bigram, backed off to continuation prob
-    0.08333333333333333
+        Observed bigrams are discounted and interpolated with the continuation
+        model, while unseen bigrams back off to the average continuation
+        probability:
 
-    The method handles unseen bigrams gracefully by backing off to a
-    continuation probability based on word diversity:
-    >>> kn(('new_context', 'cat'))  # Unseen context, uses continuation
-    0.16666666666666666
+        >>> bigram_counts = {
+        ...     ("the", "cat"): 5, ("the", "dog"): 3, ("a", "cat"): 2,
+        ...     ("a", "dog"): 1, ("big", "cat"): 1, ("small", "dog"): 1,
+        ... }
+        >>> kn = KneserNey(bigram_counts, discount=0.75, logprob=False)
+        >>> round(kn(("the", "cat")), 3)
+        0.625
+        >>> round(kn(("the", "mouse")), 3)
+        0.5
+        >>> round(kn(("new_context", "cat")), 3)
+        0.5
 
-    Properties
-    ----------
-    - Excellent performance in language modeling tasks
-    - Handles sparse data better than simple discounting methods
-    - Takes into account word frequency diversity across contexts
-    - Particularly effective for n-gram language models
-    - Widely used baseline in NLP applications
-
-    Notes:
-    -----
-    This implementation assumes bigram input but can be extended to higher-order
-    n-grams. The discount parameter d is typically set between 0.5-0.8, with
-    0.75 being a common default that works well across many domains.
-
-    For optimal performance, the input should contain sufficient bigram data
-    to estimate continuation probabilities reliably.
+    Note:
+        This implementation assumes bigram input. The discount ``d`` is
+        typically between ``0.5`` and ``0.8``; ``0.75`` is a robust default.
+        Reliable continuation probabilities require sufficient bigram data.
     """
 
     __slots__ = ()
@@ -186,57 +161,38 @@ class KneserNey(ScoringMethod):
 class ModifiedKneserNey(ScoringMethod):
     """Modified Kneser-Ney smoothing probability distribution.
 
-    An enhanced version of Kneser-Ney smoothing that uses different discount
-    values for different frequency counts. This typically provides better
-    performance than standard Kneser-Ney by adapting the discounting strategy
-    based on the reliability of count estimates.
+    An enhanced Kneser-Ney variant that applies a different discount depending
+    on a bigram's count: ``d1`` for singletons, ``d2`` for doubletons, and
+    ``d3`` for counts of three or more. Those discounts are estimated
+    automatically from the data's count-of-counts statistics, which usually
+    makes it more accurate than the fixed-discount version.
 
-    Mathematical Formulation
-    ------------------------
-    P_MKN(wᵢ|wᵢ₋₁) = max(c(wᵢ₋₁,wᵢ) - D(c(wᵢ₋₁,wᵢ)), 0) / c(wᵢ₋₁) + λ(wᵢ₋₁) * P_cont(wᵢ)
-
-    Where D(c) is a count-dependent discount:
-    - D(1) = d₁ for singleton counts
-    - D(2) = d₂ for doubleton counts
-    - D(c) = d₃ for c ≥ 3
-
-    The discounts are estimated from the data using:
-    - d₁ = 1 - 2 * (n₂/n₁) * (n₁/(n₁+2*n₂))
-    - d₂ = 2 - 3 * (n₃/n₂) * (n₂/(n₂+3*n₃))
-    - d₃ = 3 - 4 * (n₄/n₃) * (n₃/(n₃+4*n₄))
-
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Frequency distribution mapping bigrams to their observed counts
-    logprob : bool, default=True
-        Whether to return log-probabilities or probabilities
+    Args:
+        freqdist: Frequency distribution mapping bigrams to their observed
+            counts, in the form ``{(context, word): count}``. Non-bigram keys
+            are ignored.
+        logprob: Return log-probabilities if ``True`` (the default), otherwise
+            plain probabilities.
 
     Examples:
-    --------
-    >>> bigram_counts = {
-    ...     ('the', 'cat'): 5, ('the', 'dog'): 3, ('a', 'cat'): 2,
-    ...     ('a', 'dog'): 1, ('big', 'cat'): 1, ('small', 'dog'): 1
-    ... }
-    >>> mkn = ModifiedKneserNey(bigram_counts, logprob=False)
-    >>> mkn(('the', 'cat'))  # Uses d₃ discount (count ≥ 3)
-    0.42857142857142855
-    >>> mkn(('a', 'cat'))    # Uses d₂ discount (count = 2)
-    0.5714285714285714
+        The discount adapts to each bigram's count, and the score interpolates
+        the discounted estimate with the continuation model:
 
-    Properties
-    ----------
-    - Generally outperforms standard Kneser-Ney
-    - Adapts discounting based on count reliability
-    - Automatic parameter estimation from data
-    - Robust across different data sizes and domains
-    - Standard method in modern language modeling
+        >>> bigram_counts = {
+        ...     ("the", "cat"): 5, ("the", "dog"): 3, ("a", "cat"): 2,
+        ...     ("a", "dog"): 1, ("big", "cat"): 1, ("small", "dog"): 1,
+        ... }
+        >>> mkn = ModifiedKneserNey(bigram_counts, logprob=False)
+        >>> round(mkn(("the", "cat")), 3)
+        0.625
+        >>> round(mkn(("a", "cat")), 3)
+        0.558
 
-    Notes:
-    -----
-    Modified Kneser-Ney is considered the state-of-the-art classical smoothing
-    method for n-gram language models. It automatically estimates optimal
-    discount parameters, making it more robust than fixed-discount methods.
+    Note:
+        Modified Kneser-Ney is a standard, state-of-the-art classical smoothing
+        method for n-gram language models. Because it estimates its discounts
+        from the data, it is more robust than fixed-discount methods but needs
+        enough varied counts to estimate them reliably.
     """
 
     __slots__ = ()

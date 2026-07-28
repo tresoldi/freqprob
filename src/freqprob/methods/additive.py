@@ -14,83 +14,60 @@ from freqprob.base import FrequencyDistribution, ScoringMethod, ScoringMethodCon
 class Lidstone(ScoringMethod):
     """Lidstone additive smoothing probability distribution.
 
-    Also known as "additive smoothing," this method addresses the zero
-    probability problem by adding a virtual count gamma (gamma) to each possible
-    element. This is equivalent to assuming a symmetric Dirichlet prior
-    with concentration parameter gamma.
+    Additive smoothing tackles the zero-probability problem by adding a virtual
+    count ``gamma`` to every possible element before normalizing. For counts
+    ``c_i``, total ``N``, and ``B`` bins, each observed element gets
+    ``(c_i + gamma) / (N + B * gamma)`` and any unobserved element gets
+    ``gamma / (N + B * gamma)``. This is the posterior mean under a symmetric
+    Dirichlet prior with concentration ``gamma``. Use it when you need a simple,
+    principled way to keep unseen elements from scoring zero, and tune ``gamma``
+    to trade off between staying close to the data (small ``gamma``) and a more
+    uniform distribution (large ``gamma``).
 
-    Mathematical Formulation
-    ------------------------
-    For elements with counts cᵢ, total count N = Σⱼcⱼ, and B bins:
-
-    P(wᵢ) = (cᵢ + gamma) / (N + B*gamma)  for observed elements wᵢ ∈ V
-    P(w)  = gamma / (N + B*gamma)         for unobserved elements w ∉ V
-
-    The method effectively adds gamma "virtual counts" to every possible element,
-    creating a uniform pseudocount baseline that prevents zero probabilities.
-
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Frequency distribution mapping elements to their observed counts
-    gamma : float
-        Additive smoothing parameter (gamma ≥ 0). Common values:
-        - gamma = 1.0: Laplace smoothing (uniform prior)
-        - gamma = 0.5: Jeffreys prior (Expected Likelihood Estimation)
-        - gamma → 0: Approaches MLE
-    bins : int | None, default=None
-        Total number of possible elements. If None, uses support size |V|
-    logprob : bool, default=True
-        Whether to return log-probabilities or probabilities
+    Args:
+        freqdist: Mapping of elements to observed counts.
+        gamma: Additive smoothing parameter (``gamma >= 0``). ``1.0`` gives
+            Laplace smoothing, ``0.5`` gives the Jeffreys prior (ELE), and
+            ``gamma -> 0`` approaches MLE.
+        bins: Total number of possible elements. If ``None`` (the default),
+            uses the support size ``|V|``. A larger ``bins`` reserves more mass
+            for unseen elements.
+        logprob: Return log-probabilities if ``True`` (the default), otherwise
+            plain probabilities.
 
     Examples:
-    --------
-    Basic Lidstone smoothing:
-    >>> freqdist = {'apple': 3, 'banana': 1}
-    >>> lidstone = Lidstone(freqdist, gamma=1.0, logprob=False)
-    >>> lidstone('apple')    # (3+1)/(4+2*1) = 4/6
-    0.6666666666666666
-    >>> lidstone('banana')   # (1+1)/(4+2*1) = 2/6
-    0.3333333333333333
-    >>> lidstone('cherry')   # 1/(4+2*1) = 1/6
-    0.16666666666666666
+        Add-gamma smoothing gives unseen elements non-zero probability:
 
-    Effect of different gamma values:
-    >>> # Higher gamma = more smoothing
-    >>> smooth = Lidstone(freqdist, gamma=2.0, logprob=False)
-    >>> smooth('apple')      # (3+2)/(4+2*2) = 5/8
-    0.625
-    >>> smooth('cherry')     # 2/(4+2*2) = 2/8
-    0.25
+        >>> from freqprob import Lidstone
+        >>> freqdist = {"apple": 3, "banana": 1}
+        >>> lidstone = Lidstone(freqdist, gamma=1.0, logprob=False)
+        >>> round(lidstone("apple"), 3)    # (3+1)/(4+2*1) = 4/6
+        0.667
+        >>> round(lidstone("banana"), 3)   # (1+1)/(4+2*1) = 2/6
+        0.333
+        >>> round(lidstone("cherry"), 3)   # 1/(4+2*1) = 1/6
+        0.167
 
-    >>> # Lower gamma = less smoothing
-    >>> minimal = Lidstone(freqdist, gamma=0.1, logprob=False)
-    >>> minimal('apple')     # (3+0.1)/(4+2*0.1) ≈ 3.1/4.2
-    0.7380952380952381
+        A larger gamma pulls probabilities toward uniform:
 
-    Specifying larger vocabulary:
-    >>> lidstone_big = Lidstone(freqdist, gamma=1.0, bins=1000, logprob=False)
-    >>> lidstone_big('apple')    # (3+1)/(4+1000*1) = 4/1004
-    0.003984063745019921
-    >>> lidstone_big('unseen')   # 1/(4+1000*1) = 1/1004
-    0.0009960159203980099
+        >>> smooth = Lidstone(freqdist, gamma=2.0, logprob=False)
+        >>> smooth("apple")      # (3+2)/(4+2*2) = 5/8
+        0.625
+        >>> smooth("cherry")     # 2/(4+2*2) = 2/8
+        0.25
 
-    Properties
-    ----------
-    - Guarantees non-zero probabilities for all elements
-    - Reduces to MLE as gamma → 0 and N → ∞
-    - Uniform pseudocount distribution when gamma = constant
-    - Bayesian interpretation as Dirichlet prior
-    - Simple and computationally efficient
+        A larger ``bins`` reserves more mass for potential unseen elements:
 
-    Notes:
-    -----
-    The choice of gamma represents a bias-variance tradeoff:
-    - Small gamma: Low bias but high variance (closer to MLE)
-    - Large gamma: Higher bias but lower variance (more uniform)
+        >>> lidstone_big = Lidstone(freqdist, gamma=1.0, bins=1000, logprob=False)
+        >>> round(lidstone_big("apple"), 4)    # (3+1)/(4+1000) = 4/1004
+        0.004
+        >>> round(lidstone_big("unseen"), 4)   # 1/(4+1000) = 1/1004
+        0.001
 
-    When bins > support size, the method reserves more probability
-    mass for potential unseen elements.
+    Note:
+        The choice of ``gamma`` is a bias-variance tradeoff: small values stay
+        close to MLE (low bias, high variance) while large values approach a
+        uniform distribution (higher bias, lower variance).
     """
 
     __slots__ = ()
@@ -144,46 +121,34 @@ class Lidstone(ScoringMethod):
 
 
 class Laplace(Lidstone):
-    """Laplace smoothing probability distribution.
+    """Laplace (add-one) smoothing probability distribution.
 
-    A special case of Lidstone smoothing with gamma = 1.0, also known as
-    "add-one smoothing." This is the most commonly used additive smoothing
-    method, corresponding to a uniform Dirichlet prior.
+    The special case of Lidstone smoothing with ``gamma = 1.0``, also called
+    "add-one smoothing." Each observed element gets ``(c_i + 1) / (N + B)`` and
+    any unobserved element gets ``1 / (N + B)`` — i.e. one virtual observation
+    added to every possible element, corresponding to a uniform Dirichlet prior.
+    It is the most common additive smoother: reach for it when you want a simple,
+    reasonable default that never assigns zero probability.
 
-    Mathematical Formulation
-    ------------------------
-    P(wᵢ) = (cᵢ + 1) / (N + B)    for observed elements wᵢ ∈ V
-    P(w)  = 1 / (N + B)           for unobserved elements w ∉ V
-
-    This is equivalent to adding one virtual observation to each possible element.
-
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Frequency distribution mapping elements to their observed counts
-    bins : int | None, default=None
-        Total number of possible elements. If None, uses support size |V|
-    logprob : bool, default=True
-        Whether to return log-probabilities or probabilities
+    Args:
+        freqdist: Mapping of elements to observed counts.
+        bins: Total number of possible elements. If ``None`` (the default),
+            uses the support size ``|V|``.
+        logprob: Return log-probabilities if ``True`` (the default), otherwise
+            plain probabilities.
 
     Examples:
-    --------
-    >>> freqdist = {'red': 3, 'blue': 2, 'green': 1}
-    >>> laplace = Laplace(freqdist, logprob=False)
-    >>> laplace('red')     # (3+1)/(6+3) = 4/9 ≈ 0.444
-    0.4444444444444444
-    >>> laplace('blue')    # (2+1)/(6+3) = 3/9 ≈ 0.333
-    0.3333333333333333
-    >>> laplace('yellow')  # 1/(6+3) = 1/9 ≈ 0.111
-    0.1111111111111111
+        Add one to every count, then normalize:
 
-    Notes:
-    -----
-    Laplace smoothing is widely used because:
-    - Simple and intuitive (add one to everything)
-    - Provides reasonable smoothing for most applications
-    - Has nice theoretical properties (uniform prior)
-    - Computationally efficient
+        >>> from freqprob import Laplace
+        >>> freqdist = {"red": 3, "blue": 2, "green": 1}
+        >>> laplace = Laplace(freqdist, logprob=False)
+        >>> round(laplace("red"), 3)     # (3+1)/(6+3) = 4/9
+        0.444
+        >>> round(laplace("blue"), 3)    # (2+1)/(6+3) = 3/9
+        0.333
+        >>> round(laplace("yellow"), 3)  # 1/(6+3) = 1/9
+        0.111
     """
 
     __slots__ = ()
@@ -203,44 +168,37 @@ class Laplace(Lidstone):
 class ELE(Lidstone):
     """Expected Likelihood Estimation probability distribution.
 
-    A special case of Lidstone smoothing with gamma = 0.5, corresponding to
-    the Jeffreys prior for multinomial distributions. This provides a
-    compromise between MLE and uniform smoothing.
+    The special case of Lidstone smoothing with ``gamma = 0.5``, corresponding
+    to the Jeffreys prior for multinomial distributions. Each observed element
+    gets ``(c_i + 0.5) / (N + 0.5 * B)`` and any unobserved element gets
+    ``0.5 / (N + 0.5 * B)`` — half a virtual observation per element. This is a
+    middle ground between MLE and Laplace: use it when add-one smoothing feels
+    too aggressive but you still want unseen elements handled.
 
-    Mathematical Formulation
-    ------------------------
-    P(wᵢ) = (cᵢ + 0.5) / (N + 0.5*B)  for observed elements wᵢ ∈ V
-    P(w)  = 0.5 / (N + 0.5*B)         for unobserved elements w ∉ V
-
-    This corresponds to adding half a virtual observation to each element.
-
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Frequency distribution mapping elements to their observed counts
-    bins : int | None, default=None
-        Total number of possible elements. If None, uses support size |V|
-    logprob : bool, default=True
-        Whether to return log-probabilities or probabilities
+    Args:
+        freqdist: Mapping of elements to observed counts.
+        bins: Total number of possible elements. If ``None`` (the default),
+            uses the support size ``|V|``.
+        logprob: Return log-probabilities if ``True`` (the default), otherwise
+            plain probabilities.
 
     Examples:
-    --------
-    >>> freqdist = {'cat': 4, 'dog': 2}
-    >>> ele = ELE(freqdist, logprob=False)
-    >>> ele('cat')     # (4+0.5)/(6+0.5*2) = 4.5/7 ≈ 0.643
-    0.6428571428571429
-    >>> ele('dog')     # (2+0.5)/(6+0.5*2) = 2.5/7 ≈ 0.357
-    0.35714285714285715
-    >>> ele('bird')    # 0.5/(6+0.5*2) = 0.5/7 ≈ 0.071
-    0.07142857142857142
+        Add half a count to each element, then normalize:
 
-    Notes:
-    -----
-    ELE is particularly useful because:
-    - Jeffreys prior is non-informative in the Bayesian sense
-    - Provides less smoothing than Laplace (gamma=1)
-    - Often performs well empirically
-    - Reduces overfitting while maintaining sensitivity to data
+        >>> from freqprob import ELE
+        >>> freqdist = {"cat": 4, "dog": 2}
+        >>> ele = ELE(freqdist, logprob=False)
+        >>> round(ele("cat"), 3)     # (4+0.5)/(6+0.5*2) = 4.5/7
+        0.643
+        >>> round(ele("dog"), 3)     # (2+0.5)/(6+0.5*2) = 2.5/7
+        0.357
+        >>> round(ele("bird"), 3)    # 0.5/(6+0.5*2) = 0.5/7
+        0.071
+
+    Note:
+        ELE applies less smoothing than Laplace (``gamma = 1``), so it stays
+        closer to the observed frequencies while still avoiding zero
+        probabilities.
     """
 
     __slots__ = ()

@@ -144,31 +144,41 @@ class LazyLaplaceComputer(LazyProbabilityComputer):
 
 
 class LazyScoringMethod(ScoringMethod):
-    """Scoring method with lazy evaluation of probabilities.
+    """Scoring method that defers probability computation until requested.
 
-    This class wraps any scoring method to provide lazy evaluation,
-    computing probabilities only when they are actually requested.
-    This can significantly improve performance when only a small
-    subset of probabilities are needed.
+    Wraps a lazy computation strategy so that probabilities are calculated
+    only for the elements actually scored, rather than for the whole
+    vocabulary up front. This can significantly improve performance when a
+    large distribution is fitted but only a small subset of elements is ever
+    queried.
 
-    Parameters
-    ----------
-    lazy_computer : LazyProbabilityComputer
-        Strategy for lazy probability computation
-    config : ScoringMethodConfig
-        Configuration for the scoring method
-    name : str
-        Name of the scoring method
+    Args:
+        lazy_computer: Strategy object that computes a single element's
+            probability on demand.
+        config: Configuration controlling ``logprob`` and any reserved
+            probability mass.
+        name: Human-readable name for the scoring method.
+
+    Note:
+        Instances are normally built through the public factory functions
+        `create_lazy_mle` and `create_lazy_laplace` rather than constructed
+        directly, since the computer and config types are internal.
 
     Examples:
-    --------
-    >>> from freqprob.performance.lazy import LazyScoringMethod, LazyMLEComputer
-    >>> computer = LazyMLEComputer()
-    >>> config = ScoringMethodConfig(logprob=False)
-    >>> lazy_scorer = LazyScoringMethod(computer, config, "Lazy MLE")
-    >>> lazy_scorer.fit({'a': 3, 'b': 2, 'c': 1})
-    >>> lazy_scorer('a')  # Computed on demand
-    0.5
+        Probabilities are computed only when an element is first scored:
+
+        >>> from freqprob import create_lazy_mle
+        >>> scorer = create_lazy_mle({"a": 3, "b": 2, "c": 1}, logprob=False)
+        >>> scorer("a")
+        0.5
+        >>> sorted(scorer.get_computed_elements())
+        ['a']
+        >>> scorer("b")
+        0.3333333333333333
+        >>> sorted(scorer.get_computed_elements())
+        ['a', 'b']
+        >>> scorer("unseen")  # unobserved element
+        0.0
     """
 
     def __init__(
@@ -179,14 +189,10 @@ class LazyScoringMethod(ScoringMethod):
     ):
         """Initialize lazy scoring method.
 
-        Parameters
-        ----------
-        lazy_computer : LazyProbabilityComputer
-            Strategy for lazy computation
-        config : ScoringMethodConfig
-            Configuration parameters
-        name : str
-            Name of the scoring method
+        Args:
+            lazy_computer: Strategy for lazy computation.
+            config: Configuration parameters.
+            name: Name of the scoring method.
         """
         super().__init__(config)
         self.lazy_computer = lazy_computer
@@ -205,15 +211,11 @@ class LazyScoringMethod(ScoringMethod):
     def __call__(self, element: Element) -> float:
         """Score element with lazy computation.
 
-        Parameters
-        ----------
-        element : Element
-            Element to score
+        Args:
+            element: Element to score.
 
         Returns:
-        -------
-        Union[float, float]
-            Probability or log-probability for the element
+            Probability or log-probability for the element.
         """
         if self._freqdist is None:
             raise ValueError("Scoring method has not been fitted")
@@ -268,10 +270,8 @@ class LazyScoringMethod(ScoringMethod):
         This can be useful when you know you'll need several elements
         and want to compute them all at once for efficiency.
 
-        Parameters
-        ----------
-        elements : Set[Element]
-            Elements to precompute
+        Args:
+            elements: Elements to precompute.
         """
         if self._freqdist is None:
             raise ValueError("Scoring method has not been fitted")
@@ -285,9 +285,7 @@ class LazyScoringMethod(ScoringMethod):
         """Get the set of elements that have been computed so far.
 
         Returns:
-        -------
-        Set[Element]
-            Set of computed elements
+            Set of elements whose probabilities have been computed.
         """
         return self._computed_elements.copy()
 
@@ -312,33 +310,34 @@ class LazyBatchScorer:
     """Batch scorer with lazy evaluation and intelligent caching.
 
     This scorer optimizes batch operations by:
-    1. Using lazy evaluation to avoid unnecessary computations
-    2. Intelligently ordering computations based on access patterns
-    3. Providing memory-efficient operations for large datasets
 
-    Parameters
-    ----------
-    lazy_scorer : LazyScoringMethod
-        Lazy scoring method to use
+    1. Using lazy evaluation to avoid unnecessary computations.
+    2. Intelligently ordering computations based on access patterns.
+    3. Providing memory-efficient operations for large datasets.
+
+    Args:
+        lazy_scorer: Lazy scoring method to wrap.
 
     Examples:
-    --------
-    >>> computer = LazyMLEComputer()
-    >>> config = ScoringMethodConfig(logprob=False)
-    >>> lazy_scorer = LazyScoringMethod(computer, config, "Lazy MLE")
-    >>> lazy_scorer.fit({'a': 3, 'b': 2, 'c': 1})
-    >>> batch_scorer = LazyBatchScorer(lazy_scorer)
-    >>> scores = batch_scorer.score_batch(['a', 'c'])  # Only computes a and c
-    [0.5, 0.16666666666666666]
+        Wrap a lazy MLE scorer and score a batch of elements:
+
+        >>> from freqprob import create_lazy_mle
+        >>> lazy_scorer = create_lazy_mle({"a": 3, "b": 2, "c": 1}, logprob=False)
+        >>> batch_scorer = LazyBatchScorer(lazy_scorer)
+        >>> [round(float(x), 4) for x in batch_scorer.score_batch(["a", "c"])]
+        [0.5, 0.1667]
+        >>> stats = batch_scorer.get_access_statistics()
+        >>> stats["total_accesses"]
+        2
+        >>> stats["unique_elements"]
+        2
     """
 
     def __init__(self, lazy_scorer: LazyScoringMethod):
         """Initialize lazy batch scorer.
 
-        Parameters
-        ----------
-        lazy_scorer : LazyScoringMethod
-            Lazy scoring method to wrap
+        Args:
+            lazy_scorer: Lazy scoring method to wrap.
         """
         self.lazy_scorer = lazy_scorer
         self._access_count: dict[Element, int] = {}
@@ -346,15 +345,11 @@ class LazyBatchScorer:
     def score_batch(self, elements: list[Element]) -> list[float]:
         """Score a batch of elements with lazy evaluation.
 
-        Parameters
-        ----------
-        elements : list
-            Elements to score
+        Args:
+            elements: Elements to score.
 
         Returns:
-        -------
-        list
-            Scores for the elements
+            Scores for the elements, in the same order as the input.
         """
         # Track access patterns
         for element in elements:
@@ -371,15 +366,11 @@ class LazyBatchScorer:
     def score_streaming(self, element_stream: Iterable[Element]) -> Iterator[float]:
         """Score elements from a stream with adaptive lazy evaluation.
 
-        Parameters
-        ----------
-        element_stream : Iterable
-            Stream of elements to score
+        Args:
+            element_stream: Stream of elements to score.
 
         Yields:
-        ------
-        float
-            Score for each element
+            Score for each element in the stream.
         """
         seen_elements = set()
         batch_size = 100  # Adaptive batch size
@@ -400,9 +391,8 @@ class LazyBatchScorer:
         """Get statistics about element access patterns.
 
         Returns:
-        -------
-        Dict[str, Any]
-            Access statistics
+            Access statistics including total accesses, unique elements, and
+            the most frequently accessed element.
         """
         if not self._access_count:
             return {"total_accesses": 0, "unique_elements": 0}
@@ -428,21 +418,29 @@ def create_lazy_mle(
     unobs_prob: float | None = None,
     logprob: bool = True,
 ) -> LazyScoringMethod:
-    """Create a lazy MLE scorer.
+    """Create a lazy Maximum Likelihood Estimation scorer.
 
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Frequency distribution
-    unobs_prob : float | None
-        Probability mass for unobserved elements
-    logprob : bool, default=True
-        Whether to use log probabilities
+    Builds a `LazyScoringMethod` that computes MLE probabilities on demand,
+    fitted to the given distribution.
+
+    Args:
+        freqdist: Mapping of elements to observed counts.
+        unobs_prob: Reserved probability mass for unobserved elements, or
+            ``None`` for plain MLE. Defaults to ``None``.
+        logprob: Return log-probabilities if ``True`` (the default),
+            otherwise plain probabilities.
 
     Returns:
-    -------
-    LazyScoringMethod
-        Lazy MLE scorer
+        A fitted lazy MLE scorer.
+
+    Examples:
+        >>> scorer = create_lazy_mle({"a": 3, "b": 2, "c": 1}, logprob=False)
+        >>> scorer("a")
+        0.5
+        >>> scorer("c")
+        0.16666666666666666
+        >>> scorer("unseen")
+        0.0
     """
     from freqprob.base import ScoringMethodConfig
 
@@ -456,21 +454,27 @@ def create_lazy_mle(
 def create_lazy_laplace(
     freqdist: FrequencyDistribution, bins: int | None = None, logprob: bool = True
 ) -> LazyScoringMethod:
-    """Create a lazy Laplace scorer.
+    """Create a lazy Laplace (add-one) smoothing scorer.
 
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Frequency distribution
-    bins : int | None
-        Total number of possible elements
-    logprob : bool, default=True
-        Whether to use log probabilities
+    Builds a `LazyScoringMethod` that computes Laplace-smoothed probabilities
+    on demand, fitted to the given distribution.
+
+    Args:
+        freqdist: Mapping of elements to observed counts.
+        bins: Total number of possible elements (vocabulary size). When
+            ``None`` (the default), the number of observed elements is used.
+        logprob: Return log-probabilities if ``True`` (the default),
+            otherwise plain probabilities.
 
     Returns:
-    -------
-    LazyScoringMethod
-        Lazy Laplace scorer
+        A fitted lazy Laplace scorer.
+
+    Examples:
+        >>> scorer = create_lazy_laplace({"a": 3, "b": 2, "c": 1}, logprob=False)
+        >>> scorer("a")
+        0.4444444444444444
+        >>> scorer("unseen")
+        0.1111111111111111
     """
     from freqprob.base import ScoringMethodConfig
 

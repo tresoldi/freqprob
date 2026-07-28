@@ -31,34 +31,26 @@ T = TypeVar("T", bound="ScoringMethod")
 class ScoringMethodConfig:
     """Configuration for scoring methods.
 
-    This dataclass encapsulates all configuration parameters that can be
-    used across different scoring methods, providing type safety and validation.
+    This dataclass encapsulates the configuration parameters shared across
+    scoring methods, providing type safety and validation of their ranges.
 
     Attributes:
-    ----------
-    unobs_prob : Probability | None
-        Reserved probability mass for unobserved elements (0.0 ≤ p ≤ 1.0)
-    gamma : float | None
-        Smoothing parameter for additive methods (gamma >= 0)
-    bins : int | None
-        Total number of possible bins/elements (B ≥ 1)
-    logprob : bool
-        Whether to return log-probabilities instead of probabilities
-
-    Examples:
-    --------
-    >>> config = ScoringMethodConfig(unobs_prob=0.1, logprob=True)
-    >>> config.unobs_prob
-    0.1
-
-    >>> config = ScoringMethodConfig(gamma=1.5, bins=1000)
-    >>> config.gamma
-    1.5
+        unobs_prob: Reserved probability mass for unobserved elements
+            (``0.0 <= p <= 1.0``).
+        gamma: Smoothing parameter for additive methods (``gamma >= 0``).
+        bins: Total number of possible bins/elements (``bins >= 1``).
+        logprob: Whether to return log-probabilities instead of probabilities.
 
     Raises:
-    ------
-    ValueError
-        If any parameter is outside its valid range
+        ValueError: If any parameter is outside its valid range.
+
+    Examples:
+        >>> config = ScoringMethodConfig(unobs_prob=0.1, logprob=True)
+        >>> config.unobs_prob
+        0.1
+        >>> config = ScoringMethodConfig(gamma=1.5, bins=1000)
+        >>> config.gamma
+        1.5
     """
 
     unobs_prob: Probability | None = None
@@ -71,10 +63,8 @@ class ScoringMethodConfig:
         """Validate configuration parameters after initialization.
 
         Raises:
-        ------
-        ValueError
-            If unobs_prob is not in [0.0, 1.0], gamma is negative,
-            or bins is not positive
+            ValueError: If ``unobs_prob`` is not in ``[0.0, 1.0]``, ``gamma`` is
+                negative, or ``bins`` is not positive.
         """
         if self.unobs_prob is not None and not 0.0 <= self.unobs_prob <= 1.0:
             raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
@@ -92,39 +82,28 @@ class ScoringMethod(ABC):
     This class provides a unified interface for all probability estimation
     methods, supporting both regular probabilities and log-probabilities.
 
-    The general workflow is:
-    1. Initialize with a configuration
-    2. Fit to a frequency distribution
-    3. Score individual elements
+    The general workflow is to initialize a method with a configuration, fit it
+    to a frequency distribution, and then score individual elements. Given a
+    frequency distribution mapping elements to their observed counts, each method
+    estimates a probability ``P(w)`` for every element ``w``. For unobserved
+    elements, methods reserve probability mass to avoid returning zero.
 
-    Mathematical Foundation
-    -----------------------
-    Given a frequency distribution D = {(w₁, c₁), (w₂, c₂), ..., (wₙ, cₙ)}
-    where wᵢ are elements and cᵢ are their counts, smoothing methods estimate:
-
-    P(w) = probability of element w
-
-    For unobserved elements (w ∉ D), methods reserve probability mass
-    to avoid zero probabilities.
+    Subclasses must implement :meth:`_compute_probabilities`, which populates the
+    internal probability table and the reserved mass for unobserved elements.
 
     Attributes:
-    ----------
-    config : ScoringMethodConfig
-        Configuration parameters for the method
-    name : str | None
-        Human-readable name of the method
-    logprob : bool | None
-        Whether this instance returns log-probabilities
+        config: Configuration parameters for the method.
+        name: Human-readable name of the method, or ``None`` before it is set.
+        logprob: Whether this instance returns log-probabilities.
 
     Examples:
-    --------
-    >>> from freqprob import MLE
-    >>> freqdist = {'apple': 3, 'banana': 2, 'cherry': 1}
-    >>> scorer = MLE(freqdist, logprob=False)
-    >>> scorer('apple')  # Most frequent item
-    0.5
-    >>> scorer('unknown')  # Unobserved item
-    0.0
+        >>> from freqprob import MLE
+        >>> freqdist = {"apple": 3, "banana": 2, "cherry": 1}
+        >>> scorer = MLE(freqdist, logprob=False)
+        >>> scorer("apple")  # most frequent item
+        0.5
+        >>> scorer("unknown")  # unobserved item
+        0.0
     """
 
     __slots__ = ("_prob", "_total_unseen_mass", "_unobs", "config", "logprob", "name")
@@ -132,15 +111,12 @@ class ScoringMethod(ABC):
     def __init__(self, config: ScoringMethodConfig) -> None:
         """Initialize the scoring method.
 
-        Parameters
-        ----------
-        config : ScoringMethodConfig
-            Configuration object containing method parameters
+        Args:
+            config: Configuration object containing the method parameters.
 
         Note:
-        ----
-        This constructor should typically be called by subclass constructors,
-        not directly by users.
+            This constructor should typically be called by subclass
+            constructors, not directly by users.
         """
         self.config: ScoringMethodConfig = config
 
@@ -155,25 +131,21 @@ class ScoringMethod(ABC):
     def __call__(self, element: Element) -> Probability | LogProbability:
         """Score a single element.
 
-        Parameters
-        ----------
-        element : Element
-            Element to be scored
+        Args:
+            element: The element to be scored.
 
         Returns:
-        -------
-        Probability | LogProbability
-            The probability (if logprob=False) or log-probability (if logprob=True)
-            of the element. Returns probability for unobserved elements based
-            on the method's smoothing strategy.
+            The probability (when ``logprob=False``) or log-probability (when
+            ``logprob=True``) of the element. Unobserved elements are scored
+            using the method's reserved probability mass.
 
         Examples:
-        --------
-        >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
-        >>> scorer('a')
-        0.6666666666666666
-        >>> scorer('c')  # unobserved
-        0.0
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> scorer("a")
+            0.6666666666666666
+            >>> scorer("c")  # unobserved
+            0.0
         """
         return self._prob.get(element, self._unobs)
 
@@ -181,19 +153,16 @@ class ScoringMethod(ABC):
         """Return a string representation of the smoothing method.
 
         Returns:
-        -------
-        str
-            Human-readable description of the method
+            A human-readable description of the method, including its name,
+            whether it is a log-scorer, and the number of observed elements.
 
         Raises:
-        ------
-        ValueError
-            If the method has not been properly initialized
+            ValueError: If the method has not been properly initialized.
 
         Examples:
-        --------
-        >>> str(MLE({'a': 1}, logprob=True))
-        'MLE log-scorer, 1 elements.'
+            >>> from freqprob import MLE
+            >>> str(MLE({"a": 1}, logprob=True))
+            'MLE log-scorer, 1 elements.'
         """
         if self.name is None:
             raise ValueError("The smoothing method has not been (properly) initialized.")
@@ -212,40 +181,36 @@ class ScoringMethod(ABC):
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
         """Compute probabilities for the given frequency distribution.
 
-        This method must be implemented by subclasses to compute the
-        actual probability values according to their specific smoothing strategy.
+        This method must be implemented by subclasses to compute the actual
+        probability values according to their specific smoothing strategy.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution mapping elements to their observed counts
+        Args:
+            freqdist: Frequency distribution mapping elements to their observed
+                counts.
 
         Note:
-        ----
-        Implementations should populate self._prob and self._unobs.
+            Implementations should populate ``self._prob`` and ``self._unobs``.
         """
 
     def fit(self, freqdist: FrequencyDistribution) -> "ScoringMethod":
         """Fit the scoring method to a frequency distribution.
 
-        This method trains the scorer on the provided frequency data,
-        computing probability estimates for all observed elements.
+        This method trains the scorer on the provided frequency data, computing
+        probability estimates for all observed elements. It resets any prior
+        state so that re-fitting behaves like a fresh fit.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution mapping elements to their observed counts
+        Args:
+            freqdist: Frequency distribution mapping elements to their observed
+                counts.
 
         Returns:
-        -------
-        ScoringMethod
-            Self, for method chaining
+            This scorer, to allow method chaining.
 
         Examples:
-        --------
-        >>> scorer = MLE({}).fit({'a': 2, 'b': 1})
-        >>> scorer('a')
-        0.6666666666666666
+            >>> from freqprob import MLE
+            >>> scorer = MLE({}, logprob=False).fit({"a": 2, "b": 1})
+            >>> scorer("a")
+            0.6666666666666666
         """
         # Reset state so re-fitting an already-fitted scorer behaves like a
         # fresh fit: methods that assign into self._prob incrementally would
@@ -261,42 +226,34 @@ class ScoringMethod(ABC):
     def score(self, element: Element) -> Probability | LogProbability:
         """Score a single element (scikit-learn-style alias for ``__call__``).
 
-        Parameters
-        ----------
-        element : Element
-            Element to be scored
+        Args:
+            element: The element to be scored.
 
         Returns:
-        -------
-        Probability | LogProbability
-            The probability (or log-probability) of the element
+            The probability (or log-probability) of the element.
 
         Examples:
-        --------
-        >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
-        >>> scorer.score('a')
-        0.6666666666666666
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> scorer.score("a")
+            0.6666666666666666
         """
         return self(element)
 
     def predict(self, elements: Iterable[Element]) -> list[Probability | LogProbability]:
         """Score many elements at once (scikit-learn-style batch alias).
 
-        Parameters
-        ----------
-        elements : Iterable[Element]
-            Elements to be scored
+        Args:
+            elements: The elements to be scored.
 
         Returns:
-        -------
-        list[Probability | LogProbability]
-            One probability (or log-probability) per input element, in order
+            One probability (or log-probability) per input element, in order.
 
         Examples:
-        --------
-        >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
-        >>> scorer.predict(['a', 'b', 'c'])
-        [0.6666666666666666, 0.3333333333333333, 0.0]
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> scorer.predict(["a", "b", "c"])
+            [0.6666666666666666, 0.3333333333333333, 0.0]
         """
         return [self(element) for element in elements]
 
@@ -320,18 +277,16 @@ class ScoringMethod(ABC):
         The scorer can be restored later with :meth:`load`, avoiding the cost of
         re-fitting. Serialization uses :mod:`pickle`.
 
-        Parameters
-        ----------
-        path : str | Path
-            Destination file path
+        Args:
+            path: Destination file path.
 
         Examples:
-        --------
-        >>> scorer = MLE({'a': 2, 'b': 1}, logprob=False)
-        >>> scorer.save('model.pkl')                 # doctest: +SKIP
-        >>> restored = MLE.load('model.pkl')         # doctest: +SKIP
-        >>> restored('a') == scorer('a')             # doctest: +SKIP
-        True
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> scorer.save("model.pkl")             # doctest: +SKIP
+            >>> restored = MLE.load("model.pkl")     # doctest: +SKIP
+            >>> restored("a") == scorer("a")         # doctest: +SKIP
+            True
         """
         with Path(path).open("wb") as fh:
             pickle.dump(self, fh, protocol=pickle.HIGHEST_PROTOCOL)
@@ -340,25 +295,24 @@ class ScoringMethod(ABC):
     def load(cls: type[T], path: str | Path) -> T:  # noqa: PYI019  (Self needs typing_extensions on 3.10)
         """Load a scorer previously written with :meth:`save`.
 
-        Parameters
-        ----------
-        path : str | Path
-            Path to a file created by :meth:`save`
+        Args:
+            path: Path to a file created by :meth:`save`.
 
         Returns:
-        -------
-        ScoringMethod
-            The restored scorer
+            The restored scorer.
 
         Raises:
-        ------
-        TypeError
-            If the file does not contain a compatible scorer
+            TypeError: If the file does not contain a compatible scorer.
 
-        Warning:
-        -------
-        Only load files you trust: unpickling executes arbitrary code from the
-        file, so never load a scorer from an untrusted source.
+        Note:
+            Only load files you trust: unpickling executes arbitrary code from
+            the file, so never load a scorer from an untrusted source.
+
+        Examples:
+            >>> from freqprob import MLE
+            >>> restored = MLE.load("model.pkl")     # doctest: +SKIP
+            >>> restored("a")                        # doctest: +SKIP
+            0.6666666666666666
         """
         with Path(path).open("rb") as fh:
             obj = pickle.load(fh)

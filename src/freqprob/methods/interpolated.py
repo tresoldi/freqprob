@@ -29,80 +29,63 @@ class InterpolatedConfig(ScoringMethodConfig):
 
 
 class Interpolated(ScoringMethod):
-    """Linear interpolation smoothing between multiple models.
+    """Linear interpolation smoothing between two frequency distributions.
 
-    Combines probability estimates from different models using weighted linear
-    interpolation. Supports two modes:
+    Blends a higher-order distribution with a lower-order one using a weighted
+    average, ``lambda_weight * P_high + (1 - lambda_weight) * P_low``. This
+    keeps the specificity of the high-order model while borrowing robustness
+    from the smoother low-order model. Two modes are detected automatically
+    from the keys:
 
-    1. **N-gram interpolation**: Different n-gram orders (e.g., trigrams with bigrams)
-       - Automatically extracts lower-order context from higher-order n-grams
-       - Example: For trigram (w1, w2, w3), uses bigram (w2, w3) from low-order model
+    - N-gram interpolation, when the high-order keys are longer tuples than the
+      low-order keys. The lower-order context is taken as the suffix of each
+      high-order n-gram (e.g. bigram ``(w2, w3)`` from trigram ``(w1, w2, w3)``).
+    - Same-type interpolation, when both distributions share the same key type
+      (strings or equal-length tuples). Keys are matched directly.
 
-    2. **Same-type interpolation**: Same element types
-       - Direct key matching between distributions
-       - Works with strings, same-length tuples, or any hashable elements
-
-    The mode is automatically detected from the element types in the distributions.
-
-    Mathematical Formulation
-    ------------------------
-    For n-gram interpolation (e.g., trigram + bigram):
-        P_interp(w3|w1,w2) = λ * P_trigram(w3|w1,w2) + (1-λ) * P_bigram(w3|w2)
-
-    For same-type interpolation:
-        P_interp(element) = λ * P_high(element) + (1-λ) * P_low(element)
-
-    Where:
-    - λ is the interpolation weight (0 ≤ λ ≤ 1)
-    - Higher λ favors the high-order model (more specificity)
-    - Lower λ favors the low-order model (more smoothing)
-
-    Parameters
-    ----------
-    high_order_dist : FrequencyDistribution
-        Higher-order frequency distribution (e.g., trigrams)
-        For n-gram interpolation, must have longer tuples than low_order_dist
-    low_order_dist : FrequencyDistribution
-        Lower-order frequency distribution (e.g., bigrams)
-    lambda_weight : float, default=0.7
-        Interpolation weight for higher-order model (0 ≤ λ ≤ 1)
-    logprob : bool, default=True
-        Whether to return log-probabilities or probabilities
+    Args:
+        high_order_dist: Higher-order frequency distribution mapping elements to
+            counts (e.g. trigrams). For n-gram mode its tuple keys must be at
+            least as long as those of ``low_order_dist``.
+        low_order_dist: Lower-order frequency distribution (e.g. bigrams).
+        lambda_weight: Interpolation weight ``0 <= lambda_weight <= 1`` for the
+            high-order model. Higher values favor specificity, lower values
+            favor smoothing. Defaults to ``0.7``.
+        logprob: Return log-probabilities if ``True`` (the default), otherwise
+            plain probabilities.
 
     Examples:
-    --------
-    N-gram interpolation (trigrams + bigrams):
+        N-gram interpolation (trigrams backed off to bigrams). The score of
+        ``('the', 'big', 'cat')`` is ``0.7 * (3/5) + 0.3 * (5/10)``, and an
+        unseen trigram backs off to ``0.3 * (5/10)``:
 
-    >>> trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
-    >>> bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3, ('small', 'cat'): 2}
-    >>> interp = Interpolated(trigrams, bigrams, lambda_weight=0.7, logprob=False)
-    >>> interp(('the', 'big', 'cat'))
-    0.5  # 0.7 * (3/5) + 0.3 * (5/10)
-    >>> interp(('unseen', 'big', 'cat'))
-    0.15  # 0.7 * 0 + 0.3 * (5/10) - backoff to bigram
+        >>> trigrams = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
+        >>> bigrams = {("big", "cat"): 5, ("big", "dog"): 3, ("small", "cat"): 2}
+        >>> interp = Interpolated(trigrams, bigrams, lambda_weight=0.7, logprob=False)
+        >>> round(interp(("the", "big", "cat")), 3)
+        0.57
+        >>> round(interp(("unseen", "big", "cat")), 3)
+        0.15
 
-    Same-type interpolation (strings):
+        Same-type interpolation between two string distributions. The score of
+        ``"word1"`` is ``0.6 * (10/15) + 0.4 * (3/10)``:
 
-    >>> model1 = {'word1': 10, 'word2': 5}
-    >>> model2 = {'word1': 3, 'word3': 7}
-    >>> interp = Interpolated(model1, model2, lambda_weight=0.6, logprob=False)
-    >>> interp('word1')
-    0.48  # 0.6 * (10/15) + 0.4 * (3/10)
+        >>> model1 = {"word1": 10, "word2": 5}
+        >>> model2 = {"word1": 3, "word3": 7}
+        >>> interp = Interpolated(model1, model2, lambda_weight=0.6, logprob=False)
+        >>> round(interp("word1"), 3)
+        0.52
+        >>> round(interp("word2"), 3)
+        0.2
+        >>> round(interp("word3"), 3)
+        0.28
 
-    Properties
-    ----------
-    - Balances specificity and generalization
-    - Reduces overfitting from sparse high-order models
-    - Provides robustness through model combination
-    - Automatic mode detection from element types
-    - All probabilities floored at 1e-10 for numerical stability
-
-    Notes:
-    -----
-    - For n-gram interpolation, the high-order n must be greater than low-order n
-    - Context extraction uses suffix (last n elements) following NLP conventions
-    - Unseen n-grams backoff to the lower-order model probability
-    - The interpolation weight λ can be tuned on held-out data for optimal performance
+    Note:
+        The mode is inferred from the key types, so mixed tuple lengths within a
+        single distribution raise an error. Unseen high-order n-grams back off
+        to the low-order model, and all probabilities are floored at ``1e-10``
+        for numerical stability. The weight ``lambda_weight`` is best tuned on
+        held-out data.
     """
 
     __slots__ = ("_high_order_dist", "_high_order_n", "_low_order_dist", "_low_order_n")

@@ -220,18 +220,39 @@ def cached_computation(
 
 
 def clear_all_caches() -> None:
-    """Clear all global caches."""
+    """Clear all global computation caches.
+
+    Empties both the Simple Good-Turing cache and the general-purpose cache used
+    to memoize expensive smoothing computations. Useful for freeing memory or
+    forcing recomputation.
+
+    Examples:
+        >>> from freqprob import clear_all_caches, get_cache_stats
+        >>> clear_all_caches()
+        >>> get_cache_stats()["sgt_cache_size"]
+        0
+    """
     _sgt_cache.clear()
     _general_cache.clear()
 
 
 def get_cache_stats() -> dict[str, int]:
-    """Get statistics about cache usage.
+    """Get statistics about global cache usage.
+
+    Reports the current number of entries held in each global cache.
 
     Returns:
-    -------
-    Dict[str, int]
-        Dictionary with cache statistics
+        A mapping with the keys ``"sgt_cache_size"`` and ``"general_cache_size"``,
+        each giving the number of cached entries in the corresponding cache.
+
+    Examples:
+        >>> from freqprob import clear_all_caches, get_cache_stats
+        >>> clear_all_caches()
+        >>> stats = get_cache_stats()
+        >>> "sgt_cache_size" in stats
+        True
+        >>> stats["general_cache_size"]
+        0
     """
     return {
         "sgt_cache_size": _sgt_cache.size(),

@@ -15,90 +15,65 @@ class BayesianConfig(ScoringMethodConfig):
     """Configuration for Bayesian smoothing methods.
 
     Attributes:
-    ----------
-    alpha : float
-        Dirichlet concentration parameter (alpha > 0, default: 1.0)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
+        alpha: Dirichlet concentration parameter (``alpha > 0``, default:
+            ``1.0``).
+        logprob: Whether to return log-probabilities (default: ``True``).
     """
 
     alpha: float = 1.0
 
 
 class Bayesian(ScoringMethod):
-    """Bayesian smoothing with Dirichlet prior.
+    """Bayesian smoothing with a Dirichlet prior.
 
-    Uses a Dirichlet prior distribution to provide Bayesian probability estimates.
-    This method is theoretically principled and provides natural uncertainty
-    quantification through the prior distribution.
+    Estimates probabilities as the posterior mean under a symmetric Dirichlet
+    prior, adding ``alpha`` pseudocounts to each possible outcome. Each observed
+    element gets ``(c_i + alpha) / (N + V * alpha)`` and any unobserved element
+    gets ``alpha / (N + V * alpha)``, where ``N`` is the total count and ``V``
+    the support size. This is numerically identical to Lidstone smoothing with
+    ``gamma = alpha``, but framed so that ``alpha`` reads as prior belief: use it
+    when you want a theoretically principled smoother whose strength you can tune
+    from near-MLE (small ``alpha``) to strongly uniform (large ``alpha``).
 
-    Mathematical Formulation
-    ------------------------
-    P_Bayes(wᵢ) = (cᵢ + alpha) / (N + V*alpha)
-
-    Where:
-    - cᵢ is the observed count for word wᵢ
-    - alpha is the Dirichlet concentration parameter (pseudocount)
-    - N is the total observed count
-    - V is the support size
-
-    This is equivalent to adding alpha pseudocounts to each possible outcome
-    and corresponds to the posterior mean under a symmetric Dirichlet prior.
-
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Frequency distribution mapping elements to their observed counts
-    alpha : float, default=1.0
-        Dirichlet concentration parameter (alpha > 0). Controls smoothing strength:
-        - alpha → 0: Approaches MLE (minimal smoothing)
-        - alpha = 1: Uniform prior (Laplace smoothing)
-        - alpha > 1: Stronger preference for uniformity
-    logprob : bool, default=True
-        Whether to return log-probabilities or probabilities
+    Args:
+        freqdist: Mapping of elements to observed counts.
+        alpha: Dirichlet concentration parameter (``alpha > 0``). ``alpha -> 0``
+            approaches MLE, ``alpha = 1`` gives a uniform prior (Laplace
+            smoothing), and ``alpha > 1`` prefers more uniform distributions.
+            Defaults to ``1.0``.
+        logprob: Return log-probabilities if ``True`` (the default), otherwise
+            plain probabilities.
 
     Examples:
-    --------
-    Basic Bayesian smoothing with uniform prior:
-    >>> freqdist = {'apple': 8, 'banana': 4, 'cherry': 1}
-    >>> bayes = Bayesian(freqdist, alpha=1.0, logprob=False)
-    >>> bayes('apple')     # (8+1)/(13+3*1) = 9/16
-    0.5625
-    >>> bayes('banana')    # (4+1)/(13+3*1) = 5/16
-    0.3125
-    >>> bayes('unseen')    # 1/(13+3*1) = 1/16
-    0.0625
+        Bayesian smoothing with a uniform prior (``alpha = 1``):
 
-    Effect of different alpha values:
-    >>> # Stronger smoothing (alpha = 2)
-    >>> bayes_smooth = Bayesian(freqdist, alpha=2.0, logprob=False)
-    >>> bayes_smooth('apple')    # (8+2)/(13+3*2) = 10/19
-    0.5263157894736842
-    >>> bayes_smooth('unseen')   # 2/(13+3*2) = 2/19
-    0.10526315789473684
+        >>> from freqprob import Bayesian
+        >>> freqdist = {"apple": 8, "banana": 4, "cherry": 1}
+        >>> bayes = Bayesian(freqdist, alpha=1.0, logprob=False)
+        >>> bayes("apple")     # (8+1)/(13+3*1) = 9/16
+        0.5625
+        >>> bayes("banana")    # (4+1)/(13+3*1) = 5/16
+        0.3125
+        >>> bayes("unseen")    # 1/(13+3*1) = 1/16
+        0.0625
 
-    >>> # Minimal smoothing (alpha = 0.1)
-    >>> bayes_minimal = Bayesian(freqdist, alpha=0.1, logprob=False)
-    >>> bayes_minimal('apple')   # (8+0.1)/(13+3*0.1) ≈ 8.1/13.3
-    0.6090226699248121
+        A larger alpha smooths more strongly toward uniform:
 
-    Properties
-    ----------
-    - Theoretically principled (Bayesian posterior)
-    - Natural uncertainty quantification
-    - Generalizes several classical methods
-    - Smooth probability estimates
-    - Prior encodes domain knowledge
+        >>> bayes_smooth = Bayesian(freqdist, alpha=2.0, logprob=False)
+        >>> round(bayes_smooth("apple"), 3)    # (8+2)/(13+3*2) = 10/19
+        0.526
+        >>> round(bayes_smooth("unseen"), 3)   # 2/(13+3*2) = 2/19
+        0.105
 
-    Notes:
-    -----
-    The choice of alpha reflects prior beliefs about outcome probabilities:
-    - alpha = 1: Uniform prior (no preference for any outcome)
-    - alpha < 1: Sparse prior (prefers concentrated distributions)
-    - alpha > 1: Dense prior (prefers uniform distributions)
+        A small alpha stays closer to the observed frequencies:
 
-    This method is equivalent to Lidstone smoothing with gamma = alpha, but the
-    Bayesian interpretation provides additional theoretical insights.
+        >>> bayes_minimal = Bayesian(freqdist, alpha=0.1, logprob=False)
+        >>> round(bayes_minimal("apple"), 3)   # (8+0.1)/(13+3*0.1) = 8.1/13.3
+        0.609
+
+    Note:
+        A positive ``alpha`` is required; passing ``alpha <= 0`` raises
+        ``ValueError``. Equivalent to `Lidstone` with ``gamma = alpha``.
     """
 
     __slots__ = ()

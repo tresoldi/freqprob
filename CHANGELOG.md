@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Documentation rebuilt from scratch.** The docs site is now a focused
+  three-page set — Home, a single flowing **User Guide** (concepts → choosing a
+  method → the methods → evaluation → worked examples in text, ecology, genomics,
+  and categorical data → a "Scaling & performance" section → practical notes),
+  and an **API Reference generated entirely from docstrings**. Every public
+  symbol's docstring was converted to Google style and given a correct, runnable
+  example (fixing, among others, `Interpolated`'s wrong numbers and the fake
+  performance/validation APIs the old guide referenced).
+- **All documentation examples are now executed in CI.** New tests run every
+  docstring example (`tests/test_doctests.py`) and every Python code block in the
+  README and docs (`tests/test_docs_examples.py`), so an example can no longer
+  drift from the code. The README is trimmed to essentials and its citation
+  version corrected to 0.6.1.
+
+### Removed
+
+- Deleted the hand-written `docs/API_REFERENCE.md` (superseded by the
+  docstring-generated reference), `docs/LLM_DOCUMENTATION.md` (stale, with many
+  non-existent APIs), and the four `docs/tutorial_*.py` files. Dropped the
+  now-unused `nhandu`/`matplotlib`/`seaborn` dev dependencies and the Makefile
+  `docs`/`docs-clean` tutorial targets.
+
 - Bumped pinned dev tooling in lockstep across `pyproject.toml` and
   `.pre-commit-config.yaml`: **ruff** `0.15.8` → `0.16.0` and **mypy**
   `1.19.1` → `2.3.0`. Applied ruff 0.16.0's updated formatting (Markdown

@@ -7,29 +7,27 @@ from .base import Element, ScoringMethod
 
 
 def perplexity(model: ScoringMethod, test_data: Iterable[Element]) -> float:
-    """Calculate perplexity of a model on test data.
+    """Calculate the perplexity of a model on test data.
 
-    Perplexity is defined as exp(H(p)) where H(p) is the cross-entropy.
-    Lower perplexity indicates better model performance.
+    Perplexity is ``exp(H(p))`` where ``H(p)`` is the cross-entropy. Lower
+    perplexity indicates a model that better predicts the test data.
 
-    Parameters
-    ----------
-    model : ScoringMethod
-        Fitted probability model
-    test_data : Iterable[Element]
-        Test data elements
+    Args:
+        model: A fitted probability model. Must be configured with
+            ``logprob=True``.
+        test_data: Iterable of test elements to score.
 
     Returns:
-    -------
-    float
-        Perplexity value
+        The perplexity value.
+
+    Raises:
+        ValueError: If ``model`` is not configured for log-probabilities.
 
     Examples:
-    --------
-    >>> from freqprob import MLE
-    >>> model = MLE({'a': 2, 'b': 1}, logprob=True)
-    >>> perplexity(model, ['a', 'b', 'a'])
-    1.8171205928321397
+        >>> from freqprob import MLE, perplexity
+        >>> model = MLE({"a": 3, "b": 2, "c": 1}, logprob=True)
+        >>> round(perplexity(model, ["a", "b", "a", "c"]), 4)
+        2.913
     """
     if not model.logprob:
         raise ValueError("Model must be configured for log probabilities")
@@ -41,29 +39,27 @@ def perplexity(model: ScoringMethod, test_data: Iterable[Element]) -> float:
 
 
 def cross_entropy(model: ScoringMethod, test_data: Iterable[Element]) -> float:
-    """Calculate cross-entropy of a model on test data.
+    """Calculate the cross-entropy of a model on test data.
 
-    Cross-entropy measures the average number of bits needed to encode
-    test data using the model's probability distribution.
+    Cross-entropy is the average negative log-probability the model assigns to
+    the test data. Lower values indicate a better fit.
 
-    Parameters
-    ----------
-    model : ScoringMethod
-        Fitted probability model
-    test_data : Iterable[Element]
-        Test data elements
+    Args:
+        model: A fitted probability model. Must be configured with
+            ``logprob=True``.
+        test_data: Iterable of test elements to score.
 
     Returns:
-    -------
-    float
-        Cross-entropy value
+        The cross-entropy value (in nats, since natural logs are used).
+
+    Raises:
+        ValueError: If ``model`` is not configured for log-probabilities.
 
     Examples:
-    --------
-    >>> from freqprob import MLE
-    >>> model = MLE({'a': 2, 'b': 1}, logprob=True)
-    >>> cross_entropy(model, ['a', 'b', 'a'])
-    0.5943761750071414
+        >>> from freqprob import MLE, cross_entropy
+        >>> model = MLE({"a": 3, "b": 2, "c": 1}, logprob=True)
+        >>> round(cross_entropy(model, ["a", "b", "a", "c"]), 4)
+        1.0692
     """
     if not model.logprob:
         raise ValueError("Model must be configured for log probabilities")
@@ -75,32 +71,30 @@ def cross_entropy(model: ScoringMethod, test_data: Iterable[Element]) -> float:
 def kl_divergence(
     p_model: ScoringMethod, q_model: ScoringMethod, test_data: Iterable[Element]
 ) -> float:
-    """Calculate Kullback-Leibler divergence between two models.
+    """Calculate the Kullback-Leibler divergence between two models.
 
-    KL divergence measures how much one probability distribution differs
-    from another. It's not symmetric: KL(P||Q) ≠ KL(Q||P).
+    KL divergence measures how much the approximate distribution ``Q`` diverges
+    from the reference distribution ``P``. It is not symmetric:
+    ``KL(P||Q) != KL(Q||P)``.
 
-    Parameters
-    ----------
-    p_model : ScoringMethod
-        First probability model (reference)
-    q_model : ScoringMethod
-        Second probability model (approximate)
-    test_data : Iterable[Element]
-        Test data elements
+    Args:
+        p_model: The reference probability model ``P``. Must use ``logprob=True``.
+        q_model: The approximate probability model ``Q``. Must use ``logprob=True``.
+        test_data: Iterable of test elements over which to accumulate the
+            divergence.
 
     Returns:
-    -------
-    float
-        KL divergence value
+        The KL divergence value.
+
+    Raises:
+        ValueError: If either model is not configured for log-probabilities.
 
     Examples:
-    --------
-    >>> from freqprob import MLE, Laplace
-    >>> p_model = MLE({'a': 2, 'b': 1}, logprob=True)
-    >>> q_model = Laplace({'a': 2, 'b': 1}, logprob=True)
-    >>> kl_divergence(p_model, q_model, ['a', 'b', 'a'])
-    0.0
+        >>> from freqprob import MLE, Laplace, kl_divergence
+        >>> p_model = MLE({"a": 3, "b": 2, "c": 1}, logprob=True)
+        >>> q_model = Laplace({"a": 3, "b": 2, "c": 1}, logprob=True)
+        >>> round(kl_divergence(p_model, q_model, ["a", "b", "a", "c"]), 4)
+        0.0698
     """
     if not p_model.logprob or not q_model.logprob:
         raise ValueError("Both models must be configured for log probabilities")
@@ -123,29 +117,37 @@ def kl_divergence(
 def model_comparison(
     models: dict[str, ScoringMethod], test_data: Iterable[Element]
 ) -> dict[str, dict[str, float]]:
-    """Compare multiple models using various metrics.
+    """Compare multiple models using perplexity and cross-entropy.
 
-    Parameters
-    ----------
-    models : Dict[str, ScoringMethod]
-        Dictionary mapping model names to fitted models
-    test_data : Iterable[Element]
-        Test data elements
+    Each model is evaluated on the same test data, producing a nested mapping of
+    model name to its metric values.
+
+    Args:
+        models: Mapping of model names to fitted models. Every model must use
+            ``logprob=True``.
+        test_data: Iterable of test elements. It is materialized once and reused
+            across all models.
 
     Returns:
-    -------
-    Dict[str, Dict[str, float]]
-        Dictionary with model names as keys and metrics as values
+        A mapping of each model name to a ``{"perplexity": ..., "cross_entropy":
+        ...}`` dictionary.
+
+    Raises:
+        ValueError: If any model is not configured for log-probabilities.
 
     Examples:
-    --------
-    >>> from freqprob import MLE, Laplace
-    >>> models = {
-    ...     'mle': MLE({'a': 2, 'b': 1}, logprob=True),
-    ...     'laplace': Laplace({'a': 2, 'b': 1}, logprob=True)
-    ... }
-    >>> model_comparison(models, ['a', 'b', 'a'])
-    {'mle': {'perplexity': 1.8171205928321397, 'cross_entropy': 0.5943761750071414}, 'laplace': {'perplexity': 1.9659482062417916, 'cross_entropy': 0.6754887502163469}}
+        >>> from freqprob import MLE, Laplace, model_comparison
+        >>> models = {
+        ...     "mle": MLE({"a": 3, "b": 2, "c": 1}, logprob=True),
+        ...     "laplace": Laplace({"a": 3, "b": 2, "c": 1}, logprob=True),
+        ... }
+        >>> results = model_comparison(models, ["a", "b", "a", "c"])
+        >>> sorted(results)
+        ['laplace', 'mle']
+        >>> round(results["mle"]["perplexity"], 4)
+        2.913
+        >>> round(results["laplace"]["cross_entropy"], 4)
+        1.0561
     """
     test_data_list = list(test_data)
     results = {}
