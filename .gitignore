@@ -192,3 +192,10 @@ cover/
 # Nhandu intermediate files
 docs/*.out.py
 docs/*.out.html
+
+# Generated documentation artifacts (built in CI, not committed)
+docs/tutorial_*.html
+docs/figures/
+
+# MkDocs build output
+site/

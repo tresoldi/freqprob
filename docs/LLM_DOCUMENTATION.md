@@ -42,8 +42,8 @@ word_counts = Counter(text.split())
 model = freqprob.Laplace(word_counts, bins=1000, logprob=False)
 
 # Get probabilities for words
-prob_the = model("the")      # High probability (frequent word)
-prob_dog = model("dog")      # Low probability (unseen word)
+prob_the = model("the")  # High probability (frequent word)
+prob_dog = model("dog")  # Low probability (unseen word)
 
 # Use log-probabilities for numerical stability
 log_model = freqprob.Laplace(word_counts, bins=1000, logprob=True)
@@ -99,10 +99,10 @@ All smoothing methods share these parameters:
 
 ```python
 model = freqprob.SomeMethod(
-    freqdist,           # Required: frequency distribution (dict-like)
-    unobs_prob=0.01,    # Optional: probability mass for unseen elements
-    logprob=True,       # Optional: return log-probabilities (default: True)
-    bins=10000,         # Optional: total vocabulary size (method-specific)
+    freqdist,  # Required: frequency distribution (dict-like)
+    unobs_prob=0.01,  # Optional: probability mass for unseen elements
+    logprob=True,  # Optional: return log-probabilities (default: True)
+    bins=10000,  # Optional: total vocabulary size (method-specific)
 )
 ```
 
@@ -132,8 +132,8 @@ counts = {"apple": 10, "banana": 5, "orange": 3}
 
 # Basic MLE
 mle = freqprob.MLE(counts, logprob=False)
-print(mle("apple"))    # 10/18 = 0.556
-print(mle("grape"))    # 0.0 (unseen word)
+print(mle("apple"))  # 10/18 = 0.556
+print(mle("grape"))  # 0.0 (unseen word)
 
 # MLE with reserved mass for unseen words
 mle_smooth = freqprob.MLE(counts, unobs_prob=0.1, logprob=False)
@@ -159,8 +159,8 @@ vocab_size = 10000  # Estimated total vocabulary
 laplace = freqprob.Laplace(counts, bins=vocab_size, logprob=False)
 
 # All words get non-zero probability
-print(laplace("the"))        # (100+1) / (170+10000)
-print(laplace("unseen"))     # 1 / (170+10000)
+print(laplace("the"))  # (100+1) / (170+10000)
+print(laplace("unseen"))  # 1 / (170+10000)
 ```
 
 ### 3. Lidstone Smoothing (Add-k)
@@ -218,13 +218,13 @@ lidstone = freqprob.Lidstone(counts, gamma=0.5, bins=5000, logprob=True)
 counts = {"positive": 20, "negative": 5, "neutral": 2}
 
 # Weak prior (α = 0.5)
-weak_prior = freqprob.BayesianSmoothing(counts, alpha=0.5, logprob=False)
+weak_prior = freqprob.Bayesian(counts, alpha=0.5, logprob=False)
 
 # Strong prior (α = 10.0) - assumes uniform distribution
-strong_prior = freqprob.BayesianSmoothing(counts, alpha=10.0, logprob=False)
+strong_prior = freqprob.Bayesian(counts, alpha=10.0, logprob=False)
 
 # Strong prior pulls probabilities toward uniform
-print(weak_prior("positive"))    # Closer to MLE
+print(weak_prior("positive"))  # Closer to MLE
 print(strong_prior("positive"))  # Closer to 1/3
 ```
 
@@ -243,15 +243,15 @@ print(strong_prior("positive"))  # Closer to 1/3
 import freqprob
 
 # Good-Turing works best with large, diverse datasets
-large_counts = {f"word_{i}": max(1, 1000 - i*2) for i in range(500)}
+large_counts = {f"word_{i}": max(1, 1000 - i * 2) for i in range(500)}
 
 try:
     # Default: bins = V_observed + N1 (singletons)
     sgt = freqprob.SimpleGoodTuring(large_counts, logprob=True)
 
     # Good-Turing excels at low-frequency and unseen words
-    prob_rare = sgt("word_400")      # Rare word
-    prob_unseen = sgt("new_word")    # Per-word unseen probability
+    prob_rare = sgt("word_400")  # Rare word
+    prob_unseen = sgt("new_word")  # Per-word unseen probability
 
     # Access total unseen mass (p0) if needed
     total_mass = sgt.total_unseen_mass  # Total for ALL unseen words
@@ -260,7 +260,7 @@ try:
     sgt_large = freqprob.SimpleGoodTuring(
         large_counts,
         bins=10000,  # Estimated total vocabulary
-        logprob=True
+        logprob=True,
     )
 
 except ValueError as e:
@@ -318,10 +318,10 @@ mle_model = freqprob.MLE(counts, logprob=True)
 laplace_model = freqprob.Laplace(counts, bins=5000, logprob=True)
 
 # Interpolate with custom weights
-interpolated = freqprob.InterpolatedSmoothing(
+interpolated = freqprob.Interpolated(
     [mle_model, laplace_model],
     weights=[0.7, 0.3],  # 70% MLE, 30% Laplace
-    logprob=True
+    logprob=True,
 )
 
 prob = interpolated("word")
@@ -380,9 +380,8 @@ for label in ["positive", "negative"]:
     word_counts = Counter(class_words)
     vocab_size = len(all_words)
 
-    class_models[label] = freqprob.Laplace(
-        word_counts, bins=vocab_size, logprob=True
-    )
+    class_models[label] = freqprob.Laplace(word_counts, bins=vocab_size, logprob=True)
+
 
 # Classify new text
 def classify(text):
@@ -397,6 +396,7 @@ def classify(text):
     # Return highest scoring class
     return max(scores.items(), key=lambda x: x[1])[0]
 
+
 # Test
 result = classify("great wonderful movie")
 print(f"Predicted class: {result}")  # "positive"
@@ -407,10 +407,12 @@ print(f"Predicted class: {result}")  # "positive"
 ```python
 import freqprob
 
+
 # Generate bigrams from text
 def generate_bigrams(text):
     words = text.split()
     return list(zip(words[:-1], words[1:]))
+
 
 # Training
 corpus = [
@@ -428,11 +430,13 @@ bigram_counts = Counter(all_bigrams)
 # Build Kneser-Ney model
 lm = freqprob.KneserNey(bigram_counts, discount=0.75, logprob=True)
 
+
 # Compute sentence probability
 def sentence_probability(sentence, model):
     bigrams = generate_bigrams(sentence)
     log_prob = sum(model(bg) for bg in bigrams)
     return log_prob
+
 
 # Evaluate
 test_sentence = "the cat sat"
@@ -454,8 +458,16 @@ from collections import Counter
 
 # User interaction history
 user_clicks = [
-    "electronics", "phone", "laptop", "phone", "tablet",
-    "electronics", "laptop", "laptop", "headphones", "phone"
+    "electronics",
+    "phone",
+    "laptop",
+    "phone",
+    "tablet",
+    "electronics",
+    "laptop",
+    "laptop",
+    "headphones",
+    "phone",
 ]
 
 # Build frequency distribution
@@ -466,11 +478,7 @@ model = freqprob.ELE(click_counts, bins=100, logprob=False)
 
 # Rank categories by probability
 categories = ["phone", "laptop", "tablet", "camera", "speaker"]
-ranked = sorted(
-    categories,
-    key=lambda cat: model(cat),
-    reverse=True
-)
+ranked = sorted(categories, key=lambda cat: model(cat), reverse=True)
 
 print("Recommended categories:", ranked)
 # Output: ['phone', 'laptop', 'tablet', 'speaker', 'camera']
@@ -528,7 +536,7 @@ initial_counts = {"word1": 10, "word2": 5}
 streaming_model = freqprob.StreamingMLE(
     initial_data=initial_counts,
     max_vocabulary_size=10000,  # Limit memory usage
-    logprob=True
+    logprob=True,
 )
 
 # Update incrementally as new data arrives
@@ -552,7 +560,7 @@ huge_counts = {f"word_{i}": i for i in range(100000)}
 # Compress to reduce memory (quantizes counts)
 compressed = freqprob.create_compressed_distribution(
     huge_counts,
-    quantization_levels=256  # 8-bit quantization
+    quantization_levels=256,  # 8-bit quantization
 )
 
 # Use compressed distribution
@@ -625,7 +633,7 @@ models = {
     "mle": freqprob.MLE(train_counts, logprob=True),
     "laplace": freqprob.Laplace(train_counts, bins=1000, logprob=True),
     "ele": freqprob.ELE(train_counts, bins=1000, logprob=True),
-    "bayesian": freqprob.BayesianSmoothing(train_counts, alpha=1.0, logprob=True),
+    "bayesian": freqprob.Bayesian(train_counts, alpha=1.0, logprob=True),
 }
 
 comparison = freqprob.model_comparison(models, test_data)
@@ -674,11 +682,7 @@ import freqprob
 # Profile memory usage during model creation
 profiler = freqprob.MemoryProfiler()
 
-metrics = profiler.profile_method_creation(
-    freqprob.SimpleGoodTuring,
-    large_counts,
-    iterations=5
-)
+metrics = profiler.profile_method_creation(freqprob.SimpleGoodTuring, large_counts, iterations=5)
 
 print(f"Peak memory: {metrics.peak_memory_mb:.1f} MB")
 print(f"Average time: {metrics.avg_time:.3f} seconds")
@@ -702,23 +706,19 @@ Requires `pip install freqprob[validation]`:
 import freqprob
 
 # Quick validation check
-is_valid = freqprob.quick_validate_method(
-    freqprob.Laplace,
-    test_distribution
-)
+is_valid = freqprob.quick_validate_method(freqprob.Laplace, test_distribution)
 
 # Comprehensive validation
 validator = freqprob.ValidationSuite()
 result = validator.validate_method(
-    freqprob.ELE,
-    test_distributions=[small_dist, medium_dist, large_dist]
+    freqprob.ELE, test_distributions=[small_dist, medium_dist, large_dist]
 )
 
 # Performance comparison
 comparison = freqprob.compare_method_performance(
     methods=[freqprob.MLE, freqprob.Laplace, freqprob.KneserNey],
     distributions=[test_dist],
-    test_data=validation_data
+    test_data=validation_data,
 )
 ```
 
@@ -744,6 +744,7 @@ trigrams = freqprob.generate_ngrams(tokens, n=3)
 
 # Count n-gram frequencies
 from collections import Counter
+
 bigram_counts = Counter(bigrams)
 ```
 
@@ -773,6 +774,7 @@ ngram_freq = freqprob.ngram_frequency(ngrams, n=1)
 import freqprob
 from collections import Counter
 
+
 def select_best_model(train_data, validation_data, vocab_size):
     """Select best smoothing method via validation perplexity."""
 
@@ -782,8 +784,8 @@ def select_best_model(train_data, validation_data, vocab_size):
     models = {
         "laplace": freqprob.Laplace(train_counts, bins=vocab_size, logprob=True),
         "ele": freqprob.ELE(train_counts, bins=vocab_size, logprob=True),
-        "bayesian_0.5": freqprob.BayesianSmoothing(train_counts, alpha=0.5, logprob=True),
-        "bayesian_1.0": freqprob.BayesianSmoothing(train_counts, alpha=1.0, logprob=True),
+        "bayesian_0.5": freqprob.Bayesian(train_counts, alpha=0.5, logprob=True),
+        "bayesian_1.0": freqprob.Bayesian(train_counts, alpha=1.0, logprob=True),
     }
 
     # Evaluate on validation set
@@ -795,6 +797,7 @@ def select_best_model(train_data, validation_data, vocab_size):
     # Return best model
     best_name = min(results.items(), key=lambda x: x[1])[0]
     return models[best_name], results
+
 
 # Usage
 train = ["word1", "word2", "word1"] * 100
@@ -808,6 +811,7 @@ print(f"Best model perplexity: {min(scores.values()):.2f}")
 
 ```python
 import freqprob
+
 
 # Use different smoothing for different frequency ranges
 def hierarchical_smoothing(counts, vocab_size):
@@ -838,6 +842,7 @@ def hierarchical_smoothing(counts, vocab_size):
 ```python
 import freqprob
 
+
 def adapt_model(general_counts, domain_counts, domain_weight=0.7):
     """Interpolate general and domain-specific models."""
 
@@ -846,13 +851,12 @@ def adapt_model(general_counts, domain_counts, domain_weight=0.7):
     domain_model = freqprob.ELE(domain_counts, bins=5000, logprob=True)
 
     # Interpolate with domain preference
-    adapted = freqprob.InterpolatedSmoothing(
-        [domain_model, general_model],
-        weights=[domain_weight, 1 - domain_weight],
-        logprob=True
+    adapted = freqprob.Interpolated(
+        [domain_model, general_model], weights=[domain_weight, 1 - domain_weight], logprob=True
     )
 
     return adapted
+
 
 # Usage
 general_text = ["common", "word", "the"] * 1000
@@ -940,6 +944,7 @@ log_product = log_p1 + log_p2  # log(P1 × P2)
 
 # Convert back to probability if needed
 import math
+
 probability = math.exp(log_product)
 ```
 
@@ -984,9 +989,7 @@ simple_model = freqprob.Laplace(counts, bins=5000, logprob=True)
 
 # Profile if performance is an issue
 profiler = freqprob.MemoryProfiler()
-metrics = profiler.profile_method_creation(
-    freqprob.Laplace, counts, iterations=10
-)
+metrics = profiler.profile_method_creation(freqprob.Laplace, counts, iterations=10)
 
 # Only optimize if needed
 if metrics.avg_time > 1.0:  # > 1 second
@@ -1024,6 +1027,7 @@ log_power = log_p1 * n
 
 # Sum of probabilities (use logsumexp for stability)
 from scipy.special import logsumexp
+
 log_probs = [model(w) for w in words]
 log_sum = logsumexp(log_probs)
 ```
@@ -1043,25 +1047,37 @@ log_sum = logsumexp(log_probs)
 ```python
 # Main classes
 from freqprob import (
-    MLE, Laplace, Lidstone, ELE,
-    BayesianSmoothing, SimpleGoodTuring,
-    KneserNey, ModifiedKneserNey,
-    WittenBell, CertaintyDegree,
-    InterpolatedSmoothing,
+    MLE,
+    Laplace,
+    Lidstone,
+    ELE,
+    Bayesian,
+    SimpleGoodTuring,
+    KneserNey,
+    ModifiedKneserNey,
+    WittenBell,
+    CertaintyDegree,
+    Interpolated,
 )
 
 # Utilities
 from freqprob import (
-    perplexity, cross_entropy, kl_divergence,
+    perplexity,
+    cross_entropy,
+    kl_divergence,
     model_comparison,
-    generate_ngrams, ngram_frequency, word_frequency,
+    generate_ngrams,
+    ngram_frequency,
+    word_frequency,
 )
 
 # Performance
 from freqprob import (
-    VectorizedScorer, BatchScorer,
+    VectorizedScorer,
+    BatchScorer,
     create_vectorized_batch_scorer,
-    StreamingMLE, StreamingLaplace,
+    StreamingMLE,
+    StreamingLaplace,
     LazyBatchScorer,
 )
 
@@ -1073,12 +1089,14 @@ from freqprob import (
 
 # Caching
 from freqprob import (
-    get_cache_stats, clear_all_caches,
+    get_cache_stats,
+    clear_all_caches,
 )
 
 # Profiling (optional)
 from freqprob import (
-    MemoryMonitor, MemoryProfiler,
+    MemoryMonitor,
+    MemoryProfiler,
     DistributionMemoryAnalyzer,
 )
 
@@ -1098,6 +1116,7 @@ from freqprob import (
 import freqprob
 from collections import Counter
 from typing import List, Tuple
+
 
 class TextCategorizer:
     """Multi-class text categorization using smoothed language models."""
@@ -1134,17 +1153,11 @@ class TextCategorizer:
             counts = Counter(words)
 
             if self.smoothing == "laplace":
-                model = freqprob.Laplace(
-                    counts, bins=self.vocab_size, logprob=True
-                )
+                model = freqprob.Laplace(counts, bins=self.vocab_size, logprob=True)
             elif self.smoothing == "ele":
-                model = freqprob.ELE(
-                    counts, bins=self.vocab_size, logprob=True
-                )
+                model = freqprob.ELE(counts, bins=self.vocab_size, logprob=True)
             elif self.smoothing == "bayesian":
-                model = freqprob.BayesianSmoothing(
-                    counts, alpha=1.0, logprob=True
-                )
+                model = freqprob.Bayesian(counts, alpha=1.0, logprob=True)
             else:
                 raise ValueError(f"Unknown smoothing: {self.smoothing}")
 

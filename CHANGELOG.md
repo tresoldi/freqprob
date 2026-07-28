@@ -7,6 +7,158 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bumped pinned dev tooling in lockstep across `pyproject.toml` and
+  `.pre-commit-config.yaml`: **ruff** `0.15.8` → `0.16.0` and **mypy**
+  `1.19.1` → `2.3.0`. Applied ruff 0.16.0's updated formatting (Markdown
+  embedded code blocks). No source-code or public API changes.
+
+## [0.6.1] - 2026-07-28
+
+Maintenance release: test-coverage and CI hardening only. No library code or
+public API changes since 0.6.0.
+
+### Added
+
+- **Test coverage for the performance helpers**: new `tests/test_profiling.py`
+  and `tests/test_performance_edge_cases.py` cover the previously under-tested
+  branches of `performance/profiling.py` (69% → 96%), `performance/vectorized.py`
+  (70% → 100%), and `performance/lazy.py` (78% → 99%), raising overall coverage
+  from ~84% to ~91%.
+- **CI security scanning**: the quality workflow now runs `bandit` against
+  `src/` on every push and pull request (configuration already lived in
+  `pyproject.toml`).
+- **CI coverage reporting**: the test workflow uploads coverage to Codecov once
+  per run (from the Ubuntu / Python 3.12 matrix cell), using the existing
+  `codecov.yml` configuration.
+
+### Changed
+
+- Raised the enforced coverage floor from 80% to 88% (in both `pyproject.toml`
+  and the CI workflow) to lock in the higher coverage.
+
+## [0.6.0] - 2026-07-24
+
+### Fixed
+
+- **Re-fitting an estimator**: Calling `fit()` a second time on an already-fitted
+  estimator now behaves identically to a fresh fit. Previously, log-space methods
+  (`MLE`, `Uniform`, `Random`, `CertaintyDegree`) could raise a `math domain error`
+  because `self._unobs` — which holds the previous *output* — was reused as an epsilon
+  floor; and methods that build `self._prob` incrementally (`KneserNey`,
+  `SimpleGoodTuring`) left stale keys from the previous data. `fit()` now resets state
+  first, and the additive-floor methods use a fixed `MIN_PROBABILITY` constant.
+
+### Changed - BREAKING
+
+- **Renamed estimator classes** (dropped the inconsistent `Smoothing` suffix):
+  `BayesianSmoothing` → `Bayesian`, `InterpolatedSmoothing` → `Interpolated`.
+  Constructor parameters and behavior are unchanged. Additionally, direct imports of
+  the old internal module paths changed during the internal reorganization; import
+  from the top-level `freqprob` namespace instead. Full details in `MIGRATION.md`.
+
+### Added
+
+- **scikit-learn-style API**: `fit()` / `predict()` / `score()` methods on every
+  estimator, alongside the existing callable contract. `score` is a single-element
+  alias for `__call__`; `predict` scores an iterable in one call.
+- **Model serialization**: `save(path)` / `load(path)` on `ScoringMethod` to persist
+  and restore a fitted estimator without re-fitting (pickle-based). `load()` validates
+  the object type and documents the trust requirement of unpickling.
+- **Public `ScoringMethod` base type**: exported from `freqprob` for `isinstance`
+  checks and type annotations.
+- **Documentation site** (MkDocs-Material + mkdocstrings): `mkdocs.yml`, a landing
+  page, and an API reference generated from docstrings (so it can't drift from the
+  code). Build with `make site` / preview with `make site-serve`; a new `docs` extra
+  provides the toolchain. Intended to be published to GitHub Pages.
+
+### Changed
+
+- **README**: Rewritten to lead with the core value (counts → probabilities) and a
+  single motivating example, add a method-selection table, frame the library as
+  general-purpose (not NLP-only), and collapse the previously repeated testing
+  sections. Documentation links now point to the docs site.
+
+- **Collapsed redundant configuration classes**: Removed eight per-method `*Config`
+  dataclasses that only restated fields already defined on the base
+  `ScoringMethodConfig` (`UniformConfig`, `MLEConfig`, `LidstoneConfig`,
+  `LaplaceConfig`, `ELEConfig`, `WittenBellConfig`, `CertaintyDegreeConfig`,
+  `ModifiedKneserNeyConfig` — the last three of which were never even instantiated).
+  Those methods now build the base `ScoringMethodConfig` directly. The five configs
+  that add a genuine parameter are kept but trimmed to just that field
+  (`RandomConfig.seed`, `KneserNeyConfig.discount`, `BayesianConfig.alpha`,
+  `InterpolatedConfig.lambda_weight`, `SimpleGoodTuringConfig.p_value`/`default_p0`/
+  `allow_fail`). No public API or behavior change — all constructor parameters work
+  exactly as before.
+
+- **mypy target**: Set mypy `python_version` to `3.12` so it can parse modern
+  dependency stubs (e.g. numpy's PEP 695 `type` statements). Source-level 3.10
+  compatibility is still enforced by ruff (`target-version = "py310"`) and validated
+  by the Python 3.10 CI test-matrix leg.
+- **Constrained type-check dependencies**: Bounded `numpy` (`<2.6`) and `scipy`
+  (`<1.19`) in the `dev` extra so a new release can't silently change mypy's view of
+  their type stubs and break the type-check job with no code change. The runtime
+  dependency and the `test` matrix stay unpinned to catch real regressions.
+
+- **Internal module organization**: Regrouped the package internals for
+  maintainability, with **no change to the public API** (`import freqprob` and every
+  `freqprob.<Name>` continue to work unchanged). Estimators now live under
+  `freqprob/methods/` grouped by family (`baselines`, `additive`, `goodturing`,
+  `certainty`, `kneser_ney`, `interpolated`, `bayesian`); the lazy/streaming/
+  vectorized/memory/profiling infrastructure moved under `freqprob/performance/`;
+  and the old `utils.py` junk drawer was split into `metrics.py` (model evaluation)
+  and `text.py` (n-gram/frequency helpers). `base.py` and `cache.py` remain
+  top-level as shared foundations. Direct imports of the old internal module paths
+  (e.g. `from freqprob.smoothing import KneserNey`) have changed; import from the
+  top-level `freqprob` namespace instead.
+- **Project layout**: Moved the package to a `src/` layout (`src/freqprob/`). This
+  prevents accidental imports of the working-tree package instead of the installed
+  one and is the modern packaging standard. The import path is unchanged
+  (`import freqprob`); only the on-disk location moved. Build/type-check/test configs
+  updated accordingly (`packages.find` → `src`, `mypy` uses `[tool.mypy] files`).
+- **Pinned linters**: `ruff` and `mypy` are now pinned to exact versions in the `dev`
+  extra and in `.pre-commit-config.yaml`, so local, CI, and pre-commit run identical
+  versions. Unpinned versions had drifted (e.g. a newer `ruff` began formatting code
+  blocks inside Markdown), silently changing check results between runs.
+
+### Removed
+
+- **Committed documentation artifacts**: Removed the generated tutorial HTML and
+  figure PNGs (~17 MB) from version control. They are build outputs (`make docs`)
+  and are now git-ignored; rendered docs will be published to the documentation site.
+
+### Added
+
+- **CI test matrix**: Tests now run across Python 3.10/3.11/3.12 on Linux, macOS, and
+  Windows, matching the platforms and versions advertised in the metadata.
+- **Automated release workflow**: Tag-triggered GitHub Actions workflow that builds and
+  publishes to PyPI via trusted publishing (OIDC), removing the need for stored tokens.
+- **Pre-commit configuration** (`.pre-commit-config.yaml`) mirroring the CI quality gates
+  (ruff lint, ruff format, mypy).
+- **`test` optional-dependency extra**: Lightweight testing dependency set used by the CI
+  test matrix (`pip install -e ".[test]"`); `dev` now includes it.
+- **`CITATION.cff`**: Machine-readable citation metadata, enabling GitHub's native
+  "Cite this repository" support.
+- **`CONTRIBUTING.md`** and **`SECURITY.md`**: Contributor setup/quality-check guide and
+  a vulnerability reporting policy.
+- **Codecov integration**: `codecov.yml` configuration and a coverage badge in the README.
+- **`make security` target**: Runs the (already configured) `bandit` static security
+  analysis; `bandit[toml]` added to the `dev` extra.
+
+### Changed
+
+- **CI**: The quality job now installs `.[dev]` so the Hypothesis, NLTK, and scikit-learn
+  test suites actually execute (previously skipped because those dependencies were not
+  installed), and type checking now also covers `scripts/`.
+
+### Fixed
+
+- **Documentation URL** in package metadata pointed to `docs/user_guide.md` (wrong case);
+  corrected to `docs/USER_GUIDE.md`.
+- **Dead code**: Removed the unreachable `HAS_VALIDATION` block in `freqprob/__init__.py`
+  that referenced a removed module.
+
 ## [0.4.0] - 2025-10-04
 
 ### Changed - BREAKING
@@ -58,18 +210,18 @@ For users upgrading from v0.3.x:
 ```python
 # v0.3.x code:
 sgt = SimpleGoodTuring(freqdist)
-p_total_unseen = sgt('unseen_word')  # Returned p₀ ≈ 0.07
+p_total_unseen = sgt("unseen_word")  # Returned p₀ ≈ 0.07
 
 # v0.4.0 equivalent:
 sgt = SimpleGoodTuring(freqdist)
-p_per_word = sgt('unseen_word')      # Returns per-word prob ≈ 0.00012
+p_per_word = sgt("unseen_word")  # Returns per-word prob ≈ 0.00012
 p_total_unseen = sgt.total_unseen_mass  # Access p₀ ≈ 0.07
 
 # If you need the old behavior (not recommended):
 # The old behavior was mathematically inconsistent. If you truly need it,
 # multiply per-word probability by estimated unseen types:
-estimated_unseen = int(sgt.total_unseen_mass / sgt('unseen_word'))
-p_approx_old = sgt('unseen_word') * estimated_unseen
+estimated_unseen = int(sgt.total_unseen_mass / sgt("unseen_word"))
+p_approx_old = sgt("unseen_word") * estimated_unseen
 ```
 
 **Why this change?**

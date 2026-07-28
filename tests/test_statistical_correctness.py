@@ -125,7 +125,7 @@ class TestStatisticalCorrectness:
         counts = {"term1": 40, "term2": 30, "term3": 20, "term4": 10}
 
         for alpha in [0.1, 0.5, 1.0, 2.0]:
-            bayesian = freqprob.BayesianSmoothing(counts, alpha=alpha, logprob=False)  # type: ignore[arg-type]
+            bayesian = freqprob.Bayesian(counts, alpha=alpha, logprob=False)  # type: ignore[arg-type]
 
             total_count = sum(counts.values())
             vocab_size = len(counts)
@@ -137,7 +137,7 @@ class TestStatisticalCorrectness:
                 assert abs(actual - expected) < 1e-15
 
         # Test that alpha=1 gives uniform prior (similar to Laplace)
-        bayesian_1 = freqprob.BayesianSmoothing(counts, alpha=1.0, logprob=False)  # type: ignore[arg-type]
+        bayesian_1 = freqprob.Bayesian(counts, alpha=1.0, logprob=False)  # type: ignore[arg-type]
 
         # Should sum to 1 for observed vocabulary
         total_prob = sum(bayesian_1(word) for word in counts)
@@ -152,7 +152,7 @@ class TestStatisticalCorrectness:
             freqprob.Laplace(counts, bins=100, logprob=False),  # type: ignore[arg-type]
             freqprob.ELE(counts, bins=100, logprob=False),  # type: ignore[arg-type]
             freqprob.Lidstone(counts, gamma=0.5, bins=100, logprob=False),  # type: ignore[arg-type]
-            freqprob.BayesianSmoothing(counts, alpha=0.5, logprob=False),  # type: ignore[arg-type]
+            freqprob.Bayesian(counts, alpha=0.5, logprob=False),  # type: ignore[arg-type]
             freqprob.Uniform(counts, unobs_prob=0.1, logprob=False),  # type: ignore[arg-type]
         ]
 
@@ -483,7 +483,7 @@ class TestAdvancedStatisticalProperties:
         }
 
         for lambda_weight in [0.1, 0.3, 0.5, 0.7, 0.9]:
-            interpolated = freqprob.InterpolatedSmoothing(
+            interpolated = freqprob.Interpolated(
                 high_order, low_order, lambda_weight=lambda_weight, logprob=False
             )
 
@@ -599,7 +599,7 @@ class TestAdvancedStatisticalProperties:
             ("Laplace", {"bins": 100}),
             ("ELE", {"bins": 100}),
             ("Lidstone", {"gamma": 0.5, "bins": 100}),
-            ("BayesianSmoothing", {"alpha": 0.5}),
+            ("Bayesian", {"alpha": 0.5}),
             ("Uniform", {"unobs_prob": 0.1}),
         ],
     )

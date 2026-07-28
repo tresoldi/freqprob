@@ -662,7 +662,9 @@ def test_sgt_raises() -> None:
     # TEST_OBS1 is very simple (just ABBCCCDDDDEEEE) and won't trigger
     # RuntimeWarning with default allow_fail=True.
     # Test bins validation instead:
-    with pytest.raises(ValueError, match=r"bins .* must be greater than observed vocabulary size"):
+    with pytest.raises(
+        ValueError, match=r"bins .* must be greater than the number of observed elements"
+    ):
         # bins <= V should raise ValueError
         SimpleGoodTuring(TEST_OBS1, bins=5)  # TEST_OBS1 has 5 types, so bins=5 should fail
 

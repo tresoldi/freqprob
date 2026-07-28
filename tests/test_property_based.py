@@ -198,7 +198,7 @@ class TestPropertyBasedSmoothing:
         """Test Bayesian smoothing with Dirichlet prior."""
         alpha = params["alpha"]
 
-        bayesian = freqprob.BayesianSmoothing(freq_dist, alpha=alpha, logprob=False)  # type: ignore[arg-type]
+        bayesian = freqprob.Bayesian(freq_dist, alpha=alpha, logprob=False)  # type: ignore[arg-type]
 
         # Property 1: All probabilities are positive
         for word in freq_dist:
@@ -295,7 +295,7 @@ class TestPropertyBasedSmoothing:
             lambda fd: freqprob.Laplace(fd, bins=bins, logprob=False),
             lambda fd: freqprob.ELE(fd, bins=bins, logprob=False),
             lambda fd: freqprob.Lidstone(fd, gamma=0.5, bins=bins, logprob=False),
-            lambda fd: freqprob.BayesianSmoothing(fd, alpha=0.5, logprob=False),
+            lambda fd: freqprob.Bayesian(fd, alpha=0.5, logprob=False),
         ]
 
         for method_factory in smoothing_methods:

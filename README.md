@@ -1,164 +1,97 @@
 # FreqProb
 
 [![CI](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml/badge.svg)](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml)
+[![codecov](https://codecov.io/gh/tresoldi/freqprob/branch/main/graph/badge.svg)](https://codecov.io/gh/tresoldi/freqprob)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://tresoldi.github.io/freqprob/)
 [![PyPI version](https://badge.fury.io/py/freqprob.svg)](https://badge.fury.io/py/freqprob)
 [![Python versions](https://img.shields.io/pypi/pyversions/freqprob.svg)](https://pypi.org/project/freqprob/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
-**A modern, high-performance Python library for probability smoothing and frequency-based language modeling.**
+**Turn frequency counts into probability estimates.**
 
-FreqProb provides state-of-the-art smoothing techniques for converting frequency counts into probability estimates, with applications in natural language processing, information retrieval, and statistical modeling.
+FreqProb converts a mapping of elements to observed counts into smoothed
+probabilities that handle unseen elements sensibly. It's a general-purpose
+statistical tool — natural language processing is one consumer among many
+(information retrieval, ecology, genomics, categorical analytics, ML features).
 
-## **Comprehensive & Accurate**
-- **10+ smoothing methods**: From basic Laplace to advanced Kneser-Ney and Simple Good-Turing
-- **Mathematically rigorous**: Implementations validated against reference sources (NLTK, SciPy)
-- **Production-ready**: Extensive testing with 400+ test cases and property-based validation
+```python
+import freqprob
 
-## **High Performance**
-- **Vectorized operations**: Batch processing with NumPy acceleration
-- **Memory efficient**: Compressed representations and streaming algorithms  
-- **Lazy evaluation**: Compute probabilities only when needed
-- **Caching system**: Intelligent memoization for expensive operations
+counts = {"the": 100, "cat": 50, "dog": 30, "bird": 10}
 
-## **Developer Experience**
-- **Type safety**: Full type hints with mypy validation
-- **Modern Python**: Requires Python 3.10+, uses latest language features
-- **Rich documentation**: Mathematical background, tutorials, and API reference
-- **Easy integration**: Clean, intuitive API design
+laplace = freqprob.Laplace(counts, bins=10_000, logprob=False)
+laplace("cat")  # 0.0050  — an observed element
+laplace("elephant")  # 0.0001  — an unseen element still gets non-zero mass
+```
 
-## Quick Start
+That last line is the whole point: a raw relative-frequency estimate would
+assign probability **0** to `"elephant"` and break any model that multiplies or
+takes logs of probabilities. Smoothing reserves a bit of mass for what you
+haven't seen yet — and FreqProb gives you a dozen well-tested ways to do it
+behind one consistent interface.
 
-### Installation
+## Install
 
 ```bash
 pip install freqprob
 ```
 
-For additional features:
-```bash
-pip install freqprob[all]  # All optional dependencies
-```
+## The interface
 
-### Basic Usage
+Every estimator follows the same contract: construct it with a frequency
+distribution, then **call it** to score an element.
 
 ```python
-import freqprob
+scorer = freqprob.KneserNey(bigram_counts, discount=0.75)
+scorer(("the", "cat"))  # score one element
+scorer.predict([("the", "cat"), ("a", "dog")])  # score many (scikit-learn-style)
 
-# Create a frequency distribution
-word_counts = {'the': 100, 'cat': 50, 'dog': 30, 'bird': 10}
+freqprob.perplexity(scorer, test_bigrams)  # evaluate a model
 
-# Basic smoothing - handles zero probabilities
-laplace = freqprob.Laplace(word_counts, bins=10000)
-print(f"P(cat) = {laplace('cat'):.4f}")      # 0.0053
-print(f"P(elephant) = {laplace('elephant'):.6f}")  # 0.000105 (unseen word)
-
-# Advanced smoothing for n-gram models
-bigrams = {('the', 'cat'): 25, ('the', 'dog'): 20, ('a', 'cat'): 15}
-kneser_ney = freqprob.KneserNey(bigrams, discount=0.75)
-
-# Model evaluation
-test_data = ['cat', 'dog', 'bird'] * 10
-perplexity = freqprob.perplexity(laplace, test_data)
-print(f"Perplexity: {perplexity:.2f}")
+scorer.save("model.pkl")  # persist a fitted model...
+scorer = freqprob.KneserNey.load("model.pkl")  # ...and load it back
 ```
 
-## Smoothing Methods
+`fit`/`predict`/`score` aliases are available for scikit-learn familiarity, and
+any fitted estimator can be saved and reloaded without re-fitting.
 
-### Basic Methods
-- **MLE (Maximum Likelihood)**: Unsmoothed relative frequencies
-- **Laplace (Add-One)**: Classic add-one smoothing
-- **Lidstone (Add-k)**: Generalized additive smoothing
-- **ELE (Expected Likelihood)**: Lidstone with γ=0.5
+## Choosing a method
 
-### Advanced Methods  
-- **Simple Good-Turing**: Frequency-of-frequency based smoothing
-- **Kneser-Ney**: State-of-the-art for n-gram language models
-- **Modified Kneser-Ney**: Improved version with automatic parameter estimation
-- **Bayesian**: Dirichlet prior-based smoothing
-- **Interpolated**: Linear combination of multiple models
+| Method | Use it for | Key parameter |
+|--------|------------|---------------|
+| `MLE` | raw relative frequencies (no smoothing) | — |
+| `Laplace` / `Lidstone` / `ELE` | simple, robust additive smoothing | `bins`, `gamma` |
+| `SimpleGoodTuring` | heavy-tailed count data (many rare items) | `p_value` |
+| `KneserNey` / `ModifiedKneserNey` | n-gram language models | `discount` |
+| `Bayesian` | Dirichlet-prior smoothing | `alpha` |
+| `Interpolated` | combining models of different orders | `lambda_weight` |
+| `WittenBell`, `CertaintyDegree`, `Uniform`, `Random` | baselines & specialized cases | — |
 
-### Specialized Features
-- **Streaming algorithms**: Real-time updates for large datasets
-- **Memory optimization**: Compressed and sparse representations
-- **Performance profiling**: Built-in benchmarking and validation tools
+For large or streaming data, FreqProb also provides vectorized batch scoring,
+lazy evaluation, streaming (incremental) estimators, and memory-efficient
+compressed/sparse representations.
 
-## Use Cases
+## Why FreqProb
 
-### **Natural Language Processing**
-```python
-# Language modeling
-bigrams = freqprob.ngram_frequency(tokens, n=2)
-lm = freqprob.KneserNey(bigrams, discount=0.75)
+- **One consistent API** across a dozen smoothing methods — swap estimators
+  without rewriting your code.
+- **Mathematically validated** against reference implementations (NLTK, SciPy)
+  and checked with property-based tests.
+- **Typed and production-ready** — full type hints (`py.typed`), strict linting
+  and type-checking, and a test suite run across Python 3.10–3.12 on Linux,
+  macOS, and Windows.
 
-# Text classification with smoothed features
-doc_features = freqprob.word_frequency(document_tokens)
-classifier_probs = freqprob.Laplace(doc_features, bins=vocab_size)
-```
+## Documentation
 
-### **Information Retrieval**
-```python
-# Document scoring with term frequency smoothing
-term_counts = compute_term_frequencies(document)
-smoothed_tf = freqprob.BayesianSmoothing(term_counts, alpha=0.5)
-
-# Query likelihood with unseen term handling
-query_prob = sum(smoothed_tf(term) for term in query_terms)
-```
-
-### **Data Science & Analytics**
-```python
-# Probability estimation for sparse categorical data
-category_counts = {cat: count for cat, count in data.value_counts().items()}
-estimator = freqprob.SimpleGoodTuring(category_counts)
-
-# Handle zero frequencies in statistical analysis
-smoothed_dist = freqprob.ELE(observed_frequencies, bins=total_categories)
-```
-
-## Quality & Reliability
-
-### **Rigorous Testing**
-- **400+ test cases** covering edge cases and normal operations
-- **Property-based testing** with Hypothesis for mathematical correctness
-- **Regression testing** against reference implementations (NLTK, SciPy)
-- **Numerical stability** validation for extreme inputs
-
-### **Performance Validated**
-- **Benchmarking framework** for performance regression detection
-- **Memory profiling** to ensure efficient resource usage
-- **Scaling analysis** from small to large vocabulary sizes
-- **Cross-platform testing** on Linux, Windows, and macOS
-
-### **Mathematical Accuracy**
-- **Formula verification** against academic literature
-- **Statistical correctness** validation with known distributions
-- **Precision testing** for floating-point edge cases
-- **Reference compatibility** with established libraries
-
-## Documentation & Learning
-
-Learn FreqProb through comprehensive, executable tutorials with visualizations. Tutorials are written using [Nhandu](https://pypi.org/project/nhandu) literate programming format.
-
-1. **[Basic Smoothing Methods](docs/tutorial_1_basic_smoothing.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_1_basic_smoothing.html))
-   - Introduction to probability smoothing
-   - MLE, Laplace, Lidstone, and ELE methods
-   - Model evaluation with perplexity
-
-2. **[Advanced Methods](docs/tutorial_2_advanced_methods.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_2_advanced_methods.html))
-   - Simple Good-Turing smoothing
-   - Kneser-Ney and Modified Kneser-Ney
-   - Bayesian and interpolated methods
-
-3. **[Efficiency & Memory](docs/tutorial_3_efficiency_memory.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_3_efficiency_memory.html))
-   - Vectorized batch processing
-   - Streaming algorithms
-   - Memory-efficient representations
-
-4. **[Real-World Applications](docs/tutorial_4_real_world_applications.py)** ([View HTML](https://htmlpreview.github.io/?https://github.com/tresoldi/freqprob/blob/main/docs/tutorial_4_real_world_applications.html))
-   - Language modeling
-   - Text classification
-   - Information retrieval
+- **[Documentation site](https://tresoldi.github.io/freqprob/)** — user guide and
+  full API reference.
+- **[User Guide](docs/USER_GUIDE.md)** — concepts and worked examples.
+- **Tutorials** (executable, [Nhandu](https://pypi.org/project/nhandu) format):
+  [basics](docs/tutorial_1_basic_smoothing.py),
+  [advanced methods](docs/tutorial_2_advanced_methods.py),
+  [efficiency & memory](docs/tutorial_3_efficiency_memory.py),
+  [applications](docs/tutorial_4_real_world_applications.py).
 
 ## Citation
 
@@ -167,11 +100,15 @@ If you use FreqProb in academic research, please cite:
 ```bibtex
 @software{tresoldi_freqprob_2025,
   author = {Tresoldi, Tiago},
-  title = {FreqProb: A Python library for probability smoothing and frequency-based language modeling},
+  title = {FreqProb: A Python library for probability smoothing and frequency-based estimation},
   url = {https://github.com/tresoldi/freqprob},
-  version = {0.4.0},
+  version = {0.6.0},
   publisher = {Department of Linguistics and Philology, Uppsala University},
   address = {Uppsala},
   year = {2025}
 }
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

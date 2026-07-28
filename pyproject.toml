@@ -43,23 +43,44 @@ dependencies = [
 memory = [
     "psutil>=5.8.0",
 ]
-# All optional dependencies (runtime + development)
-all = [
-    "freqprob[memory,dev]",
-]
-# Development dependencies
-dev = [
-    # Testing (required by Makefile and tests/)
+# Testing dependencies (lightweight; used by the CI test matrix)
+test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "pytest-xdist>=3.0.0",
     "hypothesis>=6.0.0",
     "nltk>=3.8",
     "scikit-learn>=1.0.0",
+]
+# Documentation site (MkDocs + mkdocstrings)
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+]
+# All optional dependencies (runtime + development)
+all = [
+    "freqprob[memory,dev,docs]",
+]
+# Development dependencies
+dev = [
+    # Testing (required by Makefile and tests/)
+    "freqprob[test]",
 
-    # Code quality (required by Makefile)
-    "ruff>=0.1.0",
-    "mypy>=1.5.0",
+    # Code quality (required by Makefile).
+    # ruff/mypy pinned exactly so local, CI, and pre-commit run identical linter
+    # versions (unpinned ruff/mypy drift silently changes check results).
+    "ruff==0.16.0",
+    "mypy==2.3.0",
+    "bandit[toml]>=1.7.0",
+
+    # Bound the stub-bearing scientific deps for the type-check (quality) job,
+    # which installs `.[dev]`. A new numpy/scipy release can otherwise change
+    # mypy's view of third-party stubs and break the type check with no code
+    # change (as numpy 2.5's PEP 695 stubs did). The runtime dependency (core
+    # `dependencies`) and the `test` matrix stay unpinned to surface real
+    # regressions against the latest versions. Bump these deliberately.
+    "numpy<2.6",
+    "scipy<1.19",
 
     # Build and release (required by Makefile)
     "build>=0.10.0",
@@ -73,7 +94,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/tresoldi/freqprob"
-Documentation = "https://github.com/tresoldi/freqprob/blob/main/docs/user_guide.md"
+Documentation = "https://tresoldi.github.io/freqprob/"
 Repository = "https://github.com/tresoldi/freqprob.git"
 Issues = "https://github.com/tresoldi/freqprob/issues"
 Changelog = "https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md"
@@ -82,7 +103,7 @@ Changelog = "https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md"
 version = {attr = "freqprob.__version__"}
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["freqprob*"]
 
 
@@ -156,7 +177,7 @@ ignore = [
     "RUF003", # Ambiguous Greek characters (mathematical notation)
     "T201",   # Allow print statements in tutorials
 ]
-"freqprob/profiling.py" = [
+"src/freqprob/performance/profiling.py" = [
     "T201",   # Allow print statements for monitoring alerts
 ]
 "docs/*.ipynb" = [
@@ -180,7 +201,11 @@ convention = "google"  # Keep existing convention; full Epytext migration requir
 
 # MyPy type checking
 [tool.mypy]
-python_version = "3.10"
+# Target 3.12 so mypy can parse modern dependency stubs (e.g. numpy's PEP 695
+# `type` statements). Our 3.10 syntax compatibility is enforced by ruff
+# (target-version = "py310") and validated by the 3.10 CI test matrix leg.
+python_version = "3.12"
+files = ["src/freqprob", "tests", "scripts"]
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -223,7 +248,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
-    "--cov-fail-under=80",
+    "--cov-fail-under=88",
 ]
 testpaths = ["tests"]
 markers = [

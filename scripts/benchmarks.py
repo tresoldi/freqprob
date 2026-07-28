@@ -6,7 +6,7 @@ smoothing methods across different scenarios and datasets.
 
 Benchmarks v0.4.0 features:
 - SimpleGoodTuring with bins parameter (per-word probability)
-- InterpolatedSmoothing with n-gram mode (trigram + bigram)
+- Interpolated with n-gram mode (trigram + bigram)
 - KneserNey and ModifiedKneserNey methods
 - Cross-entropy evaluation
 - N-gram datasets (bigrams, trigrams)
@@ -114,7 +114,7 @@ class DatasetGenerator:
         np.random.seed(42)  # For reproducibility
 
         # Generate Zipfian frequencies
-        frequencies = np.random.zipf(alpha, vocab_size)
+        frequencies: np.ndarray = np.random.zipf(alpha, vocab_size)
 
         # Normalize to desired total count
         frequencies = (frequencies / frequencies.sum()) * total_count
@@ -173,7 +173,7 @@ class DatasetGenerator:
 
         # Generate bigrams with Zipfian frequencies
         num_bigrams = min(vocab_size * vocab_size, total_count // 10)
-        frequencies = np.random.zipf(alpha, num_bigrams)
+        frequencies: np.ndarray = np.random.zipf(alpha, num_bigrams)
         frequencies = (frequencies / frequencies.sum()) * total_count
         frequencies = frequencies.astype(int)
         frequencies[frequencies == 0] = 1
@@ -199,7 +199,7 @@ class DatasetGenerator:
 
         # Generate trigrams with Zipfian frequencies
         num_trigrams = min(vocab_size * vocab_size, total_count // 20)
-        frequencies = np.random.zipf(alpha, num_trigrams)
+        frequencies: np.ndarray = np.random.zipf(alpha, num_trigrams)
         frequencies = (frequencies / frequencies.sum()) * total_count
         frequencies = frequencies.astype(int)
         frequencies[frequencies == 0] = 1
@@ -235,8 +235,8 @@ class PerformanceBenchmark:
             "Lidstone_0.5": lambda freq: freqprob.Lidstone(
                 freq, gamma=0.5, bins=len(freq) * 2, logprob=True
             ),
-            "Bayesian_0.5": lambda freq: freqprob.BayesianSmoothing(freq, alpha=0.5, logprob=True),
-            "Bayesian_1.0": lambda freq: freqprob.BayesianSmoothing(freq, alpha=1.0, logprob=True),
+            "Bayesian_0.5": lambda freq: freqprob.Bayesian(freq, alpha=0.5, logprob=True),
+            "Bayesian_1.0": lambda freq: freqprob.Bayesian(freq, alpha=1.0, logprob=True),
         }
 
         # Add SimpleGoodTuring with different bins configurations (v0.4.0)
@@ -302,7 +302,7 @@ class PerformanceBenchmark:
                 sparse_data[f"word_{i:06d}"] = max(1, int(np.random.exponential(2)))
         self.datasets["sparse"] = sparse_data
 
-        # N-gram datasets (for KneserNey, ModifiedKneserNey, InterpolatedSmoothing)
+        # N-gram datasets (for KneserNey, ModifiedKneserNey, Interpolated)
         self.datasets["bigram_small"] = DatasetGenerator.create_bigram_distribution(50, 500)
         self.datasets["bigram_medium"] = DatasetGenerator.create_bigram_distribution(100, 2000)
         self.datasets["trigram_small"] = DatasetGenerator.create_trigram_distribution(30, 300)
@@ -508,7 +508,7 @@ class PerformanceBenchmark:
                     pass
 
     def benchmark_ngram_methods(self) -> None:
-        """Benchmark n-gram specific methods (KneserNey, ModifiedKneserNey, InterpolatedSmoothing)."""
+        """Benchmark n-gram specific methods (KneserNey, ModifiedKneserNey, Interpolated)."""
         print("Benchmarking n-gram methods...")
 
         # Benchmark KneserNey and ModifiedKneserNey on bigram datasets
@@ -555,8 +555,8 @@ class PerformanceBenchmark:
                     )
                     self.results.append(result)
 
-        # Benchmark InterpolatedSmoothing (trigram + bigram)
-        print("  Benchmarking InterpolatedSmoothing...")
+        # Benchmark Interpolated (trigram + bigram)
+        print("  Benchmarking Interpolated...")
         for lambda_weight in [0.5, 0.7, 0.9]:
             # Find matching trigram and bigram datasets
             if "trigram_small" in self.datasets and "bigram_small" in self.datasets:
@@ -567,13 +567,13 @@ class PerformanceBenchmark:
                 for _ in range(3):
                     start_time = time.perf_counter()
                     try:
-                        model = freqprob.InterpolatedSmoothing(
+                        model = freqprob.Interpolated(
                             trigram_data, bigram_data, lambda_weight=lambda_weight, logprob=True
                         )
                         end_time = time.perf_counter()
                         times.append(end_time - start_time)
                     except Exception as e:
-                        print(f"    Warning: InterpolatedSmoothing λ={lambda_weight} failed: {e}")
+                        print(f"    Warning: Interpolated λ={lambda_weight} failed: {e}")
                         times.append(float("inf"))
 
                 valid_times = [t for t in times if t != float("inf")]

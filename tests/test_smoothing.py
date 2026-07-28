@@ -4,9 +4,9 @@
 import pytest
 
 # Import the library to test
-from freqprob.smoothing import (
-    BayesianSmoothing,
-    InterpolatedSmoothing,
+from freqprob import (
+    Bayesian,
+    Interpolated,
     KneserNey,
     ModifiedKneserNey,
 )
@@ -120,7 +120,7 @@ def test_interpolated_smoothing_basic() -> None:
     high_order = {"trigram_1": 3, "trigram_2": 2, "trigram_3": 1}
     low_order = {"bigram_1": 5, "bigram_2": 3, "trigram_1": 1}  # Some overlap
 
-    interp = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.7, logprob=False)  # type: ignore[arg-type]
+    interp = Interpolated(high_order, low_order, lambda_weight=0.7, logprob=False)  # type: ignore[arg-type]
 
     # Test element that appears in both distributions
     prob_common = interp("trigram_1")
@@ -145,10 +145,10 @@ def test_interpolated_smoothing_weights() -> None:
     low_order = {"common": 1}
 
     # Test with high weight on high-order model
-    interp_high = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.9, logprob=False)  # type: ignore[arg-type]
+    interp_high = Interpolated(high_order, low_order, lambda_weight=0.9, logprob=False)  # type: ignore[arg-type]
 
     # Test with high weight on low-order model
-    interp_low = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.1, logprob=False)  # type: ignore[arg-type]
+    interp_low = Interpolated(high_order, low_order, lambda_weight=0.1, logprob=False)  # type: ignore[arg-type]
 
     # Both should give same result for this balanced case
     prob_high = interp_high("common")
@@ -163,10 +163,10 @@ def test_interpolated_smoothing_validation() -> None:
     low_order = {"b": 1}
 
     with pytest.raises(ValueError, match=r"Lambda.*between.*0.*1"):
-        InterpolatedSmoothing(high_order, low_order, lambda_weight=-0.1)  # type: ignore[arg-type]
+        Interpolated(high_order, low_order, lambda_weight=-0.1)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match=r"Lambda.*between.*0.*1"):
-        InterpolatedSmoothing(high_order, low_order, lambda_weight=1.1)  # type: ignore[arg-type]
+        Interpolated(high_order, low_order, lambda_weight=1.1)  # type: ignore[arg-type]
 
 
 def test_interpolated_ngram_trigram_bigram() -> None:
@@ -182,7 +182,7 @@ def test_interpolated_ngram_trigram_bigram() -> None:
         ("small", "cat"): 2,
     }
 
-    interp = InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.7, logprob=False)  # type: ignore[arg-type]
+    interp = Interpolated(trigrams, bigrams, lambda_weight=0.7, logprob=False)  # type: ignore[arg-type]
 
     # Test observed trigram with observed bigram context
     prob_observed = interp(("the", "big", "cat"))
@@ -214,7 +214,7 @@ def test_interpolated_ngram_4gram_trigram() -> None:
         ("big", "red", "dog"): 2,
     }
 
-    interp = InterpolatedSmoothing(fourgrams, trigrams, lambda_weight=0.6, logprob=False)  # type: ignore[arg-type]
+    interp = Interpolated(fourgrams, trigrams, lambda_weight=0.6, logprob=False)  # type: ignore[arg-type]
 
     prob = interp(("the", "big", "red", "cat"))
     assert prob > 0
@@ -228,7 +228,7 @@ def test_interpolated_same_type_backward_compat() -> None:
     high_order = {"word1": 3, "word2": 2}
     low_order = {"word1": 1, "word3": 4}
 
-    interp = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.7, logprob=False)  # type: ignore[arg-type]
+    interp = Interpolated(high_order, low_order, lambda_weight=0.7, logprob=False)  # type: ignore[arg-type]
 
     # word1 appears in both
     prob_word1 = interp("word1")
@@ -242,7 +242,7 @@ def test_interpolated_same_length_tuples() -> None:
     high_order = {("a", "b"): 3, ("c", "d"): 2}
     low_order = {("a", "b"): 1, ("e", "f"): 4}
 
-    interp = InterpolatedSmoothing(high_order, low_order, lambda_weight=0.5, logprob=False)  # type: ignore[arg-type]
+    interp = Interpolated(high_order, low_order, lambda_weight=0.5, logprob=False)  # type: ignore[arg-type]
 
     prob = interp(("a", "b"))
     assert prob > 0
@@ -257,7 +257,7 @@ def test_interpolated_ngram_order_validation() -> None:
 
     # Should raise: high-order (2) must be > low-order (3)
     with pytest.raises(ValueError, match=r"must be greater than"):
-        InterpolatedSmoothing(bigrams, trigrams, lambda_weight=0.7)  # type: ignore[arg-type]
+        Interpolated(bigrams, trigrams, lambda_weight=0.7)  # type: ignore[arg-type]
 
 
 def test_interpolated_inconsistent_lengths() -> None:
@@ -266,7 +266,7 @@ def test_interpolated_inconsistent_lengths() -> None:
     other = {("x", "y"): 1}
 
     with pytest.raises(ValueError, match=r"Inconsistent tuple lengths"):
-        InterpolatedSmoothing(mixed, other, lambda_weight=0.7)  # type: ignore[arg-type]
+        Interpolated(mixed, other, lambda_weight=0.7)  # type: ignore[arg-type]
 
 
 def test_interpolated_ngram_lambda_effect() -> None:
@@ -275,12 +275,12 @@ def test_interpolated_ngram_lambda_effect() -> None:
     bigrams = {("b", "c"): 6}
 
     # High lambda: favor trigrams
-    interp_high = InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.9, logprob=False)  # type: ignore[arg-type]
+    interp_high = Interpolated(trigrams, bigrams, lambda_weight=0.9, logprob=False)  # type: ignore[arg-type]
     prob_high = interp_high(("a", "b", "c"))
     # Should be: 0.9 * (4/4) + 0.1 * (6/6) = 0.9 + 0.1 = 1.0
 
     # Low lambda: favor bigrams
-    interp_low = InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.1, logprob=False)  # type: ignore[arg-type]
+    interp_low = Interpolated(trigrams, bigrams, lambda_weight=0.1, logprob=False)  # type: ignore[arg-type]
     prob_low = interp_low(("a", "b", "c"))
     # Should be: 0.1 * (4/4) + 0.9 * (6/6) = 0.1 + 0.9 = 1.0
 
@@ -291,7 +291,7 @@ def test_interpolated_ngram_lambda_effect() -> None:
 
 def test_bayesian_smoothing_basic() -> None:
     """Test basic Bayesian smoothing functionality."""
-    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]
+    bayes = Bayesian(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]
 
     # Test observed elements
     prob_apple = bayes("apple")  # (6+1)/(10+3*1) = 7/13
@@ -307,10 +307,10 @@ def test_bayesian_smoothing_basic() -> None:
 def test_bayesian_smoothing_alpha_effects() -> None:
     """Test that different alpha values affect smoothing strength."""
     # Minimal smoothing
-    bayes_min = BayesianSmoothing(SIMPLE_DATA, alpha=0.1, logprob=False)  # type: ignore[arg-type]
+    bayes_min = Bayesian(SIMPLE_DATA, alpha=0.1, logprob=False)  # type: ignore[arg-type]
 
     # Strong smoothing
-    bayes_strong = BayesianSmoothing(SIMPLE_DATA, alpha=5.0, logprob=False)  # type: ignore[arg-type]
+    bayes_strong = Bayesian(SIMPLE_DATA, alpha=5.0, logprob=False)  # type: ignore[arg-type]
 
     prob_common_min = bayes_min("apple")
     prob_unseen_min = bayes_min("unseen")
@@ -326,7 +326,7 @@ def test_bayesian_smoothing_alpha_effects() -> None:
 
 def test_bayesian_smoothing_logprob() -> None:
     """Test Bayesian smoothing with log-probabilities."""
-    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=True)  # type: ignore[arg-type]
+    bayes = Bayesian(SIMPLE_DATA, alpha=1.0, logprob=True)  # type: ignore[arg-type]
 
     log_prob = bayes("apple")
     assert log_prob < 0
@@ -339,18 +339,18 @@ def test_bayesian_smoothing_logprob() -> None:
 def test_bayesian_smoothing_validation() -> None:
     """Test that Bayesian smoothing validates alpha parameter."""
     with pytest.raises(ValueError, match=r"Alpha.*positive"):
-        BayesianSmoothing(SIMPLE_DATA, alpha=0.0)  # type: ignore[arg-type]
+        Bayesian(SIMPLE_DATA, alpha=0.0)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match=r"Alpha.*positive"):
-        BayesianSmoothing(SIMPLE_DATA, alpha=-1.0)  # type: ignore[arg-type]
+        Bayesian(SIMPLE_DATA, alpha=-1.0)  # type: ignore[arg-type]
 
 
 def test_all_methods_string_representation() -> None:
     """Test that all methods have proper string representation."""
     kn = KneserNey(BIGRAM_DATA)  # type: ignore[arg-type]
     mkn = ModifiedKneserNey(BIGRAM_DATA)  # type: ignore[arg-type]
-    interp = InterpolatedSmoothing({"a": 1}, {"b": 1})
-    bayes = BayesianSmoothing(SIMPLE_DATA)  # type: ignore[arg-type]
+    interp = Interpolated({"a": 1}, {"b": 1})
+    bayes = Bayesian(SIMPLE_DATA)  # type: ignore[arg-type]
 
     assert "Kneser-Ney" in str(kn)
     assert "Modified Kneser-Ney" in str(mkn)
@@ -390,7 +390,7 @@ def test_consistency_with_traditional_methods() -> None:
     from freqprob import Laplace
 
     # For unigram data, Bayesian with alpha=1 should match Laplace
-    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]
+    bayes = Bayesian(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]
     laplace = Laplace(SIMPLE_DATA, logprob=False)  # type: ignore[arg-type]
 
     # Test observed elements
@@ -407,7 +407,7 @@ def test_consistency_with_traditional_methods() -> None:
 
 def test_probability_normalization() -> None:
     """Test that probabilities are reasonable (don't test exact normalization)."""
-    bayes = BayesianSmoothing(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]
+    bayes = Bayesian(SIMPLE_DATA, alpha=1.0, logprob=False)  # type: ignore[arg-type]
 
     # Test that all probabilities are positive and reasonable
     for element in SIMPLE_DATA:

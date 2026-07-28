@@ -1,7 +1,7 @@
 # FreqProb Makefile
 # POSIX-compatible development commands
 
-.PHONY: help quality format test test-cov test-fast bump-version build build-release clean install install-dev bench bench-all docs docs-clean
+.PHONY: help quality security format test test-cov test-fast bump-version build build-release clean install install-dev bench bench-all docs docs-clean site site-serve
 
 # Default target: show help
 .DEFAULT_GOAL := help
@@ -31,8 +31,13 @@ quality: ## Run code quality checks (ruff format --check, ruff check, mypy)
 	@echo "==> Running ruff linter..."
 	ruff check .
 	@echo "==> Running mypy type checker..."
-	mypy freqprob/ tests/ scripts/
+	mypy
 	@echo "✓ All quality checks passed!"
+
+security: ## Run bandit static security analysis
+	@echo "==> Running bandit security scan..."
+	bandit -c pyproject.toml -r src/freqprob/
+	@echo "✓ Security scan passed!"
 
 format: ## Auto-format code with ruff
 	@echo "==> Formatting code with ruff..."
@@ -55,7 +60,7 @@ test-fast: ## Run tests in parallel (faster)
 	@echo "✓ Tests passed!"
 
 bump-version: ## Bump version (TYPE=patch|minor|major), commit, and tag
-	@CURRENT=$$(grep -o "__version__ = \"[^\"]*\"" freqprob/__init__.py | cut -d'"' -f2); \
+	@CURRENT=$$(grep -o "__version__ = \"[^\"]*\"" src/freqprob/__init__.py | cut -d'"' -f2); \
 	echo "==> Current version: $$CURRENT"; \
 	IFS='.' read -r major minor patch <<< "$$CURRENT"; \
 	if [ "$(TYPE)" = "major" ]; then NEW="$$((major + 1)).0.0"; \
@@ -63,12 +68,12 @@ bump-version: ## Bump version (TYPE=patch|minor|major), commit, and tag
 	elif [ "$(TYPE)" = "patch" ]; then NEW="$$major.$$minor.$$((patch + 1))"; \
 	else echo "Error: TYPE must be patch, minor, or major"; exit 1; fi; \
 	echo "==> Bumping $(TYPE) version to $$NEW..."; \
-	sed -i "s/__version__ = \"$$CURRENT\"/__version__ = \"$$NEW\"/" freqprob/__init__.py; \
+	sed -i "s/__version__ = \"$$CURRENT\"/__version__ = \"$$NEW\"/" src/freqprob/__init__.py; \
 	echo ""; \
 	echo "⚠️  Please update CHANGELOG.md manually before committing!"; \
 	echo ""; \
 	read -p "Press Enter to commit and tag, or Ctrl+C to cancel..."; \
-	git add freqprob/__init__.py; \
+	git add src/freqprob/__init__.py; \
 	git commit -m "chore: bump version to $$NEW"; \
 	git tag -a "v$$NEW" -m "Release v$$NEW"; \
 	echo "✓ Version bumped to $$NEW and tagged!"; \
@@ -137,3 +142,12 @@ docs-clean: ## Remove generated HTML documentation
 	@echo "==> Cleaning generated documentation..."
 	rm -f docs/tutorial_*.html
 	@echo "✓ Documentation cleaned!"
+
+site: ## Build the MkDocs documentation site (strict) into site/
+	@echo "==> Building documentation site..."
+	mkdocs build --strict
+	@echo "✓ Site built in site/"
+
+site-serve: ## Serve the docs site locally with live reload
+	@echo "==> Serving docs at http://127.0.0.1:8000 ..."
+	mkdocs serve

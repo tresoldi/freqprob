@@ -75,9 +75,9 @@ MLE(freqdist: FrequencyDistribution,
 
 **Example:**
 ```python
-freqdist = {'cat': 3, 'dog': 2, 'bird': 1}
+freqdist = {"cat": 3, "dog": 2, "bird": 1}
 mle = freqprob.MLE(freqdist, logprob=False)
-print(mle('cat'))  # 0.5 (3/6)
+print(mle("cat"))  # 0.5 (3/6)
 ```
 
 **Mathematical Formula:**
@@ -107,10 +107,10 @@ Laplace(freqdist: FrequencyDistribution,
 
 **Example:**
 ```python
-freqdist = {'cat': 3, 'dog': 2, 'bird': 1}
+freqdist = {"cat": 3, "dog": 2, "bird": 1}
 laplace = freqprob.Laplace(freqdist, bins=1000, logprob=False)
-print(laplace('cat'))    # (3+1)/(6+1000) ≈ 0.004
-print(laplace('mouse'))  # (0+1)/(6+1000) ≈ 0.001
+print(laplace("cat"))  # (3+1)/(6+1000) ≈ 0.004
+print(laplace("mouse"))  # (0+1)/(6+1000) ≈ 0.001
 ```
 
 **Mathematical Formula:**
@@ -142,9 +142,9 @@ Lidstone(freqdist: FrequencyDistribution,
 
 **Example:**
 ```python
-freqdist = {'cat': 3, 'dog': 2, 'bird': 1}
+freqdist = {"cat": 3, "dog": 2, "bird": 1}
 lidstone = freqprob.Lidstone(freqdist, gamma=0.5, bins=1000, logprob=False)
-print(lidstone('cat'))  # (3+0.5)/(6+500) ≈ 0.007
+print(lidstone("cat"))  # (3+0.5)/(6+500) ≈ 0.007
 ```
 
 **Mathematical Formula:**
@@ -174,9 +174,9 @@ ELE(freqdist: FrequencyDistribution,
 
 **Example:**
 ```python
-freqdist = {'cat': 3, 'dog': 2, 'bird': 1}
+freqdist = {"cat": 3, "dog": 2, "bird": 1}
 ele = freqprob.ELE(freqdist, bins=1000, logprob=False)
-print(ele('cat'))  # (3+0.5)/(6+500) ≈ 0.007
+print(ele("cat"))  # (3+0.5)/(6+500) ≈ 0.007
 ```
 
 **Mathematical Formula:**
@@ -272,19 +272,19 @@ SimpleGoodTuring(freqdist: FrequencyDistribution,
 
 **Example:**
 ```python
-freqdist = {'cat': 3, 'dog': 2, 'bird': 1, 'fish': 1}
+freqdist = {"cat": 3, "dog": 2, "bird": 1, "fish": 1}
 try:
     # Default behavior: bins = V + N₁
     sgt = freqprob.SimpleGoodTuring(freqdist, logprob=False)
-    print(sgt('cat'))       # Probability for observed word
-    print(sgt('unknown'))   # Per-word probability for unseen word
+    print(sgt("cat"))  # Probability for observed word
+    print(sgt("unknown"))  # Per-word probability for unseen word
 
     # Access total unseen mass
     print(sgt.total_unseen_mass)  # p₀ (total mass for ALL unseen)
 
     # Custom bins for larger vocabulary
     sgt_large = freqprob.SimpleGoodTuring(freqdist, bins=10000, logprob=False)
-    print(sgt_large('unknown'))  # Smaller per-word probability
+    print(sgt_large("unknown"))  # Smaller per-word probability
 
 except ValueError:
     print("SGT failed - frequency distribution unsuitable")
@@ -309,8 +309,8 @@ instead of the total unseen mass p₀. Use the `total_unseen_mass` property to a
 
 # v0.4.0+ behavior (returns per-word probability):
 sgt = SimpleGoodTuring(freqdist)
-sgt('unseen')            # ≈ 0.00012 (per-word probability)
-sgt.total_unseen_mass    # ≈ 0.07 (same p₀ as before)
+sgt("unseen")  # ≈ 0.00012 (per-word probability)
+sgt.total_unseen_mass  # ≈ 0.07 (same p₀ as before)
 ```
 
 ---
@@ -338,12 +338,9 @@ KneserNey(freqdist: FrequencyDistribution,
 **Example:**
 ```python
 # Bigram counts: context -> word
-bigrams = {
-    ('the', 'cat'): 5, ('the', 'dog'): 3,
-    ('a', 'cat'): 2, ('a', 'dog'): 1
-}
+bigrams = {("the", "cat"): 5, ("the", "dog"): 3, ("a", "cat"): 2, ("a", "dog"): 1}
 kn = freqprob.KneserNey(bigrams, discount=0.75, logprob=False)
-print(kn(('the', 'cat')))
+print(kn(("the", "cat")))
 ```
 
 **Mathematical Formula:**
@@ -371,9 +368,9 @@ ModifiedKneserNey(freqdist: FrequencyDistribution,
 
 **Example:**
 ```python
-bigrams = {('the', 'cat'): 5, ('the', 'dog'): 3, ('a', 'cat'): 2}
+bigrams = {("the", "cat"): 5, ("the", "dog"): 3, ("a", "cat"): 2}
 mkn = freqprob.ModifiedKneserNey(bigrams, logprob=False)
-print(mkn(('the', 'cat')))
+print(mkn(("the", "cat")))
 ```
 
 **Features:**
@@ -383,17 +380,17 @@ print(mkn(('the', 'cat')))
 
 ---
 
-### InterpolatedSmoothing
+### Interpolated
 
 Linear interpolation between two models with automatic n-gram mode detection.
 
 ```python
-class InterpolatedSmoothing(ScoringMethod)
+class Interpolated(ScoringMethod)
 ```
 
 **Constructor:**
 ```python
-InterpolatedSmoothing(high_order_dist: FrequencyDistribution,
+Interpolated(high_order_dist: FrequencyDistribution,
                       low_order_dist: FrequencyDistribution,
                       lambda_weight: float = 0.7,
                       logprob: bool = True)
@@ -423,18 +420,18 @@ The method automatically detects the interpolation mode:
 
 N-gram interpolation (trigrams + bigrams):
 ```python
-trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
-bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3, ('small', 'cat'): 2}
-interp = freqprob.InterpolatedSmoothing(trigrams, bigrams, lambda_weight=0.7, logprob=False)
-print(interp(('the', 'big', 'cat')))  # 0.57 = 0.7 * (3/5) + 0.3 * (5/10)
-print(interp(('unseen', 'big', 'cat')))  # 0.15 = 0.7 * 0 + 0.3 * (5/10)
+trigrams = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
+bigrams = {("big", "cat"): 5, ("big", "dog"): 3, ("small", "cat"): 2}
+interp = freqprob.Interpolated(trigrams, bigrams, lambda_weight=0.7, logprob=False)
+print(interp(("the", "big", "cat")))  # 0.57 = 0.7 * (3/5) + 0.3 * (5/10)
+print(interp(("unseen", "big", "cat")))  # 0.15 = 0.7 * 0 + 0.3 * (5/10)
 ```
 
 Same-type interpolation (strings):
 ```python
-high_freq = {'cat': 10, 'dog': 5}
-low_freq = {'cat': 3, 'dog': 2, 'bird': 1}
-interp = freqprob.InterpolatedSmoothing(high_freq, low_freq, lambda_weight=0.8, logprob=False)
+high_freq = {"cat": 10, "dog": 5}
+low_freq = {"cat": 3, "dog": 2, "bird": 1}
+interp = freqprob.Interpolated(high_freq, low_freq, lambda_weight=0.8, logprob=False)
 ```
 
 **Mathematical Formulas:**
@@ -452,17 +449,17 @@ $$P_{interp}(w) = \lambda P_{high}(w) + (1-\lambda) P_{low}(w)$$
 
 ---
 
-### BayesianSmoothing
+### Bayesian
 
 Bayesian smoothing with Dirichlet prior.
 
 ```python
-class BayesianSmoothing(ScoringMethod)
+class Bayesian(ScoringMethod)
 ```
 
 **Constructor:**
 ```python
-BayesianSmoothing(freqdist: FrequencyDistribution,
+Bayesian(freqdist: FrequencyDistribution,
                   alpha: float = 1.0,
                   logprob: bool = True)
 ```
@@ -474,9 +471,9 @@ BayesianSmoothing(freqdist: FrequencyDistribution,
 
 **Example:**
 ```python
-freqdist = {'cat': 3, 'dog': 2, 'bird': 1}
-bayesian = freqprob.BayesianSmoothing(freqdist, alpha=0.5, logprob=False)
-print(bayesian('cat'))
+freqdist = {"cat": 3, "dog": 2, "bird": 1}
+bayesian = freqprob.Bayesian(freqdist, alpha=0.5, logprob=False)
+print(bayesian("cat"))
 ```
 
 **Mathematical Formula:**
@@ -559,7 +556,7 @@ def perplexity(model: ScoringMethod,
 **Example:**
 ```python
 model = freqprob.KneserNey(bigrams, logprob=True)
-test_words = ['the', 'cat', 'sat', 'on', 'mat']
+test_words = ["the", "cat", "sat", "on", "mat"]
 pp = freqprob.perplexity(model, test_words)
 print(f"Perplexity: {pp:.2f}")
 ```
@@ -632,8 +629,8 @@ def model_comparison(models: Dict[str, ScoringMethod],
 **Example:**
 ```python
 models = {
-    'mle': freqprob.MLE(freqdist, logprob=True),
-    'laplace': freqprob.Laplace(freqdist, logprob=True)
+    "mle": freqprob.MLE(freqdist, logprob=True),
+    "laplace": freqprob.Laplace(freqdist, logprob=True),
 }
 results = freqprob.model_comparison(models, test_data)
 for name, metrics in results.items():
@@ -661,7 +658,7 @@ def generate_ngrams(tokens: List[str], n: int) -> List[Tuple[str, ...]]
 
 **Example:**
 ```python
-tokens = ['the', 'cat', 'sat']
+tokens = ["the", "cat", "sat"]
 bigrams = freqprob.generate_ngrams(tokens, 2)
 # [('<s>', 'the'), ('the', 'cat'), ('cat', 'sat'), ('sat', '</s>')]
 ```
@@ -730,7 +727,7 @@ def score_batch(self, elements: List[Element]) -> np.ndarray
 ```python
 mle = freqprob.MLE(freqdist, logprob=False)
 vectorized = freqprob.VectorizedScorer(mle)
-elements = ['cat', 'dog', 'bird']
+elements = ["cat", "dog", "bird"]
 scores = vectorized.score_batch(elements)
 # Returns numpy array of scores
 ```
@@ -786,12 +783,9 @@ def score_batch(self, elements: List[Element]) -> Dict[str, np.ndarray]
 
 **Example:**
 ```python
-scorers = {
-    'mle': freqprob.MLE(freqdist),
-    'laplace': freqprob.Laplace(freqdist)
-}
+scorers = {"mle": freqprob.MLE(freqdist), "laplace": freqprob.Laplace(freqdist)}
 batch_scorer = freqprob.BatchScorer(scorers)
-results = batch_scorer.score_batch(['cat', 'dog'])
+results = batch_scorer.score_batch(["cat", "dog"])
 # Returns: {'mle': array([...]), 'laplace': array([...])}
 ```
 
@@ -822,8 +816,8 @@ def create_lazy_laplace(freqdist: FrequencyDistribution,
 ```python
 lazy_mle = freqprob.create_lazy_mle(huge_freqdist)
 # Only computes probabilities when accessed
-prob = lazy_mle('word')  # Computed on first access
-prob = lazy_mle('word')  # Cached on subsequent access
+prob = lazy_mle("word")  # Computed on first access
+prob = lazy_mle("word")  # Cached on subsequent access
 ```
 
 ### LazyScoringMethod
@@ -893,11 +887,8 @@ def create_compressed_distribution(
 
 **Example:**
 ```python
-large_freqdist = {f'word_{i}': max(1, 1000-i) for i in range(10000)}
-compressed = freqprob.create_compressed_distribution(
-    large_freqdist,
-    quantization_levels=1024
-)
+large_freqdist = {f"word_{i}": max(1, 1000 - i) for i in range(10000)}
+compressed = freqprob.create_compressed_distribution(large_freqdist, quantization_levels=1024)
 print(compressed.get_memory_usage())
 ```
 
@@ -1068,9 +1059,9 @@ def load_state(cls, filepath: str) -> 'StreamingMLE'
 **Example:**
 ```python
 streaming_mle = freqprob.StreamingMLE(max_vocabulary_size=10000, logprob=False)
-streaming_mle.update_single('word1', 5)
-streaming_mle.update_batch(['word2', 'word3'])
-prob = streaming_mle('word1')
+streaming_mle.update_single("word1", 5)
+streaming_mle.update_batch(["word2", "word3"])
+prob = streaming_mle("word1")
 ```
 
 ---
@@ -1165,8 +1156,7 @@ class IncrementalScoringMethod(ABC):
     def update_single(self, element: Element, count: int = 1) -> None: ...
 
     @abstractmethod
-    def update_batch(self, elements: List[Element],
-                     counts: Optional[List[int]] = None) -> None: ...
+    def update_batch(self, elements: List[Element], counts: Optional[List[int]] = None) -> None: ...
 
     @abstractmethod
     def get_update_count(self) -> int: ...
@@ -1212,7 +1202,7 @@ except RuntimeError:
 import freqprob
 
 # Create frequency distribution
-freqdist = {'the': 100, 'cat': 50, 'dog': 30, 'bird': 10}
+freqdist = {"the": 100, "cat": 50, "dog": 30, "bird": 10}
 
 # Basic smoothing
 mle = freqprob.MLE(freqdist, logprob=False)
@@ -1227,17 +1217,17 @@ print(f"Laplace P(unseen) = {laplace('elephant'):.6f}")
 
 ```python
 # N-gram language modeling
-bigrams = {('the', 'cat'): 5, ('the', 'dog'): 3, ('a', 'cat'): 2}
+bigrams = {("the", "cat"): 5, ("the", "dog"): 3, ("a", "cat"): 2}
 kn = freqprob.KneserNey(bigrams, discount=0.75, logprob=True)
 
 # Model evaluation
-test_bigrams = [('the', 'cat'), ('a', 'dog')]
+test_bigrams = [("the", "cat"), ("a", "dog")]
 pp = freqprob.perplexity(kn, test_bigrams)
 print(f"Perplexity: {pp:.2f}")
 
 # Efficiency features
 vectorized = freqprob.VectorizedScorer(laplace)
-batch_scores = vectorized.score_batch(['cat', 'dog', 'bird'])
+batch_scores = vectorized.score_batch(["cat", "dog", "bird"])
 ```
 
 ### Streaming Usage
@@ -1253,7 +1243,7 @@ for word in data_stream:
         print(f"Processed {streaming.get_update_count()} updates")
 
 # Get current probability
-current_prob = streaming('word')
+current_prob = streaming("word")
 ```
 
 This API reference provides comprehensive documentation for all FreqProb functionality. For additional examples and tutorials, see the user guide and Jupyter notebooks.

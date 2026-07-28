@@ -18,11 +18,11 @@ from freqprob import (
     create_compressed_distribution,
     create_sparse_distribution,
 )
-from freqprob.profiling import HAS_PSUTIL, get_object_memory_usage, profile_memory_usage
+from freqprob.performance.profiling import HAS_PSUTIL, get_object_memory_usage, profile_memory_usage
 
 if TYPE_CHECKING:
     from freqprob.base import Element
-    from freqprob.streaming import IncrementalScoringMethod
+    from freqprob.performance.streaming import IncrementalScoringMethod
 
 # mypy: disable-error-code=arg-type
 
