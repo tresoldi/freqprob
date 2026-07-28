@@ -23,7 +23,7 @@ counts = {"the": 100, "cat": 50, "dog": 30, "bird": 10}
 # Add-one (Laplace) smoothing over a vocabulary of 10,000 possible elements
 laplace = freqprob.Laplace(counts, bins=10_000, logprob=False)
 
-laplace("cat")       # 0.0050  — an observed element
+laplace("cat")  # 0.0050  — an observed element
 laplace("elephant")  # 0.0001  — an unseen element still gets non-zero mass
 ```
 

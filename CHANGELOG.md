@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bumped pinned dev tooling in lockstep across `pyproject.toml` and
+  `.pre-commit-config.yaml`: **ruff** `0.15.8` → `0.16.0` and **mypy**
+  `1.19.1` → `2.3.0`. Applied ruff 0.16.0's updated formatting (Markdown
+  embedded code blocks). No source-code or public API changes.
+
 ## [0.6.1] - 2026-07-28
 
 Maintenance release: test-coverage and CI hardening only. No library code or
@@ -203,18 +210,18 @@ For users upgrading from v0.3.x:
 ```python
 # v0.3.x code:
 sgt = SimpleGoodTuring(freqdist)
-p_total_unseen = sgt('unseen_word')  # Returned p₀ ≈ 0.07
+p_total_unseen = sgt("unseen_word")  # Returned p₀ ≈ 0.07
 
 # v0.4.0 equivalent:
 sgt = SimpleGoodTuring(freqdist)
-p_per_word = sgt('unseen_word')      # Returns per-word prob ≈ 0.00012
+p_per_word = sgt("unseen_word")  # Returns per-word prob ≈ 0.00012
 p_total_unseen = sgt.total_unseen_mass  # Access p₀ ≈ 0.07
 
 # If you need the old behavior (not recommended):
 # The old behavior was mathematically inconsistent. If you truly need it,
 # multiply per-word probability by estimated unseen types:
-estimated_unseen = int(sgt.total_unseen_mass / sgt('unseen_word'))
-p_approx_old = sgt('unseen_word') * estimated_unseen
+estimated_unseen = int(sgt.total_unseen_mass / sgt("unseen_word"))
+p_approx_old = sgt("unseen_word") * estimated_unseen
 ```
 
 **Why this change?**

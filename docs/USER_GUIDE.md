@@ -40,7 +40,7 @@ pip install freqprob
 import freqprob
 
 # Create a frequency distribution
-freqdist = {'the': 1000, 'cat': 50, 'dog': 30, 'bird': 10}
+freqdist = {"the": 1000, "cat": 50, "dog": 30, "bird": 10}
 
 # Basic Maximum Likelihood Estimation
 mle = freqprob.MLE(freqdist, logprob=False)
@@ -51,8 +51,8 @@ laplace = freqprob.Laplace(freqdist, logprob=False)
 print(f"P(unknown) = {laplace('unknown')}")  # Non-zero probability
 
 # Model Comparison
-models = {'mle': mle, 'laplace': laplace}
-test_data = ['the', 'cat', 'unknown']
+models = {"mle": mle, "laplace": laplace}
+test_data = ["the", "cat", "unknown"]
 comparison = freqprob.model_comparison(models, test_data)
 print(comparison)
 ```
@@ -104,7 +104,7 @@ $$P_{MLE}(w) = \frac{c(w)}{N}$$
 **Implementation:**
 ```python
 mle = freqprob.MLE(freqdist, logprob=False)
-prob = mle('word')
+prob = mle("word")
 ```
 
 ### Uniform Distribution
@@ -231,8 +231,8 @@ where `bins` is the estimated total vocabulary size (default: $V + N_1$).
 ```python
 # Basic usage with automatic bins estimation
 sgt = freqprob.SimpleGoodTuring(freqdist, logprob=False)
-print(sgt('word'))              # Per-word probability
-print(sgt.total_unseen_mass)    # Access p₀
+print(sgt("word"))  # Per-word probability
+print(sgt.total_unseen_mass)  # Access p₀
 
 # Custom vocabulary size
 sgt_large = freqprob.SimpleGoodTuring(freqdist, bins=10000, logprob=False)
@@ -290,11 +290,15 @@ where:
 ```python
 # Input should be bigrams: {(context, word): count}
 bigram_counts = {
-    ('the', 'cat'): 5, ('the', 'dog'): 3, ('a', 'cat'): 2,
-    ('a', 'dog'): 1, ('big', 'cat'): 1, ('small', 'dog'): 1
+    ("the", "cat"): 5,
+    ("the", "dog"): 3,
+    ("a", "cat"): 2,
+    ("a", "dog"): 1,
+    ("big", "cat"): 1,
+    ("small", "dog"): 1,
 }
 kn = freqprob.KneserNey(bigram_counts, discount=0.75, logprob=False)
-prob = kn(('the', 'cat'))
+prob = kn(("the", "cat"))
 ```
 
 ### Modified Kneser-Ney Smoothing
@@ -353,25 +357,21 @@ $$P_{interp}(w) = \lambda P_{high}(w) + (1-\lambda) P_{low}(w)$$
 **Implementation:**
 ```python
 # N-gram interpolation (automatic mode detection)
-trigrams = {('the', 'big', 'cat'): 3, ('a', 'big', 'dog'): 2}
-bigrams = {('big', 'cat'): 5, ('big', 'dog'): 3, ('small', 'cat'): 2}
+trigrams = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
+bigrams = {("big", "cat"): 5, ("big", "dog"): 3, ("small", "cat"): 2}
 
-interpolated = freqprob.Interpolated(
-    trigrams, bigrams, lambda_weight=0.7, logprob=False
-)
+interpolated = freqprob.Interpolated(trigrams, bigrams, lambda_weight=0.7, logprob=False)
 
 # Observed trigram: 0.7 * (3/5) + 0.3 * (5/10) = 0.57
-print(interpolated(('the', 'big', 'cat')))
+print(interpolated(("the", "big", "cat")))
 
 # Unseen trigram with observed context: 0.7 * 0 + 0.3 * (5/10) = 0.15
-print(interpolated(('unseen', 'big', 'cat')))
+print(interpolated(("unseen", "big", "cat")))
 
 # Same-type interpolation (strings)
-high_freq = {'cat': 10, 'dog': 5}
-low_freq = {'cat': 3, 'dog': 2, 'bird': 1}
-interp_str = freqprob.Interpolated(
-    high_freq, low_freq, lambda_weight=0.8, logprob=False
-)
+high_freq = {"cat": 10, "dog": 5}
+low_freq = {"cat": 3, "dog": 2, "bird": 1}
+interp_str = freqprob.Interpolated(high_freq, low_freq, lambda_weight=0.8, logprob=False)
 ```
 
 **Properties:**
@@ -412,11 +412,11 @@ scorer = freqprob.MLE(large_freqdist, logprob=False)
 vectorized = VectorizedScorer(scorer)
 
 # Score batch of elements efficiently
-elements = ['word1', 'word2', 'word3', ...]
+elements = ["word1", "word2", "word3", ...]
 scores = vectorized.score_batch(elements)  # Returns numpy array
 
 # Matrix operations
-elements_2d = [['word1', 'word2'], ['word3', 'word4']]
+elements_2d = [["word1", "word2"], ["word3", "word4"]]
 score_matrix = vectorized.score_matrix(elements_2d)
 
 # Top-k most probable elements
@@ -428,9 +428,9 @@ top_elements, top_scores = vectorized.top_k_elements(10)
 from freqprob import BatchScorer
 
 scorers = {
-    'mle': freqprob.MLE(freqdist),
-    'laplace': freqprob.Laplace(freqdist),
-    'kneser_ney': freqprob.KneserNey(bigram_freqdist)
+    "mle": freqprob.MLE(freqdist),
+    "laplace": freqprob.Laplace(freqdist),
+    "kneser_ney": freqprob.KneserNey(bigram_freqdist),
 }
 
 batch_scorer = BatchScorer(scorers)
@@ -466,10 +466,10 @@ from freqprob import create_lazy_mle
 lazy_scorer = create_lazy_mle(huge_freqdist, logprob=False)
 
 # First access triggers computation
-prob1 = lazy_scorer('frequent_word')  # Computed
+prob1 = lazy_scorer("frequent_word")  # Computed
 
 # Subsequent accesses use cached value
-prob2 = lazy_scorer('frequent_word')  # Cached
+prob2 = lazy_scorer("frequent_word")  # Cached
 
 # Check what's been computed
 computed = lazy_scorer.get_computed_elements()
@@ -490,7 +490,7 @@ from freqprob import StreamingFrequencyDistribution
 stream_dist = StreamingFrequencyDistribution(
     max_vocabulary_size=10000,
     min_count_threshold=2,
-    decay_factor=0.99  # Exponential forgetting
+    decay_factor=0.99,  # Exponential forgetting
 )
 
 # Process streaming data
@@ -509,15 +509,15 @@ from freqprob import StreamingMLE
 streaming_mle = StreamingMLE(max_vocabulary_size=10000, logprob=False)
 
 # Update with new observations
-streaming_mle.update_single('word', 5)
-streaming_mle.update_batch(['word1', 'word2', 'word1'])
+streaming_mle.update_single("word", 5)
+streaming_mle.update_batch(["word1", "word2", "word1"])
 
 # Get current probabilities
-prob = streaming_mle('word')
+prob = streaming_mle("word")
 
 # Save/load state
-streaming_mle.save_state('model.pkl')
-loaded_model = StreamingMLE.load_state('model.pkl')
+streaming_mle.save_state("model.pkl")
+loaded_model = StreamingMLE.load_state("model.pkl")
 ```
 
 ### Memory-Efficient Representations
@@ -529,13 +529,13 @@ For large vocabularies, use compressed representations to reduce memory usage.
 from freqprob import create_compressed_distribution
 
 # 50-90% memory savings
-large_freqdist = {f'word_{i}': max(1, 10000-i) for i in range(100000)}
+large_freqdist = {f"word_{i}": max(1, 10000 - i) for i in range(100000)}
 
 # With quantization for additional compression
 compressed = create_compressed_distribution(
     large_freqdist,
     quantization_levels=1024,  # Trade-off: memory vs precision
-    use_compression=True
+    use_compression=True,
 )
 
 # Check memory usage
@@ -548,7 +548,7 @@ print(f"Total memory: {memory_info['total'] / 1024 / 1024:.2f} MB")
 from freqprob import create_sparse_distribution
 
 # Optimized for distributions with many zeros
-sparse_freqdist = {'rare_word': 1, 'common_word': 10000}
+sparse_freqdist = {"rare_word": 1, "common_word": 10000}
 sparse = create_sparse_distribution(sparse_freqdist)
 
 # Efficient queries
@@ -585,7 +585,7 @@ FreqProb provides standard evaluation metrics for comparing different smoothing 
 from freqprob import perplexity
 
 model = freqprob.KneserNey(train_bigrams, logprob=True)
-test_data = [('the', 'cat'), ('a', 'dog'), ('big', 'house')]
+test_data = [("the", "cat"), ("a", "dog"), ("big", "house")]
 
 pp = perplexity(model, test_data)
 print(f"Perplexity: {pp:.2f}")  # Lower is better
@@ -604,15 +604,14 @@ print(f"Cross-entropy: {ce:.2f} bits")  # Lower is better
 from freqprob import model_comparison
 
 models = {
-    'mle': freqprob.MLE(train_data, logprob=True),
-    'laplace': freqprob.Laplace(train_data, logprob=True),
-    'kneser_ney': freqprob.KneserNey(train_bigrams, logprob=True)
+    "mle": freqprob.MLE(train_data, logprob=True),
+    "laplace": freqprob.Laplace(train_data, logprob=True),
+    "kneser_ney": freqprob.KneserNey(train_bigrams, logprob=True),
 }
 
 comparison = model_comparison(models, test_data)
 for model_name, metrics in comparison.items():
-    print(f"{model_name}: PP={metrics['perplexity']:.2f}, "
-          f"CE={metrics['cross_entropy']:.2f}")
+    print(f"{model_name}: PP={metrics['perplexity']:.2f}, CE={metrics['cross_entropy']:.2f}")
 ```
 
 **KL Divergence:**
@@ -633,12 +632,13 @@ def evaluate_smoothing_method(method_class, train_data, test_data, **kwargs):
     model = method_class(train_data, logprob=True, **kwargs)
 
     metrics = {
-        'perplexity': perplexity(model, test_data),
-        'cross_entropy': cross_entropy(model, test_data),
-        'coverage': sum(1 for item in test_data if model(item) > -20) / len(test_data)
+        "perplexity": perplexity(model, test_data),
+        "cross_entropy": cross_entropy(model, test_data),
+        "coverage": sum(1 for item in test_data if model(item) > -20) / len(test_data),
     }
 
     return metrics
+
 
 # Compare different gamma values for Lidstone
 gammas = [0.01, 0.1, 0.5, 1.0, 2.0]
@@ -650,7 +650,7 @@ for gamma in gammas:
     )
 
 # Find best gamma
-best_gamma = min(results.keys(), key=lambda g: results[g]['perplexity'])
+best_gamma = min(results.keys(), key=lambda g: results[g]["perplexity"])
 print(f"Best gamma: {best_gamma} (PP: {results[best_gamma]['perplexity']:.2f})")
 ```
 
@@ -680,12 +680,13 @@ print(f"Best gamma: {best_gamma} (PP: {results[best_gamma]['perplexity']:.2f})")
 from sklearn.model_selection import ParameterGrid
 import numpy as np
 
+
 def tune_lidstone_gamma(train_data, val_data):
     """Find optimal gamma for Lidstone smoothing."""
-    param_grid = {'gamma': np.logspace(-3, 1, 20)}  # 0.001 to 10
+    param_grid = {"gamma": np.logspace(-3, 1, 20)}  # 0.001 to 10
 
     best_gamma = None
-    best_perplexity = float('inf')
+    best_perplexity = float("inf")
 
     for params in ParameterGrid(param_grid):
         model = freqprob.Lidstone(train_data, logprob=True, **params)
@@ -693,9 +694,10 @@ def tune_lidstone_gamma(train_data, val_data):
 
         if pp < best_perplexity:
             best_perplexity = pp
-            best_gamma = params['gamma']
+            best_gamma = params["gamma"]
 
     return best_gamma, best_perplexity
+
 
 gamma, pp = tune_lidstone_gamma(train_freqdist, val_data)
 print(f"Optimal gamma: {gamma:.4f} (Perplexity: {pp:.2f})")
@@ -709,11 +711,12 @@ print(f"Optimal gamma: {gamma:.4f} (Perplexity: {pp:.2f})")
 compressed_dist = create_compressed_distribution(
     large_freqdist,
     quantization_levels=2048,  # Balance memory vs accuracy
-    use_compression=True
+    use_compression=True,
 )
 
 # Monitor memory usage
 from freqprob import MemoryProfiler
+
 profiler = MemoryProfiler()
 
 with profiler.profile_operation("model_training"):
@@ -727,13 +730,13 @@ print(f"Memory usage: {profiler.get_latest_metrics().memory_delta_mb:.2f} MB")
 # Configure streaming with appropriate limits
 streaming_model = freqprob.StreamingMLE(
     max_vocabulary_size=50000,  # Limit vocabulary
-    logprob=True
+    logprob=True,
 )
 
 # Process data in batches for efficiency
 batch_size = 1000
 for i in range(0, len(data_stream), batch_size):
-    batch = data_stream[i:i+batch_size]
+    batch = data_stream[i : i + batch_size]
     streaming_model.update_batch(batch)
 ```
 
@@ -755,7 +758,7 @@ scores = vectorized.score_batch(large_list)  # Fast
 lazy_model = create_lazy_mle(huge_freqdist)
 
 # Only compute what you need
-important_words = ['the', 'of', 'and', 'to', 'a']
+important_words = ["the", "of", "and", "to", "a"]
 important_probs = [lazy_model(word) for word in important_words]
 
 # Check computation efficiency
@@ -778,7 +781,7 @@ def build_ngram_model(text_corpus, n=3):
     for sentence in text_corpus:
         tokens = sentence.split()
         # Add sentence boundaries
-        padded = ['<s>'] * (n-1) + tokens + ['</s>']
+        padded = ["<s>"] * (n - 1) + tokens + ["</s>"]
         ngrams.extend(generate_ngrams(padded, n))
 
     # Create frequency distribution
@@ -789,18 +792,21 @@ def build_ngram_model(text_corpus, n=3):
 
     return model
 
+
 # Usage
 corpus = ["the cat sat on the mat", "a dog ran in the park"]
 model = build_ngram_model(corpus, n=3)
 
+
 # Calculate sentence probability
 def sentence_probability(model, sentence, n=3):
     tokens = sentence.split()
-    padded = ['<s>'] * (n-1) + tokens + ['</s>']
+    padded = ["<s>"] * (n - 1) + tokens + ["</s>"]
     ngrams = generate_ngrams(padded, n)
 
     log_prob = sum(model(ngram) for ngram in ngrams)
     return math.exp(log_prob)
+
 
 prob = sentence_probability(model, "the cat ran")
 print(f"P(sentence) = {prob:.2e}")
@@ -837,12 +843,9 @@ def extract_smoothed_features(documents, smoothing_method=freqprob.Laplace):
 
     return features, sorted(vocab)
 
+
 # Usage
-docs = [
-    "the cat is happy",
-    "the dog is sad",
-    "cats and dogs are pets"
-]
+docs = ["the cat is happy", "the dog is sad", "cats and dogs are pets"]
 
 features, vocabulary = extract_smoothed_features(docs)
 print(f"Vocabulary size: {len(vocabulary)}")
@@ -865,11 +868,11 @@ def build_document_language_model(document, background_model, lambda_mix=0.8):
 
     # Interpolate with background model
     interpolated = Interpolated(
-        doc_freqdist, background_model._freqdist,
-        lambda_weight=lambda_mix, logprob=True
+        doc_freqdist, background_model._freqdist, lambda_weight=lambda_mix, logprob=True
     )
 
     return interpolated
+
 
 def score_query(query, doc_models):
     """Score a query against document models."""
@@ -883,11 +886,12 @@ def score_query(query, doc_models):
 
     return scores
 
+
 # Usage
 documents = [
     "machine learning algorithms for classification",
     "natural language processing with neural networks",
-    "computer vision and image recognition"
+    "computer vision and image recognition",
 ]
 
 # Build background model from all documents
@@ -908,7 +912,7 @@ scores = score_query(query, doc_models)
 # Rank documents
 ranked_docs = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)
 for rank, (doc_idx, score) in enumerate(ranked_docs, 1):
-    print(f"Rank {rank}: Document {doc_idx+1} (score: {score:.2f})")
+    print(f"Rank {rank}: Document {doc_idx + 1} (score: {score:.2f})")
 ```
 
 ### Real-time Text Processing
@@ -925,8 +929,7 @@ class StreamingTopicDetector:
         # Initialize streaming models for each topic
         for topic in topics:
             self.topic_models[topic] = freqprob.StreamingMLE(
-                max_vocabulary_size=max_vocab_size,
-                logprob=True
+                max_vocabulary_size=max_vocab_size, logprob=True
             )
 
     def update_topic(self, topic, text):
@@ -955,14 +958,15 @@ class StreamingTopicDetector:
             stats[topic] = model.get_streaming_statistics()
         return stats
 
+
 # Usage
-detector = StreamingTopicDetector(['sports', 'technology', 'politics'])
+detector = StreamingTopicDetector(["sports", "technology", "politics"])
 
 # Train with streaming data
 training_data = [
-    ('sports', 'football soccer basketball game score'),
-    ('technology', 'computer software algorithm programming'),
-    ('politics', 'government election policy vote democracy')
+    ("sports", "football soccer basketball game score"),
+    ("technology", "computer software algorithm programming"),
+    ("politics", "government election policy vote democracy"),
 ]
 
 for topic, text in training_data:
@@ -983,7 +987,7 @@ FreqProb provides several memory optimization techniques for large-scale applica
 **Compressed Storage:**
 ```python
 # Compressed storage for large vocabularies
-large_dist = {f'word_{i}': count for i, count in enumerate(counts)}
+large_dist = {f"word_{i}": count for i, count in enumerate(counts)}
 compressed = freqprob.create_compressed_distribution(large_dist)
 
 # Significant memory reduction with minimal accuracy loss
@@ -1024,21 +1028,17 @@ Validate implementation correctness and performance:
 
 ```python
 # Validate implementation correctness
-is_valid = freqprob.quick_validate_method(
-    freqprob.Laplace, test_distribution, bins=1000
-)
+is_valid = freqprob.quick_validate_method(freqprob.Laplace, test_distribution, bins=1000)
 
 # Comprehensive validation suite
 validator = freqprob.ValidationSuite()
 results = validator.run_comprehensive_validation(
     method_classes=[freqprob.MLE, freqprob.Laplace, freqprob.ELE],
-    test_distributions=[test_dist1, test_dist2]
+    test_distributions=[test_dist1, test_dist2],
 )
 
 # Performance benchmarking
-performance_metrics = freqprob.profile_method_performance(
-    freqprob.KneserNey, test_distribution
-)
+performance_metrics = freqprob.profile_method_performance(freqprob.KneserNey, test_distribution)
 print(f"Creation time: {performance_metrics.duration_seconds:.4f}s")
 ```
 
@@ -1048,11 +1048,12 @@ print(f"Creation time: {performance_metrics.duration_seconds:.4f}s")
 ```python
 # Vectorized batch processing
 vectorized = freqprob.VectorizedScorer(laplace)
-words = ['cat', 'dog', 'bird', 'fish'] * 1000
+words = ["cat", "dog", "bird", "fish"] * 1000
 scores = vectorized.score_batch(words)  # Fast batch scoring
 
 # Performance comparison
 import time
+
 start = time.time()
 individual_scores = [laplace(word) for word in words]
 individual_time = time.time() - start
@@ -1063,20 +1064,20 @@ batch_time = time.time() - start
 
 print(f"Individual: {individual_time:.4f}s")
 print(f"Vectorized: {batch_time:.4f}s")
-print(f"Speedup: {individual_time/batch_time:.2f}x")
+print(f"Speedup: {individual_time / batch_time:.2f}x")
 ```
 
 **Model Comparison:**
 ```python
 # Compare multiple models efficiently
 models = {
-    'laplace': freqprob.Laplace(word_counts, bins=10000),
-    'kneser_ney': freqprob.KneserNey(bigrams),
-    'simple_gt': freqprob.SimpleGoodTuring(word_counts)
+    "laplace": freqprob.Laplace(word_counts, bins=10000),
+    "kneser_ney": freqprob.KneserNey(bigrams),
+    "simple_gt": freqprob.SimpleGoodTuring(word_counts),
 }
 
 # Comprehensive model evaluation
-test_data = ['cat', 'dog', 'bird'] * 100
+test_data = ["cat", "dog", "bird"] * 100
 comparison = freqprob.model_comparison(models, test_data)
 
 for model_name, metrics in comparison.items():

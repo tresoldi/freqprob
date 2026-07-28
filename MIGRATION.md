@@ -22,10 +22,12 @@ uniform:
 ```python
 # Before
 from freqprob import BayesianSmoothing, InterpolatedSmoothing
+
 model = BayesianSmoothing(counts, alpha=1.0)
 
 # After
 from freqprob import Bayesian, Interpolated
+
 model = Bayesian(counts, alpha=1.0)
 ```
 
@@ -54,9 +56,9 @@ stable across these moves.
 - **scikit-learn-style aliases** on every estimator, alongside the existing
   callable contract:
   ```python
-  scorer.fit(freqdist)        # returns self
-  scorer.score(element)       # single element (alias for scorer(element))
-  scorer.predict(elements)    # batch: list of scores
+  scorer.fit(freqdist)  # returns self
+  scorer.score(element)  # single element (alias for scorer(element))
+  scorer.predict(elements)  # batch: list of scores
   ```
 - **Serialization** — persist and restore a fitted estimator without re-fitting:
   ```python
