@@ -1,12 +1,13 @@
 site_name: FreqProb
 site_description: A Python library for probability smoothing and frequency-based estimation.
-site_url: https://tresoldi.github.io/freqprob/
+site_url: https://freqprob.tresoldi.org/
 repo_url: https://github.com/tresoldi/freqprob
 repo_name: tresoldi/freqprob
 edit_uri: edit/main/docs/
 
 theme:
   name: material
+  custom_dir: overrides
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

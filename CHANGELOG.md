@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Documentation landing page.** The docs site now opens with a dedicated,
+  self-contained landing page (a chromeless "monograph" design with a figure
+  illustrating smoothing), served as a MkDocs custom home template; the User
+  Guide and API Reference keep the standard Material navigation behind it.
+- **Custom domain.** The site is served from `https://freqprob.tresoldi.org`
+  (via a `docs/CNAME` file and updated `site_url`); in-repo documentation links
+  were updated accordingly.
+
 ## [0.6.2] - 2026-07-28
 
 Maintenance release: license/metadata fixes and a full documentation rebuild.
