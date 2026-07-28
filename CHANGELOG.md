@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **License file corrected to MIT.** The `LICENSE` file contained the full GNU
+  GPL v3 text, contradicting the MIT license declared in `pyproject.toml`,
+  `CITATION.cff`, and the README. Replaced it with the MIT License text so all
+  license metadata agrees.
+
 ### Changed
 
+- Removed the publisher/address (Uppsala University) fields from the README
+  citation entry.
 - **Documentation rebuilt from scratch.** The docs site is now a focused
   three-page set — Home, a single flowing **User Guide** (concepts → choosing a
   method → the methods → evaluation → worked examples in text, ecology, genomics,

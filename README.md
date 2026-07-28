@@ -102,8 +102,6 @@ If you use FreqProb in academic research, please cite:
   title = {FreqProb: A Python library for probability smoothing and frequency-based estimation},
   url = {https://github.com/tresoldi/freqprob},
   version = {0.6.1},
-  publisher = {Department of Linguistics and Philology, Uppsala University},
-  address = {Uppsala},
   year = {2025}
 }
 ```
