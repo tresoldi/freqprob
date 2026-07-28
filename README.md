@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml/badge.svg)](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml)
 [![codecov](https://codecov.io/gh/tresoldi/freqprob/branch/main/graph/badge.svg)](https://codecov.io/gh/tresoldi/freqprob)
-[![Docs](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://tresoldi.github.io/freqprob/)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://freqprob.tresoldi.org/)
 [![PyPI version](https://badge.fury.io/py/freqprob.svg)](https://badge.fury.io/py/freqprob)
 [![Python versions](https://img.shields.io/pypi/pyversions/freqprob.svg)](https://pypi.org/project/freqprob/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -85,11 +85,11 @@ compressed/sparse representations.
 
 ## Documentation
 
-- **[Documentation site](https://tresoldi.github.io/freqprob/)** — user guide and
+- **[Documentation site](https://freqprob.tresoldi.org/)** — user guide and
   full API reference.
 - **[User Guide](docs/USER_GUIDE.md)** — concepts, choosing a method, and worked
   examples across text, ecology, genomics, and categorical data.
-- **[API Reference](https://tresoldi.github.io/freqprob/reference/)** — every
+- **[API Reference](https://freqprob.tresoldi.org/reference/)** — every
   public class and function, generated from the source with a runnable example.
 
 ## Citation
