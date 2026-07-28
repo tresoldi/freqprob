@@ -176,7 +176,7 @@ assert sgt("unseen") > 0.0
 
 # Witten-Bell: parameter-free, reserves mass by the count of distinct types.
 wb = freqprob.WittenBell(counts, logprob=False)
-assert wb("a") > wb("g")   # observed elements ranked by frequency
+assert wb("a") > wb("g")  # observed elements ranked by frequency
 assert wb("unseen") > 0.0  # unseen types share the reserved mass
 ```
 
@@ -227,7 +227,7 @@ counts = {"apple": 8, "banana": 4, "cherry": 2, "date": 1}
 cd = freqprob.CertaintyDegree(counts, logprob=False)
 
 assert cd("apple") > cd("date")  # observed elements ranked by frequency
-assert cd("kiwi") > 0.0          # unobserved element still gets mass
+assert cd("kiwi") > 0.0  # unobserved element still gets mass
 ```
 
 This is an **experimental** estimator still under development; it is documented
