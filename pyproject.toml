@@ -69,8 +69,8 @@ dev = [
     # Code quality (required by Makefile).
     # ruff/mypy pinned exactly so local, CI, and pre-commit run identical linter
     # versions (unpinned ruff/mypy drift silently changes check results).
-    "ruff==0.15.8",
-    "mypy==1.19.1",
+    "ruff==0.16.0",
+    "mypy==2.3.0",
     "bandit[toml]>=1.7.0",
 
     # Bound the stub-bearing scientific deps for the type-check (quality) job,

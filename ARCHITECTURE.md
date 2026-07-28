@@ -125,7 +125,7 @@ The estimator lifecycle:
 
 ```python
 scorer = freqprob.Laplace(freqdist, bins=..., logprob=True)
-p = scorer(element)          # __call__ scores one element
+p = scorer(element)  # __call__ scores one element
 ```
 
 - Construction fits the model; `__call__(element)` returns a probability or

@@ -21,7 +21,7 @@ import freqprob
 counts = {"the": 100, "cat": 50, "dog": 30, "bird": 10}
 
 laplace = freqprob.Laplace(counts, bins=10_000, logprob=False)
-laplace("cat")       # 0.0050  — an observed element
+laplace("cat")  # 0.0050  — an observed element
 laplace("elephant")  # 0.0001  — an unseen element still gets non-zero mass
 ```
 
@@ -44,13 +44,13 @@ distribution, then **call it** to score an element.
 
 ```python
 scorer = freqprob.KneserNey(bigram_counts, discount=0.75)
-scorer(("the", "cat"))                              # score one element
-scorer.predict([("the", "cat"), ("a", "dog")])      # score many (scikit-learn-style)
+scorer(("the", "cat"))  # score one element
+scorer.predict([("the", "cat"), ("a", "dog")])  # score many (scikit-learn-style)
 
-freqprob.perplexity(scorer, test_bigrams)           # evaluate a model
+freqprob.perplexity(scorer, test_bigrams)  # evaluate a model
 
-scorer.save("model.pkl")                            # persist a fitted model...
-scorer = freqprob.KneserNey.load("model.pkl")       # ...and load it back
+scorer.save("model.pkl")  # persist a fitted model...
+scorer = freqprob.KneserNey.load("model.pkl")  # ...and load it back
 ```
 
 `fit`/`predict`/`score` aliases are available for scikit-learn familiarity, and
