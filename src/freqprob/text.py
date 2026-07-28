@@ -10,25 +10,31 @@ from collections import Counter
 def generate_ngrams(text: str | list[str], n: int) -> list[tuple[str, ...]]:
     """Generate n-grams from text.
 
-    Parameters
-    ----------
-    text : Union[str, List[str]]
-        Input text as string or list of tokens
-    n : int
-        Size of n-grams to generate
+    A string input is treated as a sequence of characters, while a list input is
+    treated as a sequence of tokens. Each n-gram is returned as a tuple.
+
+    Args:
+        text: Input text, either a string (split into characters) or a list of
+            tokens.
+        n: Size of the n-grams to generate. Must be positive.
 
     Returns:
-    -------
-    List[Tuple[str, ...]]
-        List of n-gram tuples
+        A list of n-gram tuples. Empty if the input has fewer than ``n`` items.
+
+    Raises:
+        ValueError: If ``n`` is not positive.
 
     Examples:
-    --------
-    >>> generate_ngrams("hello world", 2)
-    [('h', 'e'), ('e', 'l'), ('l', 'l'), ('l', 'o'), ('o', ' '), (' ', 'w'), ('w', 'o'), ('o', 'r'), ('r', 'l'), ('l', 'd')]
+        Character n-grams from a string:
 
-    >>> generate_ngrams(["hello", "world", "test"], 2)
-    [('hello', 'world'), ('world', 'test')]
+        >>> from freqprob import generate_ngrams
+        >>> generate_ngrams("abcd", 2)
+        [('a', 'b'), ('b', 'c'), ('c', 'd')]
+
+        Token n-grams from a list:
+
+        >>> generate_ngrams(["hello", "world", "test"], 2)
+        [('hello', 'world'), ('world', 'test')]
     """
     tokens = list(text) if isinstance(text, str) else text
 
@@ -44,25 +50,32 @@ def generate_ngrams(text: str | list[str], n: int) -> list[tuple[str, ...]]:
 def word_frequency(text: str | list[str], normalize: bool = False) -> dict[str, int | float]:
     """Compute word frequency from text.
 
-    Parameters
-    ----------
-    text : Union[str, List[str]]
-        Input text as string or list of tokens
-    normalize : bool, default=False
-        If True, return relative frequencies instead of counts
+    A string input is split on whitespace into words; a list input is used as-is.
+    Counts are returned by default, or relative frequencies when ``normalize`` is
+    set.
+
+    Args:
+        text: Input text, either a whitespace-delimited string or a list of
+            tokens.
+        normalize: If ``True``, return relative frequencies that sum to ``1.0``
+            instead of raw counts. Defaults to ``False``.
 
     Returns:
-    -------
-    Dict[str, Union[int, float]]
-        Dictionary mapping words to their frequencies
+        A mapping of each word to its frequency (an ``int`` count, or a ``float``
+        relative frequency when ``normalize`` is ``True``).
 
     Examples:
-    --------
-    >>> word_frequency("hello world hello")
-    {'hello': 2, 'world': 1}
+        Raw counts:
 
-    >>> word_frequency(["hello", "world", "hello"], normalize=True)
-    {'hello': 0.6666666666666666, 'world': 0.3333333333333333}
+        >>> from freqprob import word_frequency
+        >>> word_frequency("hello world hello")
+        {'hello': 2, 'world': 1}
+
+        Normalized frequencies:
+
+        >>> freq = word_frequency(["hello", "world", "hello"], normalize=True)
+        >>> round(freq["hello"], 4)
+        0.6667
     """
     tokens = text.split() if isinstance(text, str) else text
 
@@ -80,24 +93,27 @@ def ngram_frequency(
 ) -> dict[tuple[str, ...], int | float]:
     """Compute n-gram frequency from text.
 
-    Parameters
-    ----------
-    text : Union[str, List[str]]
-        Input text as string or list of tokens
-    n : int
-        Size of n-grams to generate
-    normalize : bool, default=False
-        If True, return relative frequencies instead of counts
+    Generates n-grams with :func:`generate_ngrams` and counts them. Counts are
+    returned by default, or relative frequencies when ``normalize`` is set.
+
+    Args:
+        text: Input text, either a string (split into characters) or a list of
+            tokens.
+        n: Size of the n-grams to count. Must be positive.
+        normalize: If ``True``, return relative frequencies that sum to ``1.0``
+            instead of raw counts. Defaults to ``False``.
 
     Returns:
-    -------
-    Dict[Tuple[str, ...], Union[int, float]]
-        Dictionary mapping n-grams to their frequencies
+        A mapping of each n-gram tuple to its frequency (an ``int`` count, or a
+        ``float`` relative frequency when ``normalize`` is ``True``).
 
     Examples:
-    --------
-    >>> ngram_frequency("hello world", 2)
-    {('h', 'e'): 1, ('e', 'l'): 1, ('l', 'l'): 1, ('l', 'o'): 1, ('o', ' '): 1, (' ', 'w'): 1, ('w', 'o'): 1, ('o', 'r'): 1, ('r', 'l'): 1, ('l', 'd'): 1}
+        >>> from freqprob import ngram_frequency
+        >>> freq = ngram_frequency(["a", "b", "a", "b"], 2)
+        >>> freq[("a", "b")]
+        2
+        >>> len(freq)
+        2
     """
     ngrams = generate_ngrams(text, n)
     freq_dict = Counter(ngrams)

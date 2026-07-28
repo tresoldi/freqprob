@@ -22,27 +22,33 @@ class CompressedFrequencyDistribution:
     for large vocabularies while maintaining fast access patterns.
 
     Techniques used:
-    - Integer compression for counts
-    - String interning for element storage
-    - Sparse representation for zero counts
-    - Optional quantization for approximate counts
 
-    Parameters
-    ----------
-    quantization_levels : Optional[int]
-        Number of quantization levels for count compression (None for exact)
-    use_compression : bool, default=True
-        Whether to use data compression
-    intern_strings : bool, default=True
-        Whether to intern string elements for memory efficiency
+    - Integer compression for counts.
+    - String interning for element storage.
+    - Sparse representation for zero counts.
+    - Optional quantization for approximate counts.
+
+    Args:
+        quantization_levels: Number of quantization levels for count
+            compression, or ``None`` for exact counts. Defaults to ``None``.
+        use_compression: Whether to use data compression when serializing.
+            Defaults to ``True``.
+        intern_strings: Whether to intern string elements for memory
+            efficiency. Defaults to ``True``.
 
     Examples:
-    --------
-    >>> compressed_dist = CompressedFrequencyDistribution()
-    >>> compressed_dist.update({'word1': 1000, 'word2': 500, 'word3': 1})
-    >>> compressed_dist.get_count('word1')
-    1000
-    >>> compressed_dist.get_memory_usage()
+        Exact counts are preserved when quantization is disabled:
+
+        >>> compressed_dist = CompressedFrequencyDistribution()
+        >>> compressed_dist.update({"word1": 1000, "word2": 500, "word3": 1})
+        >>> compressed_dist.get_count("word1")
+        1000
+        >>> compressed_dist.get_vocabulary_size()
+        3
+        >>> compressed_dist.get_total_count()
+        1501
+        >>> sorted(compressed_dist.to_dict().items())
+        [('word1', 1000), ('word2', 500), ('word3', 1)]
     """
 
     def __init__(
@@ -135,10 +141,8 @@ class CompressedFrequencyDistribution:
     def update(self, freqdist: FrequencyDistribution) -> None:
         """Update with a frequency distribution.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution to add
+        Args:
+            freqdist: Frequency distribution to add.
         """
         # Update count range for quantization
         if freqdist and self.quantization_levels:
@@ -171,15 +175,11 @@ class CompressedFrequencyDistribution:
     def get_count(self, element: Element) -> int:
         """Get count for an element.
 
-        Parameters
-        ----------
-        element : Element
-            Element to query
+        Args:
+            element: Element to query.
 
         Returns:
-        -------
-        int
-            Count for the element (dequantized if quantization is used)
+            Count for the element (dequantized if quantization is used).
         """
         element = self._intern_element(element)
         if element not in self._element_to_id:
@@ -227,9 +227,8 @@ class CompressedFrequencyDistribution:
         """Get detailed memory usage information.
 
         Returns:
-        -------
-        Dict[str, int]
-            Memory usage breakdown in bytes
+            Memory usage breakdown in bytes, keyed by component, including a
+            ``"total"`` entry.
         """
         element_to_id_size = sys.getsizeof(self._element_to_id)
         for k, v in self._element_to_id.items():
@@ -259,9 +258,7 @@ class CompressedFrequencyDistribution:
         """Compress the entire distribution to bytes.
 
         Returns:
-        -------
-        bytes
-            Compressed representation
+            Serialized (and optionally gzip-compressed) representation.
         """
         data = {
             "element_to_id": self._element_to_id,
@@ -285,17 +282,13 @@ class CompressedFrequencyDistribution:
     ) -> "CompressedFrequencyDistribution":
         """Decompress distribution from bytes.
 
-        Parameters
-        ----------
-        compressed_data : bytes
-            Compressed data
-        use_compression : bool, default=True
-            Whether the data is compressed
+        Args:
+            compressed_data: Compressed data to restore.
+            use_compression: Whether the data was gzip-compressed. Defaults to
+                ``True``.
 
         Returns:
-        -------
-        CompressedFrequencyDistribution
-            Decompressed distribution
+            The reconstructed distribution.
         """
         serialized = gzip.decompress(compressed_data) if use_compression else compressed_data
 
@@ -327,20 +320,26 @@ class SparseFrequencyDistribution:
     This class is optimized for distributions where most elements have zero
     counts, using sparse data structures for memory efficiency.
 
-    Parameters
-    ----------
-    default_count : int, default=0
-        Default count for unobserved elements
-    use_sorted_storage : bool, default=True
-        Whether to keep elements sorted by frequency for faster access
+    Args:
+        default_count: Default count for unobserved elements. Defaults to
+            ``0``.
+        use_sorted_storage: Whether to keep elements sorted by frequency for
+            faster top-k access. Defaults to ``True``.
 
     Examples:
-    --------
-    >>> sparse_dist = SparseFrequencyDistribution()
-    >>> sparse_dist.update({'rare_word': 1, 'common_word': 1000})
-    >>> sparse_dist.get_count('rare_word')
-    1
-    >>> sparse_dist.get_top_k(5)  # Get top 5 most frequent
+        Only non-default counts are stored; missing elements return the
+        default:
+
+        >>> sparse_dist = SparseFrequencyDistribution()
+        >>> sparse_dist.update({"rare_word": 1, "common_word": 1000})
+        >>> sparse_dist.get_count("rare_word")
+        1
+        >>> sparse_dist.get_count("unseen")
+        0
+        >>> sparse_dist.get_vocabulary_size()
+        2
+        >>> sparse_dist.get_top_k(2)
+        [('common_word', 1000), ('rare_word', 1)]
     """
 
     def __init__(self, default_count: int = 0, use_sorted_storage: bool = True):
@@ -360,10 +359,8 @@ class SparseFrequencyDistribution:
     def update(self, freqdist: FrequencyDistribution) -> None:
         """Update with a frequency distribution.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution to add
+        Args:
+            freqdist: Frequency distribution to add.
         """
         for element, count in freqdist.items():
             if count != self.default_count:
@@ -380,12 +377,9 @@ class SparseFrequencyDistribution:
     def increment(self, element: Element, count: int = 1) -> None:
         """Increment count for a single element.
 
-        Parameters
-        ----------
-        element : Element
-            Element to increment
-        count : int, default=1
-            Count increment
+        Args:
+            element: Element to increment.
+            count: Count increment. Defaults to ``1``.
         """
         if element in self._sparse_counts:
             self._sparse_counts[element] += count
@@ -400,15 +394,11 @@ class SparseFrequencyDistribution:
     def get_count(self, element: Element) -> int:
         """Get count for an element.
 
-        Parameters
-        ----------
-        element : Element
-            Element to query
+        Args:
+            element: Element to query.
 
         Returns:
-        -------
-        int
-            Count for the element
+            Count for the element, or the default count if not present.
         """
         return self._sparse_counts.get(element, self.default_count)
 
@@ -432,15 +422,11 @@ class SparseFrequencyDistribution:
     def get_top_k(self, k: int) -> list[tuple[Element, int]]:
         """Get top-k most frequent elements.
 
-        Parameters
-        ----------
-        k : int
-            Number of top elements to return
+        Args:
+            k: Number of top elements to return.
 
         Returns:
-        -------
-        List[Tuple[Element, int]]
-            List of (element, count) pairs
+            List of ``(element, count)`` pairs, highest count first.
         """
         if not self.use_sorted_storage:
             # Sort on demand
@@ -453,17 +439,12 @@ class SparseFrequencyDistribution:
     def get_elements_with_count_range(self, min_count: int, max_count: int) -> list[Element]:
         """Get elements with counts in a specific range.
 
-        Parameters
-        ----------
-        min_count : int
-            Minimum count (inclusive)
-        max_count : int
-            Maximum count (inclusive)
+        Args:
+            min_count: Minimum count (inclusive).
+            max_count: Maximum count (inclusive).
 
         Returns:
-        -------
-        List[Element]
-            Elements with counts in the specified range
+            Elements whose counts fall within the specified range.
         """
         result = []
         for element, count in self._sparse_counts.items():
@@ -475,9 +456,7 @@ class SparseFrequencyDistribution:
         """Get histogram of counts (count -> frequency of that count).
 
         Returns:
-        -------
-        Dict[int, int]
-            Histogram mapping counts to their frequencies
+            Histogram mapping each count value to how many elements have it.
         """
         histogram: dict[int, int] = defaultdict(int)
         for count in self._sparse_counts.values():
@@ -504,9 +483,7 @@ class SparseFrequencyDistribution:
         """Get memory usage information.
 
         Returns:
-        -------
-        Dict[str, int]
-            Memory usage breakdown in bytes
+            Memory usage breakdown in bytes, including a ``"total"`` entry.
         """
         sparse_counts_size = sys.getsizeof(self._sparse_counts)
         for k, v in self._sparse_counts.items():
@@ -531,19 +508,24 @@ class QuantizedProbabilityTable:
     This class stores probabilities using quantization to reduce memory usage
     while maintaining reasonable precision for most applications.
 
-    Parameters
-    ----------
-    num_quantization_levels : int, default=65536
-        Number of quantization levels (determines precision)
-    log_space : bool, default=True
-        Whether to quantize in log space for better precision
+    Args:
+        num_quantization_levels: Number of quantization levels, which
+            determines precision. Defaults to ``65536``.
+        log_space: Whether to quantize in log space for better precision.
+            Defaults to ``True``.
 
     Examples:
-    --------
-    >>> prob_table = QuantizedProbabilityTable(num_quantization_levels=1024)
-    >>> prob_table.set_probabilities({'word1': 0.5, 'word2': 0.3, 'word3': 0.2})
-    >>> prob_table.get_probability('word1')
-    0.5004884004884005
+        Stored probabilities are approximate; higher level counts are more
+        precise:
+
+        >>> prob_table = QuantizedProbabilityTable(num_quantization_levels=1024)
+        >>> prob_table.set_probabilities(
+        ...     {"word1": 0.5, "word2": 0.3, "word3": 0.2}
+        ... )
+        >>> round(prob_table.get_probability("word1"), 2)
+        0.49
+        >>> sorted(prob_table.get_elements())
+        ['word1', 'word2', 'word3']
     """
 
     def __init__(self, num_quantization_levels: int = 65536, log_space: bool = True):
@@ -622,10 +604,8 @@ class QuantizedProbabilityTable:
     def set_probabilities(self, probabilities: dict[Element, float]) -> None:
         """Set probabilities for multiple elements.
 
-        Parameters
-        ----------
-        probabilities : Dict[Element, float]
-            Dictionary mapping elements to their probabilities
+        Args:
+            probabilities: Mapping of elements to their probabilities.
         """
         self._quantized_probs.clear()
         for element, prob in probabilities.items():
@@ -634,27 +614,20 @@ class QuantizedProbabilityTable:
     def set_probability(self, element: Element, probability: float) -> None:
         """Set probability for a single element.
 
-        Parameters
-        ----------
-        element : Element
-            Element to set probability for
-        probability : float
-            Probability value
+        Args:
+            element: Element to set probability for.
+            probability: Probability value.
         """
         self._quantized_probs[element] = self._quantize_probability(probability)
 
     def get_probability(self, element: Element) -> float:
         """Get probability for an element.
 
-        Parameters
-        ----------
-        element : Element
-            Element to query
+        Args:
+            element: Element to query.
 
         Returns:
-        -------
-        float
-            Dequantized probability
+            Dequantized probability for the element (or the default).
         """
         quantized = self._quantized_probs.get(element, self._default_quantized_prob)
         return self._dequantize_probability(quantized)
@@ -662,10 +635,8 @@ class QuantizedProbabilityTable:
     def set_default_probability(self, default_prob: float) -> None:
         """Set default probability for unobserved elements.
 
-        Parameters
-        ----------
-        default_prob : float
-            Default probability
+        Args:
+            default_prob: Default probability for unobserved elements.
         """
         self._default_quantized_prob = self._quantize_probability(default_prob)
 
@@ -677,9 +648,7 @@ class QuantizedProbabilityTable:
         """Get memory usage information.
 
         Returns:
-        -------
-        Dict[str, int]
-            Memory usage breakdown in bytes
+            Memory usage breakdown in bytes, including a ``"total"`` entry.
         """
         quantized_probs_size = sys.getsizeof(self._quantized_probs)
         for k, v in self._quantized_probs.items():
@@ -695,15 +664,11 @@ class QuantizedProbabilityTable:
     ) -> dict[str, float]:
         """Analyze quantization error compared to original probabilities.
 
-        Parameters
-        ----------
-        original_probs : Dict[Element, float]
-            Original probabilities for comparison
+        Args:
+            original_probs: Original probabilities to compare against.
 
         Returns:
-        -------
-        Dict[str, float]
-            Error statistics
+            Error statistics including mean/max absolute and relative errors.
         """
         errors = []
         relative_errors = []
@@ -780,19 +745,22 @@ def create_compressed_distribution(
 ) -> CompressedFrequencyDistribution:
     """Create a compressed frequency distribution from a regular one.
 
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Original frequency distribution
-    quantization_levels : Optional[int]
-        Number of quantization levels for compression
-    use_compression : bool, default=True
-        Whether to use data compression
+    Args:
+        freqdist: Original frequency distribution.
+        quantization_levels: Number of quantization levels for compression, or
+            ``None`` for exact counts. Defaults to ``None``.
+        use_compression: Whether to use data compression when serializing.
+            Defaults to ``True``.
 
     Returns:
-    -------
-    CompressedFrequencyDistribution
-        Compressed distribution
+        A compressed distribution populated from ``freqdist``.
+
+    Examples:
+        >>> dist = create_compressed_distribution({"a": 10, "b": 5})
+        >>> dist.get_count("a")
+        10
+        >>> dist.get_vocabulary_size()
+        2
     """
     compressed = CompressedFrequencyDistribution(
         quantization_levels=quantization_levels, use_compression=use_compression
@@ -806,17 +774,20 @@ def create_sparse_distribution(
 ) -> SparseFrequencyDistribution:
     """Create a sparse frequency distribution from a regular one.
 
-    Parameters
-    ----------
-    freqdist : FrequencyDistribution
-        Original frequency distribution
-    default_count : int, default=0
-        Default count for unobserved elements
+    Args:
+        freqdist: Original frequency distribution.
+        default_count: Default count for unobserved elements. Defaults to
+            ``0``.
 
     Returns:
-    -------
-    SparseFrequencyDistribution
-        Sparse distribution
+        A sparse distribution populated from ``freqdist``.
+
+    Examples:
+        >>> dist = create_sparse_distribution({"a": 10, "b": 5})
+        >>> dist.get_count("a")
+        10
+        >>> dist.get_count("unseen")
+        0
     """
     sparse = SparseFrequencyDistribution(default_count=default_count)
     sparse.update(freqdist)

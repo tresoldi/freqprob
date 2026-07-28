@@ -58,9 +58,3 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - toc:
       permalink: true
-
-# Aux files kept in the repo but not part of the published site.
-exclude_docs: |
-  API_REFERENCE.md
-  LLM_DOCUMENTATION.md
-  tutorial_*.py

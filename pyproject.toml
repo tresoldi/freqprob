@@ -85,11 +85,6 @@ dev = [
     # Build and release (required by Makefile)
     "build>=0.10.0",
     "twine>=4.0.0",
-
-    # Documentation generation (nhandu for tutorials)
-    "nhandu>=0.1.0",
-    "matplotlib>=3.5.0",
-    "seaborn>=0.11.0",
 ]
 
 [project.urls]
@@ -225,8 +220,6 @@ module = [
     "numpy.*",
     "scipy.*",
     "psutil.*",
-    "matplotlib.*",
-    "seaborn.*",
     "pytest.*",
     "nltk.*",
     "sklearn.*",

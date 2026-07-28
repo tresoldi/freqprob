@@ -43,17 +43,11 @@ class MemorySnapshot:
     """Memory usage snapshot.
 
     Attributes:
-    ----------
-    timestamp : float
-        Time when snapshot was taken
-    rss_mb : float
-        Resident Set Size in MB
-    vms_mb : float
-        Virtual Memory Size in MB
-    python_objects_mb : float
-        Memory used by Python objects in MB
-    peak_mb : Optional[float]
-        Peak memory usage since last reset (if available)
+        timestamp: Time when the snapshot was taken.
+        rss_mb: Resident Set Size in MB.
+        vms_mb: Virtual Memory Size in MB.
+        python_objects_mb: Memory used by Python objects in MB.
+        peak_mb: Peak memory usage since last reset, if available.
     """
 
     timestamp: float
@@ -69,17 +63,11 @@ class PerformanceMetrics:
     """Performance measurement results.
 
     Attributes:
-    ----------
-    operation_name : str
-        Name of the operation
-    execution_time : float
-        Execution time in seconds
-    memory_before : MemorySnapshot
-        Memory usage before operation
-    memory_after : MemorySnapshot
-        Memory usage after operation
-    memory_peak : Optional[float]
-        Peak memory usage during operation (if available)
+        operation_name: Name of the operation.
+        execution_time: Execution time in seconds.
+        memory_before: Memory usage before the operation.
+        memory_after: Memory usage after the operation.
+        memory_peak: Peak memory usage during the operation, if available.
     """
 
     operation_name: str
@@ -106,21 +94,27 @@ class MemoryProfiler:
     This class provides utilities for monitoring memory usage during
     various operations and analyzing memory efficiency.
 
-    Parameters
-    ----------
-    enable_tracemalloc : bool, default=True
-        Whether to enable detailed Python memory tracing
-    snapshot_interval : float, default=1.0
-        Interval in seconds for automatic snapshots
+    Args:
+        enable_tracemalloc: Whether to enable detailed Python memory tracing.
+            Defaults to ``True``.
+        snapshot_interval: Interval in seconds for automatic snapshots.
+            Defaults to ``1.0``.
 
     Examples:
-    --------
-    >>> profiler = MemoryProfiler()
-    >>> with profiler.profile_operation("test_operation"):
-    ...     # Your operation here
-    ...     pass
-    >>> metrics = profiler.get_latest_metrics()
-    >>> print(f"Memory used: {metrics.memory_delta_mb:.2f} MB")
+        Profile an operation and inspect the recorded metrics:
+
+        >>> profiler = MemoryProfiler()
+        >>> with profiler.profile_operation("build_list"):
+        ...     data = [i * i for i in range(10000)]
+        >>> metrics = profiler.get_latest_metrics()
+        >>> metrics.operation_name
+        'build_list'
+        >>> isinstance(metrics.execution_time, float)
+        True
+        >>> isinstance(metrics.memory_delta_mb, float)
+        True
+        >>> len(profiler.get_all_metrics())
+        1
     """
 
     def __init__(self, enable_tracemalloc: bool = True, snapshot_interval: float = 1.0):
@@ -139,9 +133,7 @@ class MemoryProfiler:
         """Take a memory usage snapshot.
 
         Returns:
-        -------
-        MemorySnapshot
-            Current memory usage snapshot
+            The current memory usage snapshot.
         """
         # Get process memory info
         if self._process is not None:
@@ -176,17 +168,14 @@ class MemoryProfiler:
     def profile_operation(self, operation_name: str) -> Iterator[None]:
         """Context manager for profiling an operation.
 
-        Uses time.perf_counter() for high-precision timing measurements,
+        Uses ``time.perf_counter()`` for high-precision timing measurements,
         ensuring accurate execution time tracking even for fast operations.
 
-        Parameters
-        ----------
-        operation_name : str
-            Name of the operation being profiled
+        Args:
+            operation_name: Name of the operation being profiled.
 
         Yields:
-        ------
-        None
+            ``None``. Metrics are recorded when the context exits.
         """
         # Reset tracemalloc peak if enabled
         if self.enable_tracemalloc and tracemalloc.is_tracing():
@@ -224,9 +213,8 @@ class MemoryProfiler:
         """Get the latest performance metrics.
 
         Returns:
-        -------
-        Optional[PerformanceMetrics]
-            Latest metrics or None if no operations have been profiled
+            The most recent metrics, or ``None`` if no operations have been
+            profiled.
         """
         return self._metrics[-1] if self._metrics else None
 
@@ -234,9 +222,7 @@ class MemoryProfiler:
         """Get all performance metrics.
 
         Returns:
-        -------
-        List[PerformanceMetrics]
-            All recorded metrics
+            A copy of all recorded metrics.
         """
         return self._metrics.copy()
 
@@ -244,9 +230,7 @@ class MemoryProfiler:
         """Get all memory snapshots.
 
         Returns:
-        -------
-        List[MemorySnapshot]
-            All recorded snapshots
+            A copy of all recorded snapshots.
         """
         return self._snapshots.copy()
 
@@ -260,9 +244,7 @@ class MemoryProfiler:
         """Get a summary of memory usage patterns.
 
         Returns:
-        -------
-        Dict[str, Any]
-            Memory usage summary
+            Memory usage summary aggregating the recorded snapshots.
         """
         if not self._snapshots:
             return {"error": "No snapshots available"}
@@ -297,22 +279,22 @@ def profile_memory_usage(
 ) -> Callable[[Callable[..., Any]], ProfiledFunction]:
     """Decorate functions to profile memory usage.
 
-    Parameters
-    ----------
-    operation_name : str, optional
-        Name for the operation (defaults to function name)
+    Args:
+        operation_name: Name for the operation, or ``None`` to use the
+            function name. Defaults to ``None``.
 
     Returns:
-    -------
-    function
-        Decorated function
+        A decorator that wraps a function with memory profiling.
 
     Examples:
-    --------
-    >>> @profile_memory_usage("test_function")
-    ... def my_function():
-    ...     return [i**2 for i in range(1000000)]
-    >>> result = my_function()
+        >>> @profile_memory_usage("square_list")
+        ... def my_function():
+        ...     return [i * i for i in range(1000)]
+        >>> result = my_function()
+        >>> len(result)
+        1000
+        >>> my_function.get_profiler().get_latest_metrics().operation_name
+        'square_list'
     """
 
     def decorator(func: Callable[..., Any]) -> ProfiledFunction:
@@ -343,15 +325,24 @@ def profile_memory_usage(
 class DistributionMemoryAnalyzer:
     """Analyzer for comparing memory usage of different distribution representations.
 
-    This class helps analyze and compare memory usage between regular dictionaries,
-    compressed distributions, sparse distributions, and other representations.
+    This class helps analyze and compare memory usage between regular
+    dictionaries, compressed distributions, sparse distributions, and other
+    representations.
+
+    Note:
+        `compare_representations` additionally contrasts compressed and sparse
+        encodings, returning per-representation savings.
 
     Examples:
-    --------
-    >>> analyzer = DistributionMemoryAnalyzer()
-    >>> freqdist = {'word1': 1000, 'word2': 500, 'word3': 1}
-    >>> comparison = analyzer.compare_representations(freqdist)
-    >>> print(comparison['memory_savings'])
+        Measure the memory footprint of a small distribution:
+
+        >>> analyzer = DistributionMemoryAnalyzer()
+        >>> freqdist = {"word1": 1000, "word2": 500, "word3": 1}
+        >>> measurement = analyzer.measure_distribution_memory(freqdist)
+        >>> sorted(measurement.keys())
+        ['bytes_per_element', 'num_elements', 'total_mb']
+        >>> measurement["num_elements"]
+        3
     """
 
     def __init__(self) -> None:
@@ -361,15 +352,12 @@ class DistributionMemoryAnalyzer:
     def measure_distribution_memory(self, freqdist: FrequencyDistribution) -> dict[str, float]:
         """Measure memory usage of a frequency distribution.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution to measure
+        Args:
+            freqdist: Frequency distribution to measure.
 
         Returns:
-        -------
-        Dict[str, float]
-            Memory usage measurements in MB
+            Memory usage measurements, including total MB, element count, and
+            bytes per element.
         """
         # Force garbage collection for accurate measurement
         gc.collect()
@@ -388,15 +376,12 @@ class DistributionMemoryAnalyzer:
     def compare_representations(self, freqdist: FrequencyDistribution) -> dict[str, Any]:
         """Compare memory usage of different distribution representations.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Original frequency distribution
+        Args:
+            freqdist: Original frequency distribution.
 
         Returns:
-        -------
-        Dict[str, Any]
-            Comparison results
+            Comparison results with per-representation memory usage, savings,
+            and profiling metrics.
         """
         from .memory_efficient import (
             create_compressed_distribution,
@@ -457,19 +442,14 @@ class DistributionMemoryAnalyzer:
     ) -> dict[str, Any]:
         """Benchmark memory usage and performance of different scoring methods.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution for testing
-        test_elements : List[str]
-            Elements to score for performance testing
-        methods_to_test : Optional[List[str]]
-            Scoring methods to test (defaults to common methods)
+        Args:
+            freqdist: Frequency distribution for testing.
+            test_elements: Elements to score for performance testing.
+            methods_to_test: Scoring methods to test, or ``None`` to use a
+                default set. Defaults to ``None``.
 
         Returns:
-        -------
-        Dict[str, Any]
-            Benchmark results
+            Benchmark results keyed by method name.
         """
         if methods_to_test is None:
             methods_to_test = ["MLE", "Laplace", "StreamingMLE"]
@@ -529,20 +509,23 @@ class MemoryMonitor:
     This class provides continuous monitoring of memory usage patterns
     and can trigger alerts when memory usage exceeds thresholds.
 
-    Parameters
-    ----------
-    memory_threshold_mb : float, default=1000.0
-        Memory threshold in MB for triggering alerts
-    monitoring_interval : float, default=5.0
-        Monitoring interval in seconds
+    Args:
+        memory_threshold_mb: Memory threshold in MB for triggering alerts.
+            Defaults to ``1000.0``.
+        monitoring_interval: Monitoring interval in seconds. Defaults to
+            ``5.0``.
 
     Examples:
-    --------
-    >>> monitor = MemoryMonitor(memory_threshold_mb=500.0)
-    >>> monitor.start_monitoring()
-    >>> # Your long-running process
-    >>> monitor.stop_monitoring()
-    >>> report = monitor.get_monitoring_report()
+        Take a memory reading against a high threshold (no alert triggered):
+
+        >>> monitor = MemoryMonitor(memory_threshold_mb=1e9)
+        >>> monitor.check_memory() is None
+        True
+        >>> report = monitor.get_monitoring_report()
+        >>> report["threshold_violations"]
+        0
+        >>> report["total_snapshots"]
+        1
     """
 
     def __init__(self, memory_threshold_mb: float = 1000.0, monitoring_interval: float = 5.0):
@@ -572,9 +555,8 @@ class MemoryMonitor:
         """Check current memory usage and trigger alerts if needed.
 
         Returns:
-        -------
-        Optional[Dict[str, Any]]
-            Alert information if threshold exceeded, None otherwise
+            Alert information if the threshold was exceeded, otherwise
+            ``None``.
         """
         snapshot = self._profiler.take_snapshot()
 
@@ -599,9 +581,7 @@ class MemoryMonitor:
         """Get a comprehensive monitoring report.
 
         Returns:
-        -------
-        Dict[str, Any]
-            Monitoring report
+            Monitoring report with memory statistics, alerts, and trend.
         """
         if not self._snapshots:
             return {"error": "No monitoring data available"}
@@ -646,15 +626,11 @@ class MemoryMonitor:
 def get_object_memory_usage(obj: Any) -> dict[str, int | float | str]:
     """Get detailed memory usage information for an object.
 
-    Parameters
-    ----------
-    obj : Any
-        Object to analyze
+    Args:
+        obj: Object to analyze.
 
     Returns:
-    -------
-    Dict[str, int | float | str]
-        Memory usage breakdown
+        Memory usage breakdown for the object.
     """
     # Basic object size
     basic_size = sys.getsizeof(obj)
@@ -691,9 +667,7 @@ def force_garbage_collection() -> dict[str, int]:
     """Force garbage collection and return statistics.
 
     Returns:
-    -------
-    Dict[str, int]
-        Garbage collection statistics
+        Garbage collection statistics.
     """
     # Get stats before collection
     objects_before = len(gc.get_objects())

@@ -1,7 +1,7 @@
 # FreqProb Makefile
 # POSIX-compatible development commands
 
-.PHONY: help quality security format test test-cov test-fast bump-version build build-release clean install install-dev bench bench-all docs docs-clean site site-serve
+.PHONY: help quality security format test test-cov test-fast bump-version build build-release clean install install-dev bench bench-all site site-serve
 
 # Default target: show help
 .DEFAULT_GOAL := help
@@ -109,14 +109,14 @@ install: ## Install package in development mode
 
 install-dev: ## Install package with development dependencies (includes all Makefile tools)
 	@echo "==> Installing package with dev dependencies..."
-	$(PIP) install -e .[dev]
+	$(PIP) install -e .[dev,docs]
 	@echo "✓ Package installed with dev dependencies!"
 	@echo ""
 	@echo "Installed tools for Makefile:"
 	@echo "  - pytest, pytest-cov, pytest-xdist (testing)"
 	@echo "  - ruff, mypy (code quality)"
 	@echo "  - build, twine (build/release)"
-	@echo "  - nhandu (documentation generation)"
+	@echo "  - mkdocs-material, mkdocstrings (docs site)"
 
 bench: ## Run quick performance benchmarks
 	@echo "==> Running quick benchmarks..."
@@ -129,19 +129,6 @@ bench-all: ## Run comprehensive benchmark suite
 	@echo "  This may take several minutes..."
 	$(PYTHON) scripts/benchmarks.py --output benchmark_results_$$(date +%Y%m%d_%H%M%S)
 	@echo "✓ Comprehensive benchmarks complete!"
-
-docs: ## Generate HTML documentation from Nhandu tutorial sources
-	@echo "==> Generating tutorial documentation..."
-	@for f in docs/tutorial_*.py; do \
-		echo "  Generating $$(basename $$f .py).html..."; \
-		nhandu "$$f" --format html -o "docs/$$(basename $$f .py).html"; \
-	done
-	@echo "✓ Documentation generated in docs/"
-
-docs-clean: ## Remove generated HTML documentation
-	@echo "==> Cleaning generated documentation..."
-	rm -f docs/tutorial_*.html
-	@echo "✓ Documentation cleaned!"
 
 site: ## Build the MkDocs documentation site (strict) into site/
 	@echo "==> Building documentation site..."

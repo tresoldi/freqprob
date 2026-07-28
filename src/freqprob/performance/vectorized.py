@@ -18,29 +18,27 @@ class VectorizedScorer:
     This class wraps existing scoring methods to provide efficient batch
     operations using numpy arrays and vectorized computations.
 
-    Parameters
-    ----------
-    scorer : ScoringMethod
-        The underlying scoring method to wrap
+    Args:
+        scorer: The underlying scoring method to wrap.
 
     Examples:
-    --------
-    >>> from freqprob import MLE
-    >>> scorer = MLE({'a': 3, 'b': 2, 'c': 1}, logprob=False)
-    >>> vectorized = VectorizedScorer(scorer)
-    >>> elements = ['a', 'b', 'c', 'd']
-    >>> scores = vectorized.score_batch(elements)
-    >>> scores
-    array([0.5, 0.33333333, 0.16666667, 0.0])
+        Score many elements at once, returning a numpy array:
+
+        >>> from freqprob import MLE
+        >>> scorer = MLE({"a": 3, "b": 2, "c": 1}, logprob=False)
+        >>> vectorized = VectorizedScorer(scorer)
+        >>> scores = vectorized.score_batch(["a", "b", "c", "d"])
+        >>> scores.shape
+        (4,)
+        >>> [round(float(x), 4) for x in scores]
+        [0.5, 0.3333, 0.1667, 0.0]
     """
 
     def __init__(self, scorer: ScoringMethod):
         """Initialize vectorized scorer wrapper.
 
-        Parameters
-        ----------
-        scorer : ScoringMethod
-            Scoring method to wrap with vectorized operations
+        Args:
+            scorer: Scoring method to wrap with vectorized operations.
         """
         self.scorer = scorer
         self._element_cache: dict[Any, int] = {}
@@ -71,22 +69,19 @@ class VectorizedScorer:
     ) -> np.ndarray[Any, Any]:
         """Score a batch of elements efficiently using vectorized operations.
 
-        Parameters
-        ----------
-        elements : Union[Sequence[Element], np.ndarray]
-            Elements to score
+        Args:
+            elements: Elements to score, as a sequence or numpy array.
 
         Returns:
-        -------
-        np.ndarray
-            Array of scores for the elements
+            Array of scores for the elements, in the same order as the input.
 
         Examples:
-        --------
-        >>> scorer = MLE({'a': 3, 'b': 2}, logprob=False)
-        >>> vectorized = VectorizedScorer(scorer)
-        >>> vectorized.score_batch(['a', 'b', 'unknown'])
-        array([0.6, 0.4, 0.0])
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 3, "b": 2}, logprob=False)
+            >>> vectorized = VectorizedScorer(scorer)
+            >>> scores = vectorized.score_batch(["a", "b", "unknown"])
+            >>> [round(float(x), 4) for x in scores]
+            [0.6, 0.4, 0.0]
         """
         if isinstance(elements, np.ndarray):
             elements = elements.tolist()
@@ -110,15 +105,11 @@ class VectorizedScorer:
     ) -> list[np.ndarray[Any, Any]]:
         """Score multiple batches in parallel (when available).
 
-        Parameters
-        ----------
-        element_batches : List[List[Element]]
-            List of element batches to score
+        Args:
+            element_batches: List of element batches to score.
 
         Returns:
-        -------
-        List[np.ndarray]
-            List of score arrays for each batch
+            List of score arrays, one per input batch.
         """
         # For now, this is a sequential implementation
         # In the future, could use multiprocessing or threading
@@ -127,15 +118,13 @@ class VectorizedScorer:
     def score_matrix(self, elements_2d: Sequence[Sequence[Element]]) -> np.ndarray[Any, Any]:
         """Score a 2D array of elements, returning a matrix of scores.
 
-        Parameters
-        ----------
-        elements_2d : List[List[Element]]
-            2D list of elements to score
+        Args:
+            elements_2d: 2D list of elements to score.
 
         Returns:
-        -------
-        np.ndarray
-            2D array of scores with shape (len(elements_2d), max_row_length)
+            2D array of scores with shape
+            ``(len(elements_2d), max_row_length)``; shorter rows are padded
+            with the default probability.
         """
         if not elements_2d:
             return np.array([])
@@ -156,15 +145,12 @@ class VectorizedScorer:
     def top_k_elements(self, k: int) -> tuple[Sequence[Element], np.ndarray[Any, Any]]:
         """Get the top-k highest scoring elements.
 
-        Parameters
-        ----------
-        k : int
-            Number of top elements to return
+        Args:
+            k: Number of top elements to return.
 
         Returns:
-        -------
-        Tuple[List[Element], np.ndarray]
-            Tuple of (elements, scores) for the top-k elements
+            A tuple of ``(elements, scores)`` for the top-k elements, ordered
+            from highest to lowest score.
         """
         if len(self._prob_array) == 0:
             return [], np.array([])
@@ -185,17 +171,12 @@ class VectorizedScorer:
     ) -> np.ndarray[Any, Any]:
         """Compute percentile ranks for element scores.
 
-        Parameters
-        ----------
-        elements : List[Element]
-            Elements to compute percentiles for
-        percentiles : List[float]
-            Percentiles to compute (0-100)
+        Args:
+            elements: Elements to compute percentile ranks for.
+            percentiles: Percentiles to compute (0-100).
 
         Returns:
-        -------
-        np.ndarray
-            Percentile ranks for each element
+            Percentile rank for each element.
         """
         scores = self.score_batch(elements)
 
@@ -214,17 +195,22 @@ class VectorizedScorer:
 
 
 def create_vectorized_batch_scorer(scorers: dict[str, ScoringMethod]) -> "BatchScorer":
-    """Create a batch scorer that can handle multiple scoring methods efficiently.
+    """Create a batch scorer handling multiple scoring methods efficiently.
 
-    Parameters
-    ----------
-    scorers : Dict[str, ScoringMethod]
-        Dictionary mapping scorer names to scoring methods
+    Args:
+        scorers: Mapping of scorer names to scoring methods.
 
     Returns:
-    -------
-    BatchScorer
-        Batch scorer instance
+        A `BatchScorer` wrapping the given scoring methods.
+
+    Examples:
+        >>> from freqprob import MLE
+        >>> batch_scorer = create_vectorized_batch_scorer(
+        ...     {"mle": MLE({"a": 3, "b": 2}, logprob=False)}
+        ... )
+        >>> scores = batch_scorer.score_batch(["a", "b"])
+        >>> [round(float(x), 4) for x in scores["mle"]]
+        [0.6, 0.4]
     """
     return BatchScorer(scorers)
 
@@ -235,33 +221,30 @@ class BatchScorer:
     This class allows scoring elements using multiple methods simultaneously,
     with optimized operations for processing large batches of data.
 
-    Parameters
-    ----------
-    scorers : Dict[str, ScoringMethod]
-        Dictionary mapping scorer names to scoring methods
+    Args:
+        scorers: Mapping of scorer names to scoring methods.
 
     Examples:
-    --------
-    >>> from freqprob import MLE, Laplace
-    >>> scorers = {
-    ...     'mle': MLE({'a': 3, 'b': 2}, logprob=False),
-    ...     'laplace': Laplace({'a': 3, 'b': 2}, logprob=False)
-    ... }
-    >>> batch_scorer = BatchScorer(scorers)
-    >>> results = batch_scorer.score_batch(['a', 'b', 'c'])
-    >>> results['mle']  # MLE scores
-    array([0.6, 0.4, 0.0])
-    >>> results['laplace']  # Laplace scores
-    array([0.5, 0.375, 0.125])
+        Score the same elements with several methods at once:
+
+        >>> from freqprob import MLE, Laplace
+        >>> scorers = {
+        ...     "mle": MLE({"a": 3, "b": 2}, logprob=False),
+        ...     "laplace": Laplace({"a": 3, "b": 2}, logprob=False),
+        ... }
+        >>> batch_scorer = BatchScorer(scorers)
+        >>> results = batch_scorer.score_batch(["a", "b", "c"])
+        >>> [round(float(x), 4) for x in results["mle"]]
+        [0.6, 0.4, 0.0]
+        >>> [round(float(x), 4) for x in results["laplace"]]
+        [0.5714, 0.4286, 0.1429]
     """
 
     def __init__(self, scorers: dict[str, ScoringMethod]):
         """Initialize batch scorer with multiple scoring methods.
 
-        Parameters
-        ----------
-        scorers : Dict[str, ScoringMethod]
-            Dictionary mapping scorer names to scoring methods
+        Args:
+            scorers: Mapping of scorer names to scoring methods.
         """
         self.scorers = scorers
         self.vectorized_scorers = {
@@ -271,15 +254,11 @@ class BatchScorer:
     def score_batch(self, elements: Sequence[Element]) -> dict[str, np.ndarray[Any, Any]]:
         """Score elements using all configured scoring methods.
 
-        Parameters
-        ----------
-        elements : List[Element]
-            Elements to score
+        Args:
+            elements: Elements to score.
 
         Returns:
-        -------
-        Dict[str, np.ndarray]
-            Dictionary mapping scorer names to score arrays
+            Mapping of scorer names to score arrays.
         """
         return {
             name: vectorized.score_batch(elements)
@@ -289,15 +268,12 @@ class BatchScorer:
     def score_and_compare(self, elements: Sequence[Element]) -> dict[str, Any]:
         """Score elements and provide comparison statistics.
 
-        Parameters
-        ----------
-        elements : List[Element]
-            Elements to score
+        Args:
+            elements: Elements to score.
 
         Returns:
-        -------
-        Dict[str, Any]
-            Dictionary with scores and comparison statistics
+            Dictionary with per-method scores plus aggregate statistics
+            (mean, std, min, max) and per-method rankings.
         """
         scores = self.score_batch(elements)
 
@@ -324,17 +300,13 @@ class BatchScorer:
     ) -> dict[str, float]:
         """Benchmark the performance of different scoring methods.
 
-        Parameters
-        ----------
-        elements : List[Element]
-            Elements to use for benchmarking
-        num_iterations : int, default=100
-            Number of iterations for timing
+        Args:
+            elements: Elements to use for benchmarking.
+            num_iterations: Number of iterations for timing. Defaults to
+                ``100``.
 
         Returns:
-        -------
-        Dict[str, float]
-            Dictionary mapping method names to average execution times
+            Mapping of method names to average execution time in seconds.
         """
         import time
 
