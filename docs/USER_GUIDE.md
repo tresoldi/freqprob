@@ -86,9 +86,11 @@ Start from what your data looks like:
 | Just want relative frequencies, no smoothing | `MLE` | — |
 | General-purpose additive smoothing | `Laplace` / `Lidstone` / `ELE` | `bins`, `gamma` |
 | Heavy-tailed counts, many rare elements | `SimpleGoodTuring` | `p_value` |
+| Parameter-free discounting by distinct-type count | `WittenBell` | `bins` |
 | n-gram language models | `KneserNey` / `ModifiedKneserNey` | `discount` |
 | You have a prior belief (Dirichlet) | `Bayesian` | `alpha` |
 | Combine a specific and a general model | `Interpolated` | `lambda_weight` |
+| Reserve mass by how fully the support is observed (experimental) | `CertaintyDegree` | `bins` |
 | Non-informative baseline | `Uniform` / `Random` | — |
 
 By data characteristics:
@@ -114,6 +116,9 @@ When-to-use, in one line each:
   is to appear in a *novel* context.
 - **`Bayesian`** — smoothing as a Dirichlet(`alpha`) prior; principled and tunable.
 - **`Interpolated`** — mix a high-order (specific) and low-order (general) model.
+- **`CertaintyDegree`** — reserves mass by how fully the possible support has been
+  observed; the more of the space you have seen, the less is held back.
+  *Experimental — not recommended as your only estimator yet.*
 
 ---
 
@@ -168,6 +173,11 @@ sgt = freqprob.SimpleGoodTuring(counts, logprob=False)
 
 assert 0.0 < sgt.total_unseen_mass < 1.0  # reserved for unseen types
 assert sgt("unseen") > 0.0
+
+# Witten-Bell: parameter-free, reserves mass by the count of distinct types.
+wb = freqprob.WittenBell(counts, logprob=False)
+assert wb("a") > wb("g")   # observed elements ranked by frequency
+assert wb("unseen") > 0.0  # unseen types share the reserved mass
 ```
 
 ### n-gram models: Kneser-Ney
@@ -201,6 +211,27 @@ interp = freqprob.Interpolated(high, low, lambda_weight=0.7, logprob=False)
 
 assert 0.0 <= interp(("the", "big", "cat")) <= 1.0
 ```
+
+### Certainty-degree smoothing: CertaintyDegree
+
+`CertaintyDegree` reserves mass for the unseen according to how much of the
+possible support has already been observed: the more of the space you have seen,
+the more certain it is that little remains unseen, so less mass is held back. The
+remainder rescales the MLE of each observed element. Pass `bins` to declare the
+size of the possible support.
+
+```python
+import freqprob
+
+counts = {"apple": 8, "banana": 4, "cherry": 2, "date": 1}
+cd = freqprob.CertaintyDegree(counts, logprob=False)
+
+assert cd("apple") > cd("date")  # observed elements ranked by frequency
+assert cd("kiwi") > 0.0          # unobserved element still gets mass
+```
+
+This is an **experimental** estimator still under development; it is documented
+for completeness but is not recommended as your sole or primary method yet.
 
 ---
 

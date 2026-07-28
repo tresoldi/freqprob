@@ -65,9 +65,11 @@ any fitted estimator can be saved with `.save(path)` and reloaded with
 | `Laplace` / `Lidstone` / `ELE` | simple, robust additive smoothing | `bins`, `gamma` |
 | `SimpleGoodTuring` | heavy-tailed count data (many rare items) | `p_value` |
 | `KneserNey` / `ModifiedKneserNey` | n-gram language models | `discount` |
+| `WittenBell` | parameter-free discounting by distinct-type count | `bins` |
 | `Bayesian` | Dirichlet-prior smoothing | `alpha` |
 | `Interpolated` | combining models of different orders | `lambda_weight` |
-| `WittenBell`, `CertaintyDegree`, `Uniform`, `Random` | baselines & specialized cases | — |
+| `CertaintyDegree` | reserving mass by how fully the support is observed (experimental) | `bins` |
+| `Uniform` / `Random` | non-informative baselines | — |
 
 For large or streaming data, FreqProb also provides vectorized batch scoring,
 lazy evaluation, streaming (incremental) estimators, and memory-efficient
