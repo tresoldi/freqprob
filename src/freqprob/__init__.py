@@ -3,7 +3,7 @@
 # Version of the freqprob package
 __version__ = "0.6.1"
 __author__ = "Tiago Tresoldi"
-__email__ = "tiago.tresoldi@lingfil.uu.se"
+__email__ = "freqprob@tresoldi.org"
 
 
 # Base type (useful for isinstance checks and type annotations)

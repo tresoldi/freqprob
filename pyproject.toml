@@ -10,10 +10,10 @@ readme = "README.md"
 license = "MIT"
 keywords = ["nlp", "smoothing", "frequency", "probability", "language-model"]
 authors = [
-    {name = "Tiago Tresoldi", email = "tiago.tresoldi@lingfil.uu.se"},
+    {name = "Tiago Tresoldi", email = "freqprob@tresoldi.org"},
 ]
 maintainers = [
-    {name = "Tiago Tresoldi", email = "tiago.tresoldi@lingfil.uu.se"},
+    {name = "Tiago Tresoldi", email = "freqprob@tresoldi.org"},
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
