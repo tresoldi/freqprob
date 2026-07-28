@@ -97,12 +97,12 @@ compressed/sparse representations.
 If you use FreqProb in academic research, please cite:
 
 ```bibtex
-@software{tresoldi_freqprob_2025,
+@software{tresoldi_freqprob_2026,
   author = {Tresoldi, Tiago},
   title = {FreqProb: A Python library for probability smoothing and frequency-based estimation},
   url = {https://github.com/tresoldi/freqprob},
-  version = {0.6.1},
-  year = {2025}
+  version = {0.6.2},
+  year = {2026}
 }
 ```
 

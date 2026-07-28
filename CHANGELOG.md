@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-07-28
+
+Maintenance release: license/metadata fixes and a full documentation rebuild.
+No library code or public API changes since 0.6.1.
+
 ### Fixed
 
 - **License file corrected to MIT.** The `LICENSE` file contained the full GNU
@@ -31,8 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **All documentation examples are now executed in CI.** New tests run every
   docstring example (`tests/test_doctests.py`) and every Python code block in the
   README and docs (`tests/test_docs_examples.py`), so an example can no longer
-  drift from the code. The README is trimmed to essentials and its citation
-  version corrected to 0.6.1.
+  drift from the code.
+- Bumped pinned dev tooling in lockstep across `pyproject.toml` and
+  `.pre-commit-config.yaml`: **ruff** `0.15.8` → `0.16.0` and **mypy**
+  `1.19.1` → `2.3.0`. Applied ruff 0.16.0's updated formatting (Markdown
+  embedded code blocks).
 
 ### Removed
 
@@ -41,11 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   non-existent APIs), and the four `docs/tutorial_*.py` files. Dropped the
   now-unused `nhandu`/`matplotlib`/`seaborn` dev dependencies and the Makefile
   `docs`/`docs-clean` tutorial targets.
-
-- Bumped pinned dev tooling in lockstep across `pyproject.toml` and
-  `.pre-commit-config.yaml`: **ruff** `0.15.8` → `0.16.0` and **mypy**
-  `1.19.1` → `2.3.0`. Applied ruff 0.16.0's updated formatting (Markdown
-  embedded code blocks). No source-code or public API changes.
 
 ## [0.6.1] - 2026-07-28
 
