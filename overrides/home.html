@@ -169,8 +169,10 @@ model("elephant")  <span class="c-com"># 0.0001   unobserved, yet non-zero</span
             <tr><td class="m">SimpleGoodTuring</td><td>the distribution is heavy-tailed with many rare types</td><td class="k">p_value</td></tr>
             <tr><td class="m">WittenBell</td><td>a parameter-free discount tied to the number of distinct types is wanted</td><td class="k">bins</td></tr>
             <tr><td class="m">KneserNey, ModifiedKneserNey</td><td>estimating an n-gram language model</td><td class="k">discount</td></tr>
+            <tr><td class="m">AbsoluteDiscounting, PitmanYor</td><td>bigram discounting with back-off to a unigram model</td><td class="k">discount, strength</td></tr>
+            <tr><td class="m">KatzBackoff, StupidBackoff</td><td>bigram back-off, normalised (Katz) or fast and unnormalised (Stupid)</td><td class="k">k, alpha</td></tr>
             <tr><td class="m">Bayesian</td><td>a Dirichlet prior is assumed</td><td class="k">alpha</td></tr>
-            <tr><td class="m">Interpolated</td><td>a specific and a general model are combined</td><td class="k">lambda_weight</td></tr>
+            <tr><td class="m">Interpolated, JelinekMercer</td><td>a specific and a general model are combined, with a fixed or EM-fitted weight</td><td class="k">lambda_weight</td></tr>
             <tr><td class="m">CertaintyDegree</td><td>mass is reserved by how fully the support has been observed (experimental)</td><td class="k">bins</td></tr>
             <tr><td class="m">Uniform, Random</td><td>a non-informative baseline is needed</td><td class="k">—</td></tr>
           </tbody>

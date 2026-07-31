@@ -317,3 +317,153 @@ class Interpolated(ScoringMethod):
             self._unobs = math.log(interpolated_unseen)
         else:
             self._unobs = interpolated_unseen
+
+
+def _mle(dist: FrequencyDistribution) -> tuple[dict[Element, float], int]:
+    """Return the maximum-likelihood distribution and total count of ``dist``."""
+    total = sum(dist.values())
+    if total == 0:
+        return {}, 0
+    return {element: count / total for element, count in dist.items()}, total
+
+
+def _estimate_jm_lambda(
+    high_order_dist: FrequencyDistribution,
+    low_order_dist: FrequencyDistribution,
+    held_out_dist: FrequencyDistribution,
+    low_order_n: int | None,
+    init_lambda: float,
+    iterations: int,
+) -> float:
+    """Estimate the Jelinek-Mercer weight by EM (deleted interpolation).
+
+    Iteratively reweights ``lambda`` so that the interpolated model
+    ``lambda * P_high + (1 - lambda) * P_low`` maximizes the likelihood of the
+    held-out data. Returns ``init_lambda`` unchanged when there is no usable
+    held-out evidence.
+    """
+    high_probs, _ = _mle(high_order_dist)
+    low_probs, _ = _mle(low_order_dist)
+
+    # Precompute (p_high, p_low, count) for each held-out n-gram once.
+    observations: list[tuple[float, float, float]] = []
+    for ngram, count in held_out_dist.items():
+        if count <= 0:
+            continue
+        p_high = high_probs.get(ngram, 0.0)
+        if low_order_n is not None and isinstance(ngram, tuple) and len(ngram) >= low_order_n:
+            context: Element = ngram[-low_order_n:]
+        else:
+            context = ngram
+        p_low = low_probs.get(context, 0.0)
+        if p_high <= 0.0 and p_low <= 0.0:
+            continue
+        observations.append((p_high, p_low, float(count)))
+
+    if not observations:
+        return init_lambda
+
+    lam = init_lambda
+    for _ in range(iterations):
+        expected_high = 0.0
+        total = 0.0
+        for p_high, p_low, weight in observations:
+            denom = lam * p_high + (1 - lam) * p_low
+            if denom <= 0.0:
+                continue
+            responsibility = lam * p_high / denom
+            expected_high += weight * responsibility
+            total += weight
+        if total <= 0.0:
+            break
+        lam = expected_high / total
+    return lam
+
+
+class JelinekMercer(Interpolated):
+    """Jelinek-Mercer smoothing with an EM-estimated interpolation weight.
+
+    Jelinek-Mercer smoothing linearly interpolates a higher-order model with a
+    lower-order one, exactly as :class:`Interpolated` does, but chooses the
+    interpolation weight ``lambda`` by *deleted interpolation*: given a held-out
+    distribution, the weight is fitted with the Expectation-Maximization
+    algorithm to maximize the likelihood of that held-out data. Without held-out
+    data it behaves as fixed-weight interpolation using ``lambda_weight``.
+
+    Args:
+        high_order_dist: Higher-order frequency distribution (e.g. trigrams).
+        low_order_dist: Lower-order frequency distribution (e.g. bigrams).
+        held_out_dist: Optional held-out frequency distribution used to fit
+            ``lambda`` by EM. If ``None`` (the default), the supplied
+            ``lambda_weight`` is used unchanged.
+        lambda_weight: Interpolation weight ``0 <= lambda_weight <= 1`` for the
+            high-order model. Used directly when there is no held-out data, and
+            as the EM starting point otherwise. Defaults to ``0.5``.
+        em_iterations: Number of EM iterations when fitting ``lambda`` from
+            held-out data (a positive integer). Defaults to ``10``.
+        logprob: Return log-probabilities if ``True`` (the default), otherwise
+            plain probabilities.
+
+    Attributes:
+        estimated_lambda: The interpolation weight actually used — either the
+            EM-fitted value or ``lambda_weight`` when no held-out data was given.
+
+    Examples:
+        With no held-out data the estimated weight is exactly ``lambda_weight``,
+        and scoring matches fixed-weight interpolation:
+
+        >>> trigrams = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
+        >>> bigrams = {("big", "cat"): 5, ("big", "dog"): 3}
+        >>> jm = JelinekMercer(trigrams, bigrams, lambda_weight=0.6, logprob=False)
+        >>> round(jm.estimated_lambda, 2)
+        0.6
+        >>> round(jm(("the", "big", "cat")), 3)   # 0.6 * (3/5) + 0.4 * (5/8)
+        0.61
+
+        Held-out data that the high-order model predicts well pulls the weight up:
+
+        >>> held_out = {("the", "big", "cat"): 8, ("a", "big", "dog"): 6}
+        >>> jm = JelinekMercer(trigrams, bigrams, held_out_dist=held_out, logprob=False)
+        >>> jm.estimated_lambda > 0.5
+        True
+
+    Note:
+        EM fits a single global ``lambda`` (not the per-context bucketed weights
+        of the original Jelinek-Mercer scheme). The held-out data should be
+        disjoint from the training data for the estimate to be meaningful.
+    """
+
+    __slots__ = ("em_iterations", "estimated_lambda")
+
+    def __init__(
+        self,
+        high_order_dist: FrequencyDistribution,
+        low_order_dist: FrequencyDistribution,
+        held_out_dist: FrequencyDistribution | None = None,
+        lambda_weight: float = 0.5,
+        em_iterations: int = 10,
+        logprob: bool = True,
+    ) -> None:
+        """Initialize Jelinek-Mercer smoothing, fitting ``lambda`` if held-out data is given."""
+        if not 0 <= lambda_weight <= 1:
+            raise ValueError("Lambda weight must be between 0 and 1")
+        if em_iterations < 1:
+            raise ValueError("em_iterations must be a positive integer")
+
+        low_order_n = self._detect_order(low_order_dist)
+        if held_out_dist:
+            estimated = _estimate_jm_lambda(
+                high_order_dist,
+                low_order_dist,
+                held_out_dist,
+                low_order_n,
+                lambda_weight,
+                em_iterations,
+            )
+        else:
+            estimated = lambda_weight
+
+        super().__init__(high_order_dist, low_order_dist, lambda_weight=estimated, logprob=logprob)
+        self.name = "Jelinek-Mercer"
+        self.em_iterations = em_iterations
+        self.estimated_lambda = estimated

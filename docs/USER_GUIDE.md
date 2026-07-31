@@ -88,8 +88,10 @@ Start from what your data looks like:
 | Heavy-tailed counts, many rare elements | `SimpleGoodTuring` | `p_value` |
 | Parameter-free discounting by distinct-type count | `WittenBell` | `bins` |
 | n-gram language models | `KneserNey` / `ModifiedKneserNey` | `discount` |
+| Bigram discounting with unigram back-off | `AbsoluteDiscounting` / `PitmanYor` | `discount`, `strength` |
+| Bigram back-off (normalised or fast) | `KatzBackoff` / `StupidBackoff` | `k`, `alpha` |
 | You have a prior belief (Dirichlet) | `Bayesian` | `alpha` |
-| Combine a specific and a general model | `Interpolated` | `lambda_weight` |
+| Combine a specific and a general model | `Interpolated` / `JelinekMercer` | `lambda_weight` |
 | Reserve mass by how fully the support is observed (experimental) | `CertaintyDegree` | `bins` |
 | Non-informative baseline | `Uniform` / `Random` | — |
 
@@ -114,8 +116,16 @@ When-to-use, in one line each:
   things seen; a solid, assumption-light choice.
 - **`KneserNey`** — the standard for n-gram models; models how likely an element
   is to appear in a *novel* context.
+- **`AbsoluteDiscounting`** / **`PitmanYor`** — bigram discounting that backs off
+  to a unigram model; `PitmanYor` adds a concentration parameter (`strength`) and
+  has absolute discounting as its `strength=0` case.
+- **`KatzBackoff`** / **`StupidBackoff`** — bigram back-off; Katz is a proper
+  normalized distribution (Good-Turing discounted), Stupid Back-off is a fast,
+  unnormalized score for ranking at scale.
 - **`Bayesian`** — smoothing as a Dirichlet(`alpha`) prior; principled and tunable.
 - **`Interpolated`** — mix a high-order (specific) and low-order (general) model.
+- **`JelinekMercer`** — interpolation whose weight is fit by EM on held-out data
+  (falls back to a fixed weight when none is given).
 - **`CertaintyDegree`** — reserves mass by how fully the possible support has been
   observed; the more of the space you have seen, the less is held back.
   *Experimental — not recommended as your only estimator yet.*
@@ -196,11 +206,44 @@ assert 0.0 < kn(("the", "cat")) <= 1.0
 assert kn(("the", "bird")) > 0.0  # unseen bigram still gets mass
 ```
 
-### Priors and interpolation: Bayesian, Interpolated
+### Bigram back-off and discounting: AbsoluteDiscounting, PitmanYor, KatzBackoff, StupidBackoff
+
+These take a distribution over `(context, word)` bigrams and model
+`P(word | context)`, discounting observed bigrams and backing off to a unigram
+model for unseen ones. `AbsoluteDiscounting` subtracts a fixed amount from each
+count; `PitmanYor` generalises it with a concentration parameter (`strength`),
+recovering absolute discounting at `strength=0`. `KatzBackoff` uses Good-Turing
+discounting and normalised back-off weights, so it is a proper distribution;
+`StupidBackoff` skips normalisation for speed and returns scores (not
+probabilities) for ranking at scale.
+
+```python
+import freqprob
+
+bigrams = {
+    ("the", "cat"): 5,
+    ("the", "dog"): 3,
+    ("a", "cat"): 2,
+    ("a", "dog"): 1,
+    ("big", "cat"): 1,
+    ("small", "dog"): 1,
+}
+
+ad = freqprob.AbsoluteDiscounting(bigrams, discount=0.75, logprob=False)
+assert ad(("the", "cat")) > 0
+assert ad(("new", "cat")) > 0  # unseen context backs off to the unigram model
+
+sb = freqprob.StupidBackoff(bigrams, alpha=0.4, logprob=False)
+assert sb(("the", "cat")) == 0.625  # observed bigram scores its relative frequency (5/8)
+```
+
+### Priors and interpolation: Bayesian, Interpolated, JelinekMercer
 
 `Bayesian` treats smoothing as a Dirichlet(`alpha`) prior over categories.
 `Interpolated` blends a high-order (specific) distribution with a low-order
-(general) one via `lambda_weight`.
+(general) one via a fixed `lambda_weight`. `JelinekMercer` is the same
+interpolation, but fits the weight by EM on a held-out distribution when one is
+supplied (otherwise it uses the fixed weight).
 
 ```python
 import freqprob
@@ -210,6 +253,12 @@ low = {"cat": 3, "dog": 2, "the": 5}
 interp = freqprob.Interpolated(high, low, lambda_weight=0.7, logprob=False)
 
 assert 0.0 <= interp(("the", "big", "cat")) <= 1.0
+
+# Jelinek-Mercer fits the interpolation weight from held-out data.
+trigrams = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
+bigrams = {("big", "cat"): 5, ("big", "dog"): 3}
+jm = freqprob.JelinekMercer(trigrams, bigrams, lambda_weight=0.6, logprob=False)
+assert round(jm.estimated_lambda, 2) == 0.6  # no held-out data -> fixed weight
 ```
 
 ### Certainty-degree smoothing: CertaintyDegree
@@ -268,6 +317,27 @@ models = {
 }
 report = freqprob.model_comparison(models, test)
 assert set(report) == {"laplace", "mle"}
+```
+
+### Coverage and entropy of a sample
+
+These work directly on a frequency distribution rather than on a fitted model.
+`sample_coverage` is the Good-Turing estimate of the observed probability mass
+(one minus the singleton rate). `chao_shen_entropy` and `nsb_entropy` estimate
+Shannon entropy while correcting the downward bias of the naive plug-in estimate
+when the sample misses mass — useful for undersampled data. `nsb_entropy` takes
+an optional `bins` to reserve entropy for types that could occur but were not
+seen.
+
+```python
+import freqprob
+
+counts = {"a": 8, "b": 1, "c": 1}  # two singletons out of ten observations
+
+assert freqprob.sample_coverage(counts) == 0.8  # 1 - 2/10
+# Both estimators exceed the (biased-low) plug-in entropy on undersampled data.
+assert freqprob.chao_shen_entropy(counts) > 0.0
+assert freqprob.nsb_entropy(counts, bins=100) > freqprob.nsb_entropy(counts)
 ```
 
 ---
