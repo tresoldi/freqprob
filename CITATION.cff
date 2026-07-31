@@ -11,8 +11,8 @@ authors:
   - family-names: Tresoldi
     given-names: Tiago
     email: freqprob@tresoldi.org
-version: 0.6.2
-date-released: 2026-07-28
+version: 0.7.0
+date-released: 2026-07-31
 license: MIT
 repository-code: "https://github.com/tresoldi/freqprob"
 url: "https://github.com/tresoldi/freqprob"
