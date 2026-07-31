@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **New bigram smoothing methods.** `AbsoluteDiscounting` and `PitmanYor`
+  (absolute discounting and its Pitman-Yor generalization, backing off to a
+  unigram model), and `KatzBackoff` and `StupidBackoff` (Good-Turing-normalized
+  and fast unnormalized back-off). They share internal machinery in
+  `methods/_bigram.py` and model `P(word | context)` over `(context, word)`
+  bigram distributions.
+- **`JelinekMercer` smoothing.** Linear interpolation whose weight is fit by EM
+  (deleted interpolation) on a held-out distribution, exposed via
+  `estimated_lambda`; falls back to a fixed weight when no held-out data is given.
+- **Sample-based entropy estimators** in `metrics`: `sample_coverage` (the
+  Good-Turing observed-mass estimate), `chao_shen_entropy` (Chao-Shen
+  bias-corrected entropy), and `nsb_entropy` (the Nemenman-Shafee-Bialek Bayesian
+  entropy estimator, with an optional `bins` for the assumed alphabet size).
+- All new estimators and functions are exported from the top-level `freqprob`
+  namespace and covered by `tests/test_new_methods.py`.
+
 ## [0.6.2] - 2026-07-28
 
 Maintenance release: license/metadata fixes, a full documentation rebuild, and a

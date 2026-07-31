@@ -65,15 +65,19 @@ any fitted estimator can be saved with `.save(path)` and reloaded with
 | `Laplace` / `Lidstone` / `ELE` | simple, robust additive smoothing | `bins`, `gamma` |
 | `SimpleGoodTuring` | heavy-tailed count data (many rare items) | `p_value` |
 | `KneserNey` / `ModifiedKneserNey` | n-gram language models | `discount` |
+| `AbsoluteDiscounting` / `PitmanYor` | bigram discounting with unigram back-off | `discount`, `strength` |
+| `KatzBackoff` / `StupidBackoff` | bigram back-off models | `k`, `alpha` |
 | `WittenBell` | parameter-free discounting by distinct-type count | `bins` |
 | `Bayesian` | Dirichlet-prior smoothing | `alpha` |
-| `Interpolated` | combining models of different orders | `lambda_weight` |
+| `Interpolated` / `JelinekMercer` | combining models of different orders (fixed or EM-fit weight) | `lambda_weight` |
 | `CertaintyDegree` | reserving mass by how fully the support is observed (experimental) | `bins` |
 | `Uniform` / `Random` | non-informative baselines | — |
 
 For large or streaming data, FreqProb also provides vectorized batch scoring,
 lazy evaluation, streaming (incremental) estimators, and memory-efficient
-compressed/sparse representations.
+compressed/sparse representations. Sample-based estimators — `sample_coverage`
+and the bias-corrected entropy estimators `chao_shen_entropy` and `nsb_entropy`
+— work directly on a frequency distribution.
 
 ## Why FreqProb
 

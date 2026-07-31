@@ -1,9 +1,19 @@
-"""Model-evaluation metrics: perplexity, cross-entropy, KL divergence."""
+"""Model-evaluation metrics: perplexity, cross-entropy, KL divergence, entropy.
+
+Alongside the model-scoring metrics, this module provides sample-based estimators
+that work directly on a frequency distribution: :func:`sample_coverage` (the
+Good-Turing estimate of observed mass) and the bias-corrected entropy estimators
+:func:`chao_shen_entropy` and :func:`nsb_entropy`, which correct the downward bias
+of the naive plug-in entropy when many types are rare or unobserved.
+"""
 
 import math
 from collections.abc import Iterable
 
-from .base import Element, ScoringMethod
+import numpy as np
+from scipy.special import gammaln, polygamma, psi
+
+from .base import Element, FrequencyDistribution, ScoringMethod
 
 
 def perplexity(model: ScoringMethod, test_data: Iterable[Element]) -> float:
@@ -162,3 +172,174 @@ def model_comparison(
         }
 
     return results
+
+
+def sample_coverage(freqdist: FrequencyDistribution) -> float:
+    """Estimate the proportion of total probability mass that was observed.
+
+    Uses the Good-Turing estimator of the *missing mass*: the share of
+    probability belonging to unseen types is approximately ``N1 / N``, where
+    ``N1`` is the number of types seen exactly once (singletons) and ``N`` the
+    total number of observations. Coverage is the complement, ``1 - N1 / N``.
+
+    Args:
+        freqdist: Mapping of elements to observed counts.
+
+    Returns:
+        The estimated observed mass, in ``[0, 1]``. Returns ``0.0`` for an empty
+        distribution.
+
+    Examples:
+        >>> from freqprob import sample_coverage
+        >>> sample_coverage({"a": 10, "b": 5, "c": 3})  # no singletons
+        1.0
+        >>> round(sample_coverage({"a": 8, "b": 1, "c": 1}), 3)  # two singletons of 10
+        0.8
+    """
+    total = sum(freqdist.values())
+    if total == 0:
+        return 0.0
+    n1 = sum(1 for count in freqdist.values() if count == 1)
+    return 1.0 - n1 / total
+
+
+def chao_shen_entropy(freqdist: FrequencyDistribution) -> float:
+    """Estimate Shannon entropy with the Chao-Shen bias correction.
+
+    The naive plug-in entropy underestimates the true entropy when the sample
+    misses probability mass. The Chao-Shen estimator combines Good-Turing
+    coverage adjustment with a Horvitz-Thompson correction for unseen types,
+    which reduces this bias:
+
+    ``H = - sum_i (C p_i) log(C p_i) / (1 - (1 - C p_i) ** N)``
+
+    where ``p_i`` is the relative frequency of type ``i``, ``C`` the sample
+    coverage (see :func:`sample_coverage`), and ``N`` the total count.
+
+    Args:
+        freqdist: Mapping of elements to observed counts.
+
+    Returns:
+        The estimated entropy in nats (natural log). Returns ``0.0`` for an
+        empty distribution or when coverage is zero (all singletons).
+
+    Examples:
+        >>> from freqprob import chao_shen_entropy
+        >>> import math
+        >>> # Approaches the true entropy of a uniform distribution when well sampled.
+        >>> round(chao_shen_entropy({"a": 1000, "b": 1000, "c": 1000}), 3)
+        1.099
+        >>> round(math.log(3), 3)
+        1.099
+    """
+    total = sum(freqdist.values())
+    if total == 0:
+        return 0.0
+    n1 = sum(1 for count in freqdist.values() if count == 1)
+    coverage = 1.0 - n1 / total
+    if coverage <= 0.0:
+        return 0.0
+
+    entropy = 0.0
+    for count in freqdist.values():
+        if count <= 0:
+            continue
+        p = coverage * (count / total)
+        if p <= 0.0:
+            continue
+        inclusion = 1.0 - (1.0 - p) ** total
+        if inclusion <= 0.0:
+            continue
+        entropy -= p * math.log(p) / inclusion
+    return entropy
+
+
+def nsb_entropy(freqdist: FrequencyDistribution, bins: int | None = None) -> float:
+    """Estimate Shannon entropy with the Nemenman-Shafee-Bialek estimator.
+
+    The NSB estimator is a Bayesian entropy estimator that averages the posterior
+    mean entropy of a symmetric Dirichlet model over its concentration parameter,
+    using a prior chosen so the *a priori* entropy is (nearly) uniform. It is
+    well suited to the undersampled regime, where the number of possible types is
+    comparable to or larger than the number of observations.
+
+    Args:
+        freqdist: Mapping of elements to observed counts.
+        bins: The size of the assumed alphabet (number of possible types),
+            reserving entropy for types that could occur but were not seen. If
+            ``None`` (the default), the number of observed types is used, so no
+            unseen types are assumed. Must be at least the number of observed
+            types.
+
+    Returns:
+        The estimated entropy in nats (natural log), in ``[0, log(bins)]``.
+        Returns ``0.0`` for an empty distribution or a single possible type.
+
+    Raises:
+        ValueError: If ``bins`` is smaller than the number of observed types.
+
+    Examples:
+        >>> from freqprob import nsb_entropy
+        >>> import math
+        >>> # Well-sampled uniform distribution approaches log(K).
+        >>> round(nsb_entropy({"a": 500, "b": 500, "c": 500, "d": 500}), 2)
+        1.39
+        >>> round(math.log(4), 2)
+        1.39
+    """
+    counts = [int(count) for count in freqdist.values() if count > 0]
+    n_observed_types = len(counts)
+
+    if bins is None:
+        bins = n_observed_types
+    if bins < n_observed_types:
+        raise ValueError("bins must be at least the number of observed types")
+
+    total = sum(counts)
+    if total == 0 or bins <= 1:
+        return 0.0
+
+    k = float(bins)
+    n = float(total)
+    observed = np.asarray(counts, dtype=float)
+
+    # Integrate over the per-bin Dirichlet concentration parameter ``a`` on a
+    # geometric grid, weighting each value by the evidence and the prior that
+    # makes the a-priori mean entropy uniform.
+    a = np.geomspace(1e-8, 1e8, 6000)
+    ka = k * a
+
+    # Log evidence (unnormalized): unobserved bins contribute nothing in log.
+    log_evidence = gammaln(ka) - gammaln(n + ka)
+    for count in observed:
+        log_evidence = log_evidence + gammaln(count + a) - gammaln(a)
+
+    # Prior Jacobian d(xi)/da, where xi(a) = psi(k a + 1) - psi(a + 1) is the
+    # a-priori mean entropy; a flat prior on xi makes this the density in ``a``.
+    jacobian = k * polygamma(1, ka + 1.0) - polygamma(1, a + 1.0)
+    jacobian = np.clip(jacobian, 0.0, None)
+
+    # Posterior mean entropy given ``a`` (Wolpert & Wolf, 1995).
+    denom = n + ka
+    observed_term = np.zeros_like(a)
+    for count in observed:
+        observed_term = observed_term + (count + a) * psi(count + a + 1.0)
+    unobserved_term = (k - n_observed_types) * a * psi(a + 1.0)
+    mean_entropy = psi(denom + 1.0) - (observed_term + unobserved_term) / denom
+
+    # Combine in log space; weight = evidence * jacobian * grid spacing.
+    spacing = np.gradient(a)
+    with np.errstate(divide="ignore"):
+        log_weight = log_evidence + np.log(np.where(jacobian > 0, jacobian, 1.0)) + np.log(spacing)
+    log_weight = np.where(jacobian > 0, log_weight, -np.inf)
+
+    finite = np.isfinite(log_weight)
+    if not finite.any():
+        return 0.0
+    log_weight = log_weight - np.max(log_weight[finite])
+    weight = np.where(finite, np.exp(log_weight), 0.0)
+
+    normalizer = float(np.sum(weight))
+    if normalizer <= 0.0:
+        return 0.0
+    return float(np.sum(weight * mean_entropy) / normalizer)

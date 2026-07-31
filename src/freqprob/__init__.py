@@ -12,15 +12,25 @@ from .base import ScoringMethod
 # Core estimators, grouped by family under methods/
 from .cache import clear_all_caches, get_cache_stats
 from .methods.additive import ELE, Laplace, Lidstone
+from .methods.backoff import KatzBackoff, StupidBackoff
 from .methods.baselines import MLE, Random, Uniform
 from .methods.bayesian import Bayesian
 from .methods.certainty import CertaintyDegree
+from .methods.discounting import AbsoluteDiscounting, PitmanYor
 from .methods.goodturing import SimpleGoodTuring, WittenBell
-from .methods.interpolated import Interpolated
+from .methods.interpolated import Interpolated, JelinekMercer
 from .methods.kneser_ney import KneserNey, ModifiedKneserNey
 
 # Model-evaluation metrics and (NLP) text helpers
-from .metrics import cross_entropy, kl_divergence, model_comparison, perplexity
+from .metrics import (
+    chao_shen_entropy,
+    cross_entropy,
+    kl_divergence,
+    model_comparison,
+    nsb_entropy,
+    perplexity,
+    sample_coverage,
+)
 
 # Performance infrastructure (lazy/streaming/vectorized/memory/profiling)
 from .performance.lazy import (
@@ -50,12 +60,15 @@ from .text import generate_ngrams, ngram_frequency, word_frequency
 __all__ = [
     "ELE",
     "MLE",
+    "AbsoluteDiscounting",
     "BatchScorer",
     "Bayesian",
     "CertaintyDegree",
     "CompressedFrequencyDistribution",
     "DistributionMemoryAnalyzer",
     "Interpolated",
+    "JelinekMercer",
+    "KatzBackoff",
     "KneserNey",
     "Laplace",
     "LazyBatchScorer",
@@ -64,6 +77,7 @@ __all__ = [
     "MemoryMonitor",
     "MemoryProfiler",
     "ModifiedKneserNey",
+    "PitmanYor",
     "QuantizedProbabilityTable",
     "Random",
     "ScoringMethod",
@@ -73,9 +87,11 @@ __all__ = [
     "StreamingFrequencyDistribution",
     "StreamingLaplace",
     "StreamingMLE",
+    "StupidBackoff",
     "Uniform",
     "VectorizedScorer",
     "WittenBell",
+    "chao_shen_entropy",
     "clear_all_caches",
     "create_compressed_distribution",
     "create_lazy_laplace",
@@ -88,6 +104,8 @@ __all__ = [
     "kl_divergence",
     "model_comparison",
     "ngram_frequency",
+    "nsb_entropy",
     "perplexity",
+    "sample_coverage",
     "word_frequency",
 ]
