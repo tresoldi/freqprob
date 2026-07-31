@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0] - 2026-07-31
+
+Feature release: new smoothing estimators and entropy metrics, together with the
+license/metadata fixes, documentation rebuild, and landing page that had been
+prepared for 0.6.2. Version 0.6.2 was never published, so PyPI goes from 0.6.1
+directly to 0.7.0, which carries all of that work.
 
 ### Added
 
@@ -24,15 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   entropy estimator, with an optional `bins` for the assumed alphabet size).
 - All new estimators and functions are exported from the top-level `freqprob`
   namespace and covered by `tests/test_new_methods.py`.
-
-## [0.6.2] - 2026-07-28
-
-Maintenance release: license/metadata fixes, a full documentation rebuild, and a
-new documentation landing page. No library code or public API changes since
-0.6.1.
-
-### Added
-
 - **Documentation landing page.** The docs site now opens with a dedicated,
   self-contained landing page — a dry, academic layout (neutral palette,
   monochrome figure and code) with a figure illustrating smoothing — served as
