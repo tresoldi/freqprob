@@ -69,7 +69,7 @@ dev = [
     # Code quality (required by Makefile).
     # ruff/mypy pinned exactly so local, CI, and pre-commit run identical linter
     # versions (unpinned ruff/mypy drift silently changes check results).
-    "ruff==0.16.0",
+    "ruff==0.16.1",
     "mypy==2.3.0",
     "bandit[toml]>=1.7.0",
 
