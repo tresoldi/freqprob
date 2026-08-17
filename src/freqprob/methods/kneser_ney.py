@@ -1,6 +1,6 @@
 """Kneser-Ney and Modified Kneser-Ney smoothing."""
 
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 
 from freqprob.base import (
@@ -8,10 +8,9 @@ from freqprob.base import (
     Estimates,
     FrequencyDistribution,
     Probability,
-    ScoringMethod,
     ScoringMethodConfig,
 )
-from freqprob.cache import cached_computation
+from freqprob.methods._bigram import BigramBackoff, continuation_probs, extract_bigram_stats
 
 
 @dataclass
@@ -29,15 +28,19 @@ class KneserNeyConfig(ScoringMethodConfig):
     discount: float = 0.75
 
 
-class KneserNey(ScoringMethod):
+class KneserNey(BigramBackoff):
     """Kneser-Ney smoothing probability distribution.
 
     One of the most effective smoothing methods for language modeling. It
     combines absolute discounting with interpolation and, crucially, weights a
     word by the diversity of contexts it appears in (its continuation
     probability) rather than its raw frequency. Each observed bigram scores
-    ``max(c - d, 0) / c(context) + backoff(context) * P_cont(word)``, and
-    unseen bigrams fall back to the average continuation probability.
+    ``max(c - d, 0) / c(context) + backoff(context) * P_cont(word)``, and an
+    unseen bigram backs off to ``backoff(context) * P_cont(word)``.
+
+    This is absolute discounting with the unigram model replaced by the
+    continuation distribution, and it shares the back-off machinery with
+    :class:`~freqprob.AbsoluteDiscounting` accordingly.
 
     Args:
         freqdist: Frequency distribution mapping bigrams to their observed
@@ -50,8 +53,8 @@ class KneserNey(ScoringMethod):
 
     Examples:
         Observed bigrams are discounted and interpolated with the continuation
-        model, while unseen bigrams back off to the average continuation
-        probability:
+        model, while unseen bigrams back off to it through the context's
+        back-off weight:
 
         >>> bigram_counts = {
         ...     ("the", "cat"): 5, ("the", "dog"): 3, ("a", "cat"): 2,
@@ -60,8 +63,16 @@ class KneserNey(ScoringMethod):
         >>> kn = KneserNey(bigram_counts, discount=0.75, logprob=False)
         >>> round(kn(("the", "cat")), 3)
         0.625
-        >>> round(kn(("the", "mouse")), 3)
-        0.5
+
+        An unseen bigram whose word is known scores through the context's
+        back-off weight rather than a flat average -- here ``0.75 * P_cont(dog)``,
+        since ``big`` was only ever followed by one word:
+
+        >>> round(kn(("big", "dog")), 3)
+        0.375
+
+        An unseen context falls back to the continuation probability alone:
+
         >>> round(kn(("new_context", "cat")), 3)
         0.5
 
@@ -69,6 +80,8 @@ class KneserNey(ScoringMethod):
         This implementation assumes bigram input. The discount ``d`` is
         typically between ``0.5`` and ``0.8``; ``0.75`` is a robust default.
         Reliable continuation probabilities require sufficient bigram data.
+        A word that never appears in the data has no continuation probability,
+        so it scores at the floor rather than borrowing an average.
     """
 
     __slots__ = ()
@@ -88,8 +101,7 @@ class KneserNey(ScoringMethod):
         self.name = "Kneser-Ney"
         self.fit(freqdist)
 
-    @cached_computation()
-    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+    def _estimate_bigrams(self, freqdist: FrequencyDistribution) -> Estimates:
         """Discount each bigram and interpolate with the continuation distribution.
 
         Args:
@@ -97,64 +109,29 @@ class KneserNey(ScoringMethod):
                 tuples as keys. Non-bigram keys are ignored.
 
         Returns:
-            The probability of each observed bigram, and the average
-            continuation probability for everything else.
+            ``P(word | context)`` for each observed bigram, and the fallback for
+            a query that is not a bigram.
         """
         discount = self.config.discount  # type: ignore[attr-defined]
 
-        # Separate contexts and words, compute various counts
-        contexts: defaultdict[str, int] = defaultdict(int)
-        word_continuation_counts: defaultdict[str, int] = defaultdict(int)
-        context_types: defaultdict[str, set[str]] = defaultdict(set)
-        all_bigram_types = 0
+        context_total, context_types, context_word, _unigram, _total = extract_bigram_stats(
+            freqdist
+        )
+        continuation = continuation_probs(context_types)
 
-        # Process the frequency distribution
-        for element, count in freqdist.items():
-            if not isinstance(element, tuple) or len(element) != 2:
-                continue  # Skip non-bigram entries
-            context, word = element
+        for context, ctotal in context_total.items():
+            n1_plus = len(context_types[context])
+            self._backoff[context] = discount * n1_plus / ctotal
 
-            contexts[context] += count
-            word_continuation_counts[word] += 1  # Count distinct contexts for this word
-            context_types[context].add(word)
-            all_bigram_types += 1
-
-        # Compute continuation probabilities
-        total_continuation_mass = sum(word_continuation_counts.values())
-        continuation_probs = {
-            word: count / total_continuation_mass
-            for word, count in word_continuation_counts.items()
-        }
-
-        # Compute backoff weights for each context
-        backoff_weights = {}
-        for context in contexts:
-            num_types = len(context_types[context])
-            backoff_weights[context] = discount * num_types / contexts[context]
-
-        # Compute probabilities for observed bigrams
         table: dict[Element, Probability] = {}
-        for element, count in freqdist.items():
-            if not isinstance(element, tuple) or len(element) != 2:
-                continue
-            context, word = element
+        for (context, word), count in context_word.items():
+            main = max(count - discount, 0.0) / context_total[context]
+            table[(context, word)] = main + self._backoff[context] * continuation.get(word, 0.0)
 
-            # Discounted probability
-            discounted_count = max(count - discount, 0)
-            context_count = contexts[context]
-
-            # Interpolated probability
-            main_prob = discounted_count / context_count
-            backoff_prob = backoff_weights[context] * continuation_probs.get(word, 0)
-            table[(context, word)] = main_prob + backoff_prob
-
-        # Unobserved bigrams get the average continuation probability
-        reserved = 1.0 / len(continuation_probs) if continuation_probs else 0.0
-
-        return table, reserved
+        return table, self._record_lower(continuation, len(continuation))
 
 
-class ModifiedKneserNey(ScoringMethod):
+class ModifiedKneserNey(BigramBackoff):
     """Modified Kneser-Ney smoothing probability distribution.
 
     An enhanced Kneser-Ney variant that applies a different discount depending
@@ -200,8 +177,7 @@ class ModifiedKneserNey(ScoringMethod):
         self.name = "Modified Kneser-Ney"
         self.fit(freqdist)
 
-    @cached_computation()
-    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+    def _estimate_bigrams(self, freqdist: FrequencyDistribution) -> Estimates:
         """Discount by count band, then interpolate with the continuation distribution.
 
         Args:
@@ -209,11 +185,18 @@ class ModifiedKneserNey(ScoringMethod):
                 tuples as keys. Non-bigram keys are ignored.
 
         Returns:
-            The probability of each observed bigram, and the average
-            continuation probability for everything else.
+            ``P(word | context)`` for each observed bigram, and the fallback for
+            a query that is not a bigram.
         """
-        # Count frequency of frequencies (n_r = number of bigrams with count r)
-        count_frequencies = Counter(freqdist.values())
+        context_total, context_types, context_word, _unigram, _total = extract_bigram_stats(
+            freqdist
+        )
+        continuation = continuation_probs(context_types)
+
+        # Count frequency of frequencies (n_r = number of bigrams with count r).
+        # Counted over the extracted bigrams, not over `freqdist` itself, so a
+        # non-bigram key cannot skew the estimated discounts.
+        count_frequencies = Counter(context_word.values())
         n1, n2, n3, n4 = (
             count_frequencies.get(1, 0),
             count_frequencies.get(2, 0),
@@ -243,70 +226,22 @@ class ModifiedKneserNey(ScoringMethod):
         d2 = max(0.01, min(1.99, d2))
         d3 = max(0.01, min(2.99, d3))
 
-        # Separate contexts and words, compute various counts
-        contexts: defaultdict[str, int] = defaultdict(int)
-        word_continuation_counts: defaultdict[str, int] = defaultdict(int)
-        context_types: defaultdict[str, set[str]] = defaultdict(set)
-
-        for element, count in freqdist.items():
-            if not isinstance(element, tuple) or len(element) != 2:
-                continue
-            context, word = element
-
-            contexts[context] += count
-            word_continuation_counts[word] += 1
-            context_types[context].add(word)
-
-        # Compute continuation probabilities
-        total_continuation_mass = sum(word_continuation_counts.values())
-        continuation_probs = {
-            word: count / total_continuation_mass
-            for word, count in word_continuation_counts.items()
-        }
-
-        # Compute context-dependent backoff weights
-        backoff_weights = {}
-        for context in contexts:
-            # Count types by frequency
-            n1_types = sum(
-                1 for word in context_types[context] if freqdist.get((context, word), 0) == 1
-            )
-            n2_types = sum(
-                1 for word in context_types[context] if freqdist.get((context, word), 0) == 2
-            )
-            n3_plus_types = sum(
-                1 for word in context_types[context] if freqdist.get((context, word), 0) >= 3
-            )
-
-            # Compute backoff weight
-            backoff_mass = (d1 * n1_types + d2 * n2_types + d3 * n3_plus_types) / contexts[context]
-            backoff_weights[context] = backoff_mass
-
-        # Compute probabilities for observed bigrams
-        table: dict[Element, Probability] = {}
-        for element, count in freqdist.items():
-            if not isinstance(element, tuple) or len(element) != 2:
-                continue
-            context, word = element
-
-            # Choose discount based on count
+        def discount_for(count: int) -> float:
+            """Pick the discount for a count, by band."""
             if count == 1:
-                discount = d1
-            elif count == 2:
-                discount = d2
-            else:
-                discount = d3
+                return d1
+            return d2 if count == 2 else d3
 
-            # Discounted probability
-            discounted_count = max(count - discount, 0)
-            context_count = contexts[context]
+        # Context-dependent back-off weights: each band contributes its own
+        # discount, times how many words in the context fall in that band.
+        for context, ctotal in context_total.items():
+            counts = [context_word[(context, word)] for word in context_types[context]]
+            backoff_mass = sum(discount_for(count) for count in counts)
+            self._backoff[context] = backoff_mass / ctotal
 
-            # Interpolated probability
-            main_prob = discounted_count / context_count
-            backoff_prob = backoff_weights[context] * continuation_probs.get(word, 0)
-            table[(context, word)] = main_prob + backoff_prob
+        table: dict[Element, Probability] = {}
+        for (context, word), count in context_word.items():
+            main = max(count - discount_for(count), 0.0) / context_total[context]
+            table[(context, word)] = main + self._backoff[context] * continuation.get(word, 0.0)
 
-        # Unobserved bigrams get the average continuation probability
-        reserved = 1.0 / len(continuation_probs) if continuation_probs else 0.0
-
-        return table, reserved
+        return table, self._record_lower(continuation, len(continuation))

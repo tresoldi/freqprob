@@ -68,6 +68,35 @@ def extract_bigram_stats(
     return context_total, context_types, context_word, unigram, total
 
 
+def continuation_probs(context_types: dict[Element, set[Element]]) -> dict[Element, float]:
+    """Build the continuation distribution over words.
+
+    A word's continuation probability is proportional to the number of *distinct*
+    contexts it follows, rather than to how often it occurs. This is what
+    separates Kneser-Ney from plain absolute discounting: a word that is frequent
+    but appears in only one context (``Francisco``, always after ``San``) gets
+    little mass in a new context.
+
+    Args:
+        context_types: The distinct words following each context, as returned by
+            :func:`extract_bigram_stats`.
+
+    Returns:
+        The continuation probability of each word, summing to ``1.0`` (empty if
+        there are no bigrams).
+    """
+    counts: dict[Element, int] = {}
+    for words in context_types.values():
+        for word in words:
+            counts[word] = counts.get(word, 0) + 1
+
+    total = sum(counts.values())
+    if not total:
+        return {}
+
+    return {word: count / total for word, count in counts.items()}
+
+
 class BigramBackoff(ScoringMethod):
     """Base class for bigram smoothers that back off to a unigram model.
 
