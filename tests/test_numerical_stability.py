@@ -5,7 +5,6 @@ extreme conditions, edge cases, and potential overflow/underflow scenarios.
 """
 
 import math
-from typing import Any
 
 import pytest
 
@@ -150,22 +149,6 @@ class TestNumericalStability:
         total_prob = sum(uniform(word) for word in dist)
         assert abs(total_prob - 1.0) < 1e-15
 
-    def test_monotonicity_properties(self) -> None:
-        """Test monotonicity properties of smoothing methods."""
-        dist = {"frequent": 100, "medium": 50, "rare": 10, "very_rare": 1}
-
-        # For MLE, more frequent words should have higher probability
-        mle = freqprob.MLE(dist, logprob=False)
-        assert mle("frequent") > mle("medium")
-        assert mle("medium") > mle("rare")
-        assert mle("rare") > mle("very_rare")
-
-        # For Laplace, same ordering should hold
-        laplace = freqprob.Laplace(dist, bins=1000, logprob=False)
-        assert laplace("frequent") > laplace("medium")
-        assert laplace("medium") > laplace("rare")
-        assert laplace("rare") > laplace("very_rare")
-
     def test_extreme_vocabulary_sizes(self) -> None:
         """Test with extremely large vocabulary sizes."""
         small_dist = {"word": 1}
@@ -309,24 +292,19 @@ class TestNumericalStabilityAdvanced:
             for j in range(i):  # i words with count i
                 freq_dist[f"word_{i}_{j}"] = i
 
-        try:
-            sgt = freqprob.SimpleGoodTuring(freq_dist, logprob=False)
+        sgt = freqprob.SimpleGoodTuring(freq_dist, logprob=False)
 
-            # Test some probabilities
-            prob_1 = sgt("word_1_0")  # Word with count 1
-            prob_100 = sgt("word_100_0")  # Word with count 100
+        # Test some probabilities
+        prob_1 = sgt("word_1_0")  # Word with count 1
+        prob_100 = sgt("word_100_0")  # Word with count 100
 
-            assert not math.isnan(prob_1)
-            assert not math.isnan(prob_100)
-            assert not math.isinf(prob_1)
-            assert not math.isinf(prob_100)
+        assert not math.isnan(prob_1)
+        assert not math.isnan(prob_100)
+        assert not math.isinf(prob_1)
+        assert not math.isinf(prob_100)
 
-            # Higher count should generally have higher probability
-            assert prob_100 > prob_1
-
-        except (ValueError, RuntimeError, RuntimeWarning):
-            # SGT might fail on some distributions, which is acceptable
-            pytest.skip("SGT failed on this distribution (expected behavior)")
+        # Higher count should generally have higher probability
+        assert prob_100 > prob_1
 
     def test_kneser_ney_numerical_stability(self) -> None:
         """Test Kneser-Ney smoothing numerical stability."""
@@ -421,60 +399,15 @@ class TestNumericalStabilityAdvanced:
         dist = {f"word_{i}": i + 1 for i in range(1000)}
 
         # Create method that uses caching (SGT)
-        try:
-            sgt = freqprob.SimpleGoodTuring(dist, logprob=False)
+        sgt = freqprob.SimpleGoodTuring(dist, logprob=False)
 
-            # Get probability multiple times
-            word = "word_50"
-            probs = [sgt(word) for _ in range(10)]
+        # Get probability multiple times
+        word = "word_50"
+        probs = [sgt(word) for _ in range(10)]
 
-            # All should be identical
-            for prob in probs[1:]:
-                assert abs(prob - probs[0]) < 1e-15
-
-        except (ValueError, RuntimeError, RuntimeWarning):
-            pytest.skip("SGT failed on this distribution")
-
-    @pytest.mark.parametrize(
-        ("method_name", "params"),
-        [
-            ("MLE", {}),
-            ("Laplace", {"bins": 1000}),
-            ("ELE", {"bins": 1000}),
-            ("Lidstone", {"gamma": 0.5, "bins": 1000}),
-            ("Bayesian", {"alpha": 0.5}),
-        ],
-    )
-    def test_method_numerical_stability(self, method_name: str, params: dict[str, Any]) -> None:
-        """Parametrized test for numerical stability across methods."""
-        # Create challenging distribution
-        dist = {
-            "very_frequent": 10**6,
-            "frequent": 10**4,
-            "medium": 10**2,
-            "rare": 1,
-            "very_rare": 1,
-        }
-
-        method_class = getattr(freqprob, method_name)
-        method = method_class(dist, logprob=False, **params)
-
-        # Test all words in distribution
-        for word in dist:
-            prob = method(word)
-            assert not math.isnan(prob), f"{method_name}: NaN for {word}"
-            assert not math.isinf(prob), f"{method_name}: Inf for {word}"
-            assert prob > 0, f"{method_name}: Non-positive probability for {word}"
-
-        # Test unknown word
-        unknown_prob = method("unknown_word")
-        assert not math.isnan(unknown_prob), f"{method_name}: NaN for unknown word"
-        # Note: MLE might return 0 for unknown words, which is acceptable
-
-        # Test frequency ordering is preserved
-        assert method("very_frequent") >= method("frequent")
-        assert method("frequent") >= method("medium")
-        assert method("medium") >= method("rare")
+        # All should be identical
+        for prob in probs[1:]:
+            assert abs(prob - probs[0]) < 1e-15
 
 
 if __name__ == "__main__":

@@ -271,7 +271,10 @@ class ScoringMethod(ABC):
         else:
             buffer.append(f"{self.name} scorer")
 
-        buffer.append(f"{len(self._prob)} elements.")
+        # Report the support rather than the probability table: a lazy scorer
+        # fills its table on demand, so the table would understate what the
+        # scorer was fitted to.
+        buffer.append(f"{len(self.support())} elements.")
 
         return ", ".join(buffer)
 
@@ -379,12 +382,19 @@ class ScoringMethod(ABC):
         return [self(element) for element in elements]
 
     def __getstate__(self) -> dict[str, Any]:
-        """Collect all ``__slots__`` values across the class hierarchy for pickling."""
+        """Collect this scorer's state for pickling.
+
+        Walks ``__slots__`` across the class hierarchy, then adds ``__dict__``:
+        a subclass that declares no ``__slots__`` of its own keeps its
+        attributes there, and leaving them out produced a restored object that
+        scored correctly but broke on first use.
+        """
         state: dict[str, Any] = {}
         for klass in type(self).__mro__:
             for slot in getattr(klass, "__slots__", ()):
                 if hasattr(self, slot):
                     state[slot] = getattr(self, slot)
+        state.update(getattr(self, "__dict__", {}))
         return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:

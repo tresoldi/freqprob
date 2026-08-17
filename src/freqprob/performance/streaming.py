@@ -86,6 +86,21 @@ class StreamingFrequencyDistribution:
         self._creation_order: dict[Element, int] = {}
         self._last_access: dict[Element, int] = {}
 
+    def __getstate__(self) -> dict[str, Any]:
+        """Collect state for pickling, minus the lock.
+
+        A :class:`threading.RLock` cannot be pickled, and it carries no
+        information worth preserving: a restored distribution gets a fresh one.
+        """
+        state = self.__dict__.copy()
+        del state["_lock"]
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore state and give the restored copy its own lock."""
+        self.__dict__.update(state)
+        self._lock = threading.RLock()
+
     def update(self, element: Element, count: int = 1) -> None:
         """Update count for a single element.
 
