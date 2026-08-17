@@ -4,6 +4,7 @@ This module provides the abstract base class and common functionality
 for all smoothing methods in the freqprob library.
 """
 
+import math
 import pickle
 from abc import ABC, abstractmethod
 from collections.abc import Collection, Iterable, Mapping
@@ -17,6 +18,12 @@ Count = int
 Probability = float
 LogProbability = float
 FrequencyDistribution = Mapping[Element, Count]
+
+# What a smoothing method returns from `_estimate`: the probability of each
+# observed element, and the probability reserved for everything unobserved.
+# Always in plain probability space -- `ScoringMethod.fit` handles the floor and
+# the conversion to log-probabilities.
+Estimates = tuple[Mapping[Element, Probability], Probability]
 
 # Smallest probability used as a floor to avoid log(0) domain errors. Kept as a
 # module constant so methods can use it directly rather than reading `_unobs`
@@ -217,6 +224,29 @@ class ScoringMethod(ABC):
         """Record that the estimates changed, invalidating callers' caches."""
         self._revision += 1
 
+    def _score_of(self, prob: Probability) -> Probability | LogProbability:
+        """Convert a plain probability into this scorer's output space.
+
+        This is where the log/plain duality lives. Estimators compute in plain
+        probability space and hand the result here.
+
+        A log-scorer substitutes :data:`MIN_PROBABILITY` for a probability of
+        zero, which keeps :func:`math.log` in its domain without disturbing
+        small-but-genuine estimates. A plain scorer returns the probability
+        untouched, so it can still report an exact ``0.0`` for an element it
+        gives no mass to.
+
+        Args:
+            prob: A probability in ``[0.0, 1.0]``.
+
+        Returns:
+            The log of the probability for a log-scorer, otherwise the
+            probability unchanged.
+        """
+        if self.logprob:
+            return math.log(prob) if prob > 0.0 else math.log(MIN_PROBABILITY)
+        return prob
+
     def __str__(self) -> str:
         """Return a string representation of the smoothing method.
 
@@ -246,18 +276,24 @@ class ScoringMethod(ABC):
         return ", ".join(buffer)
 
     @abstractmethod
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute probabilities for the given frequency distribution.
+    def _estimate(self, freqdist: FrequencyDistribution) -> "Estimates":
+        """Estimate probabilities for the given frequency distribution.
 
-        This method must be implemented by subclasses to compute the actual
-        probability values according to their specific smoothing strategy.
+        This is the one method a smoothing method must implement, and it should
+        contain nothing but that method's mathematics. Work in **plain
+        probability space** and return the result; :meth:`fit` applies the
+        :data:`MIN_PROBABILITY` floor, converts to log-probabilities when the
+        scorer is a log-scorer, and installs the result. An implementation
+        therefore never writes ``self._prob``, never branches on
+        ``self.logprob``, and never calls :func:`math.log`.
 
         Args:
             freqdist: Frequency distribution mapping elements to their observed
                 counts.
 
-        Note:
-            Implementations should populate ``self._prob`` and ``self._unobs``.
+        Returns:
+            The probability of each observed element, and the probability
+            reserved for everything else.
         """
 
     def fit(self, freqdist: FrequencyDistribution) -> "ScoringMethod":
@@ -281,16 +317,32 @@ class ScoringMethod(ABC):
             0.6666666666666666
         """
         # Reset state so re-fitting an already-fitted scorer behaves like a
-        # fresh fit: methods that assign into self._prob incrementally would
-        # otherwise leave stale keys, and self._unobs (which holds the previous
-        # output) would otherwise pollute epsilon floors on a second fit.
+        # fresh fit: an estimator that carries auxiliary state would otherwise
+        # leave stale keys behind.
         self._prob = {}
         self._unobs = MIN_PROBABILITY
         self._total_unseen_mass = None
-        self._compute_probabilities(freqdist)
-        self._mark_changed()
+
+        self._install(self._estimate(freqdist))
 
         return self
+
+    def _install(self, estimates: "Estimates") -> None:
+        """Convert estimates into this scorer's output space and adopt them.
+
+        The single place where a probability becomes a score. Called by
+        :meth:`fit`, and by any estimator that revises its estimates outside a
+        fit (the streaming scorers do this on every update).
+
+        Args:
+            estimates: A probability table and a reserved mass, both in plain
+                probability space.
+        """
+        table, reserved = estimates
+
+        self._prob = {element: self._score_of(prob) for element, prob in table.items()}
+        self._unobs = self._score_of(reserved)
+        self._mark_changed()
 
     def score(self, element: Element) -> Probability | LogProbability:
         """Score a single element (scikit-learn-style alias for ``__call__``).

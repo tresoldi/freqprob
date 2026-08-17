@@ -1,9 +1,9 @@
 """Bayesian (Dirichlet-prior) smoothing."""
 
-import math
 from dataclasses import dataclass
 
 from freqprob.base import (
+    Estimates,
     FrequencyDistribution,
     ScoringMethod,
     ScoringMethodConfig,
@@ -90,31 +90,19 @@ class Bayesian(ScoringMethod):
         self.name = "Bayesian"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Bayesian smoothed probabilities.
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Take the mean of the Dirichlet posterior with concentration ``alpha``.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution with element counts
+        Args:
+            freqdist: Frequency distribution with element counts.
+
+        Returns:
+            The posterior mean probability of each element, and the mass an
+            unseen element receives from the prior alone.
         """
-        alpha = self.config.alpha  # type: ignore
+        alpha = self.config.alpha  # type: ignore[attr-defined]
 
-        # Compute Dirichlet posterior parameters
-        total_count = sum(freqdist.values())
-        vocab_size = len(freqdist)
-        denominator = total_count + vocab_size * alpha
+        denominator = sum(freqdist.values()) + len(freqdist) * alpha
+        table = {element: (count + alpha) / denominator for element, count in freqdist.items()}
 
-        if self.logprob:
-            # Log-probability computation
-            self._prob = {
-                element: math.log((count + alpha) / denominator)
-                for element, count in freqdist.items()
-            }
-            self._unobs = math.log(alpha / denominator)
-        else:
-            # Regular probability computation
-            self._prob = {
-                element: (count + alpha) / denominator for element, count in freqdist.items()
-            }
-            self._unobs = alpha / denominator
+        return table, alpha / denominator

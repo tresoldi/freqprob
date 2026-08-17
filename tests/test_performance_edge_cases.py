@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 
 from freqprob import MLE
-from freqprob.base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
+from freqprob.base import Estimates, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 from freqprob.performance.lazy import (
     LazyBatchScorer,
     LazyLaplaceComputer,
@@ -45,9 +45,9 @@ class _EmptyScorer(ScoringMethod):
         self.name = "Empty"
         self._unobs = 0.0
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Leave the probability table empty."""
-        self._unobs = 0.0
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Estimate nothing: the support stays empty."""
+        return {}, 0.0
 
 
 class TestVectorizedScorerEdgeCases:

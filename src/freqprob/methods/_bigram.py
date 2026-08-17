@@ -11,11 +11,12 @@ Like the Kneser-Ney implementation, any key that is not a length-2 tuple is
 ignored, so a distribution may mix bigrams with other bookkeeping entries.
 """
 
-import math
+from abc import abstractmethod
 
 from freqprob.base import (
     MIN_PROBABILITY,
     Element,
+    Estimates,
     FrequencyDistribution,
     LogProbability,
     Probability,
@@ -70,17 +71,18 @@ def extract_bigram_stats(
 class BigramBackoff(ScoringMethod):
     """Base class for bigram smoothers that back off to a unigram model.
 
-    Subclasses populate, in :meth:`_compute_probabilities`:
+    Subclasses implement :meth:`_estimate_bigrams`, returning the probability of
+    each observed bigram together with the mass reserved for a non-bigram query.
+    While doing so they record, through :meth:`_record_lower`, the lower-order
+    (unigram) model, and set:
 
-    - ``self._prob``: scores for observed bigrams,
-    - ``self._lower``: the lower-order (unigram) probability of each word,
     - ``self._backoff``: a per-context back-off weight applied to the unigram
       probability of a word unseen in that context, and
     - ``self._unknown_context_weight``: the back-off weight used when the whole
       context is unseen (``1.0`` for the discounting methods, ``alpha`` for
-      Stupid Back-off),
+      Stupid Back-off).
 
-    and this base class handles scoring, including the on-the-fly back-off for
+    This base class handles scoring, including the on-the-fly back-off for
     unseen bigrams (mirroring the approach used by ``Interpolated``).
     """
 
@@ -109,18 +111,46 @@ class BigramBackoff(ScoringMethod):
             context, word = element
             lower = self._lower.get(word, 0.0)
             weight = self._backoff.get(context, self._unknown_context_weight)
-            prob = max(weight * lower, MIN_PROBABILITY)
-            return math.log(prob) if self.logprob else prob
+            return self._score_of(max(weight * lower, MIN_PROBABILITY))
 
         return self._unobs
 
-    def _store_observed(self, key: tuple[Element, Element], prob: float) -> None:
-        """Store one observed-bigram score, honoring the log/plain setting."""
-        prob = max(prob, MIN_PROBABILITY)
-        self._prob[key] = math.log(prob) if self.logprob else prob
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Discard any back-off state from a previous fit, then estimate.
 
-    def _finalize(self, lower: dict[Element, float], vocab_size: int) -> None:
-        """Record the unigram model and the fallback for non-bigram queries."""
+        Args:
+            freqdist: Mapping of ``(context, word)`` bigrams to counts.
+
+        Returns:
+            Whatever :meth:`_estimate_bigrams` produces.
+        """
+        self._lower = {}
+        self._backoff = {}
+        self._unknown_context_weight = 1.0
+
+        return self._estimate_bigrams(freqdist)
+
+    @abstractmethod
+    def _estimate_bigrams(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Estimate ``P(word | context)`` for each observed bigram.
+
+        Args:
+            freqdist: Mapping of ``(context, word)`` bigrams to counts.
+
+        Returns:
+            The probability of each observed bigram, and the mass reserved for
+            a query that is not a bigram at all.
+        """
+
+    def _record_lower(self, lower: dict[Element, float], vocab_size: int) -> Probability:
+        """Record the unigram model and report the fallback for non-bigram queries.
+
+        Args:
+            lower: The lower-order (unigram) probability of each word.
+            vocab_size: The number of distinct words in the unigram model.
+
+        Returns:
+            The probability reserved for a query that is not a bigram.
+        """
         self._lower = lower
-        uniform = 1.0 / vocab_size if vocab_size else MIN_PROBABILITY
-        self._unobs = math.log(uniform) if self.logprob else uniform
+        return 1.0 / vocab_size if vocab_size else MIN_PROBABILITY

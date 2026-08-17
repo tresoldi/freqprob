@@ -7,11 +7,16 @@ probability distribution; Stupid Back-off skips normalization for speed and
 returns unnormalized scores.
 """
 
-import math
 from collections import Counter
 from dataclasses import dataclass
 
-from freqprob.base import FrequencyDistribution, ScoringMethodConfig
+from freqprob.base import (
+    Element,
+    Estimates,
+    FrequencyDistribution,
+    Probability,
+    ScoringMethodConfig,
+)
 from freqprob.methods._bigram import BigramBackoff, extract_bigram_stats
 
 
@@ -109,8 +114,16 @@ class KatzBackoff(BigramBackoff):
         self.name = "Katz Back-off"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Katz back-off probabilities."""
+    def _estimate_bigrams(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Discount counts up to ``k`` by Good-Turing, then normalize the back-off.
+
+        Args:
+            freqdist: Mapping of ``(context, word)`` bigrams to counts.
+
+        Returns:
+            ``P(word | context)`` for each observed bigram, and the fallback for
+            a query that is not a bigram.
+        """
         k = self.config.k  # type: ignore[attr-defined]
 
         context_total, context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
@@ -138,13 +151,14 @@ class KatzBackoff(BigramBackoff):
             return discount_ratio.get(count, 1.0) if count <= k else 1.0
 
         # Observed-bigram probabilities and per-context back-off weights.
+        table: dict[Element, Probability] = {}
         for context, ctotal in context_total.items():
             used = 0.0
             remaining_lower = 1.0
             for word in context_types[context]:
                 count = context_word[(context, word)]
                 prob = discount(count) * count / ctotal
-                self._store_observed((context, word), prob)
+                table[(context, word)] = prob
                 used += prob
                 remaining_lower -= lower.get(word, 0.0)
 
@@ -154,8 +168,7 @@ class KatzBackoff(BigramBackoff):
             else:
                 self._backoff[context] = 0.0
 
-        self._unknown_context_weight = 1.0
-        self._finalize(lower, len(unigram))
+        return table, self._record_lower(lower, len(unigram))
 
 
 class StupidBackoff(BigramBackoff):
@@ -222,23 +235,33 @@ class StupidBackoff(BigramBackoff):
         self.name = "Stupid Back-off"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Stupid Back-off scores."""
+    def _estimate_bigrams(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Score each bigram by its relative frequency, backing off by a flat ``alpha``.
+
+        The scores are deliberately not normalized: Stupid Back-off is a ranking
+        score, not a probability distribution.
+
+        Args:
+            freqdist: Mapping of ``(context, word)`` bigrams to counts.
+
+        Returns:
+            The score of each observed bigram, and the fallback for a query that
+            is not a bigram.
+        """
         alpha = self.config.alpha  # type: ignore[attr-defined]
 
         context_total, _context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
 
         lower = {word: count / total for word, count in unigram.items()} if total else {}
 
-        for (context, word), count in context_word.items():
-            ctotal = context_total[context]
-            self._store_observed((context, word), count / ctotal)
+        table: dict[Element, Probability] = {
+            (context, word): count / context_total[context]
+            for (context, word), count in context_word.items()
+        }
 
         # Every context (seen or unseen) uses the same alpha weight, so leave
         # self._backoff empty and let the unknown-context weight handle both.
         self._unknown_context_weight = alpha
 
-        vocab_size = len(unigram)
-        self._lower = lower
-        fallback = alpha / vocab_size if vocab_size else 1e-10
-        self._unobs = math.log(fallback) if self.logprob else fallback
+        # The fallback carries the same alpha the unseen-bigram path applies.
+        return table, alpha * self._record_lower(lower, len(unigram))

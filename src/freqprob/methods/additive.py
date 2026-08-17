@@ -6,9 +6,7 @@ and Expected Likelihood Estimation (gamma=0.5). These methods add virtual
 counts to observed data to handle the zero probability problem.
 """
 
-import math
-
-from freqprob.base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
+from freqprob.base import Estimates, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
 
 class Lidstone(ScoringMethod):
@@ -89,13 +87,15 @@ class Lidstone(ScoringMethod):
         self.name = "Lidstone"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Lidstone smoothed probabilities.
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Add ``gamma`` to every count, then normalize.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution with element counts
+        Args:
+            freqdist: Frequency distribution with element counts.
+
+        Returns:
+            The smoothed probability of each element, and the mass an unseen
+            element receives from the same formula with a count of zero.
         """
         gamma = self.config.gamma
         bins = self.config.bins
@@ -104,20 +104,10 @@ class Lidstone(ScoringMethod):
         assert gamma is not None, "Gamma must be set before computing probabilities"
         assert bins is not None, "Bins must be set before computing probabilities"
 
-        # Calculate normalization factors
-        total_count = sum(freqdist.values())
-        denominator = total_count + bins * gamma
+        denominator = sum(freqdist.values()) + bins * gamma
+        table = {elem: (count + gamma) / denominator for elem, count in freqdist.items()}
 
-        if self.logprob:
-            # Log-probability computation
-            self._prob = {
-                elem: math.log((count + gamma) / denominator) for elem, count in freqdist.items()
-            }
-            self._unobs = math.log(gamma / denominator)
-        else:
-            # Regular probability computation
-            self._prob = {elem: (count + gamma) / denominator for elem, count in freqdist.items()}
-            self._unobs = gamma / denominator
+        return table, gamma / denominator
 
 
 class Laplace(Lidstone):

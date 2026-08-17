@@ -31,7 +31,7 @@ from freqprob import (
     create_lazy_laplace,
     create_lazy_mle,
 )
-from freqprob.base import Element, ScoringMethod
+from freqprob.base import Element, Estimates, ScoringMethod
 
 
 class TestEstimatorInterface:
@@ -209,10 +209,10 @@ class TestAdaptersUseOnlyTheInterface:
         class MinimalScorer(ScoringMethod):
             """An estimator exposing nothing beyond the interface."""
 
-            def _compute_probabilities(self, freqdist: dict[Element, int]) -> None:
+            def _estimate(self, freqdist: dict[Element, int]) -> Estimates:
                 total = sum(freqdist.values())
-                self._prob = {element: count / total for element, count in freqdist.items()}
-                self._unobs = 0.0
+                table = {element: count / total for element, count in freqdist.items()}
+                return table, 0.0
 
         scorer = MinimalScorer.__new__(MinimalScorer)
         ScoringMethod.__init__(scorer, MLE({"a": 1}, logprob=False).config)

@@ -1,11 +1,13 @@
 """Kneser-Ney and Modified Kneser-Ney smoothing."""
 
-import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 
 from freqprob.base import (
+    Element,
+    Estimates,
     FrequencyDistribution,
+    Probability,
     ScoringMethod,
     ScoringMethodConfig,
 )
@@ -87,15 +89,18 @@ class KneserNey(ScoringMethod):
         self.fit(freqdist)
 
     @cached_computation()
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Kneser-Ney smoothed probabilities.
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Discount each bigram and interpolate with the continuation distribution.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Bigram frequency distribution with (context, word) tuples as keys
+        Args:
+            freqdist: Bigram frequency distribution with ``(context, word)``
+                tuples as keys. Non-bigram keys are ignored.
+
+        Returns:
+            The probability of each observed bigram, and the average
+            continuation probability for everything else.
         """
-        discount = self.config.discount  # type: ignore
+        discount = self.config.discount  # type: ignore[attr-defined]
 
         # Separate contexts and words, compute various counts
         contexts: defaultdict[str, int] = defaultdict(int)
@@ -128,6 +133,7 @@ class KneserNey(ScoringMethod):
             backoff_weights[context] = discount * num_types / contexts[context]
 
         # Compute probabilities for observed bigrams
+        table: dict[Element, Probability] = {}
         for element, count in freqdist.items():
             if not isinstance(element, tuple) or len(element) != 2:
                 continue
@@ -140,22 +146,12 @@ class KneserNey(ScoringMethod):
             # Interpolated probability
             main_prob = discounted_count / context_count
             backoff_prob = backoff_weights[context] * continuation_probs.get(word, 0)
-            total_prob = main_prob + backoff_prob
+            table[(context, word)] = main_prob + backoff_prob
 
-            if self.logprob:
-                if total_prob > 0:
-                    self._prob[(context, word)] = math.log(total_prob)
-                else:
-                    self._prob[(context, word)] = math.log(1e-10)  # Avoid log(0)
-            else:
-                self._prob[(context, word)] = total_prob
+        # Unobserved bigrams get the average continuation probability
+        reserved = 1.0 / len(continuation_probs) if continuation_probs else 0.0
 
-        # Set unobserved probability (average continuation probability)
-        avg_continuation = 1.0 / len(continuation_probs) if continuation_probs else 1e-10
-        if self.logprob:
-            self._unobs = math.log(avg_continuation)
-        else:
-            self._unobs = avg_continuation
+        return table, reserved
 
 
 class ModifiedKneserNey(ScoringMethod):
@@ -205,13 +201,16 @@ class ModifiedKneserNey(ScoringMethod):
         self.fit(freqdist)
 
     @cached_computation()
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Modified Kneser-Ney smoothed probabilities.
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Discount by count band, then interpolate with the continuation distribution.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Bigram frequency distribution with (context, word) tuples as keys
+        Args:
+            freqdist: Bigram frequency distribution with ``(context, word)``
+                tuples as keys. Non-bigram keys are ignored.
+
+        Returns:
+            The probability of each observed bigram, and the average
+            continuation probability for everything else.
         """
         # Count frequency of frequencies (n_r = number of bigrams with count r)
         count_frequencies = Counter(freqdist.values())
@@ -284,6 +283,7 @@ class ModifiedKneserNey(ScoringMethod):
             backoff_weights[context] = backoff_mass
 
         # Compute probabilities for observed bigrams
+        table: dict[Element, Probability] = {}
         for element, count in freqdist.items():
             if not isinstance(element, tuple) or len(element) != 2:
                 continue
@@ -304,19 +304,9 @@ class ModifiedKneserNey(ScoringMethod):
             # Interpolated probability
             main_prob = discounted_count / context_count
             backoff_prob = backoff_weights[context] * continuation_probs.get(word, 0)
-            total_prob = main_prob + backoff_prob
+            table[(context, word)] = main_prob + backoff_prob
 
-            if self.logprob:
-                if total_prob > 0:
-                    self._prob[(context, word)] = math.log(total_prob)
-                else:
-                    self._prob[(context, word)] = math.log(1e-10)
-            else:
-                self._prob[(context, word)] = total_prob
+        # Unobserved bigrams get the average continuation probability
+        reserved = 1.0 / len(continuation_probs) if continuation_probs else 0.0
 
-        # Set unobserved probability
-        avg_continuation = 1.0 / len(continuation_probs) if continuation_probs else 1e-10
-        if self.logprob:
-            self._unobs = math.log(avg_continuation)
-        else:
-            self._unobs = avg_continuation
+        return table, reserved

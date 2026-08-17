@@ -21,9 +21,12 @@ class TestNumericalStability:
         """Test behavior with empty frequency distributions."""
         empty_dist: dict[str, int] = {}
 
-        # Methods should handle empty distributions gracefully
+        # Methods should handle empty distributions gracefully. A log-scorer
+        # reports the floor in log space: it used to hand back the raw 1e-10,
+        # which as a log-probability means p == 1.0 for an unseen element.
         mle = freqprob.MLE(empty_dist)
-        assert mle("test") == 1e-10  # Default unobserved value
+        assert mle("test") == math.log(1e-10)
+        assert math.exp(mle("test")) == pytest.approx(1e-10)
 
         laplace = freqprob.Laplace(empty_dist, bins=100, logprob=False)
         assert laplace("test") > 0  # Should give positive probability

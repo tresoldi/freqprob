@@ -1,9 +1,7 @@
 """Certainty-degree probability estimation."""
 
-import math
-
 from freqprob.base import (
-    MIN_PROBABILITY,
+    Estimates,
     FrequencyDistribution,
     Probability,
     ScoringMethod,
@@ -67,39 +65,28 @@ class CertaintyDegree(ScoringMethod):
         self.fit(freqdist)
 
     @cached_computation()
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Certainty Degree probabilities."""
-        bins = self.config.bins
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Scale the maximum-likelihood estimate by the certainty of full coverage.
 
-        unobs_prob = self.config.unobs_prob
+        For very large ``n`` the reserved mass underflows, because the estimator
+        is then confident that every element that matters has been observed.
+        That used to need an explicit epsilon here to keep :func:`math.log` in
+        its domain; :meth:`~freqprob.base.ScoringMethod._score_of` now applies
+        that floor for every method.
 
-        # Obtain the parameters for probability calculation.
+        Args:
+            freqdist: Frequency distribution with element counts.
+
+        Returns:
+            The discounted relative frequency of each element, and the mass
+            reserved for everything unobserved.
+        """
         n = sum(freqdist.values())
         b = len(freqdist)
-        z = bins or b
+        z = self.config.bins or b
+        unobs_prob = self.config.unobs_prob or 0.0
 
-        # Calculate the mass of probability space to reserve and use this value to
-        # correct the Maximum-Likelihood Estimate for each sample.
-        # Note that, for very large values of N, this will underflow because we
-        # effectively have a large confidence of having observed all the
-        # samples that matter; this is a problem when taking the
-        # log-probability, as we'll ultimately raise a math domain error by
-        # asking for the logarithm of what is machine-represented as zero;
-        # for this reason, we take as the probability space the minimum value
-        # between 1.0 discounted the calculated mass and 1.0 discounted the
-        # minimum mass probability reserved.
-        if self.logprob:
-            # Floor the reserved mass with a fixed epsilon (not self._unobs, which
-            # holds the previous output and would be stale on a second fit()).
-            unobs_prob = max(unobs_prob or 0.0, MIN_PROBABILITY)
-            prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
-            self._prob = {
-                sample: math.log((count / n) * prob_space) for sample, count in freqdist.items()
-            }
-            self._unobs = math.log(-(prob_space - 1.0))
-        else:
-            # Ensure unobs_prob is not None
-            unobs_prob = unobs_prob or 0.0
-            prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
-            self._prob = {sample: (count / n) * prob_space for sample, count in freqdist.items()}
-            self._unobs = -(prob_space - 1.0)
+        prob_space = min(1.0 - (b / (z + 1)) ** n, 1.0 - unobs_prob)
+        table = {sample: (count / n) * prob_space for sample, count in freqdist.items()}
+
+        return table, 1.0 - prob_space

@@ -11,7 +11,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
-from .base import FrequencyDistribution
+from .base import Estimates, FrequencyDistribution
 
 
 class ComputationCache:
@@ -117,49 +117,44 @@ _general_cache = ComputationCache(max_size=1000)
 
 
 def cached_sgt_computation(
-    func: Callable[[Any, FrequencyDistribution], None],
-) -> Callable[[Any, FrequencyDistribution], None]:
-    """Cache Simple Good-Turing computations.
+    func: Callable[[Any, FrequencyDistribution], Estimates],
+) -> Callable[[Any, FrequencyDistribution], Estimates]:
+    """Cache Simple Good-Turing estimates.
 
-    Parameters
-    ----------
-    func : Callable
-        Function to cache (should be _compute_probabilities method)
+    Wraps an ``_estimate`` implementation. Simple Good-Turing also reports the
+    total unseen mass, which is cached alongside the estimates so a cache hit
+    reproduces it too.
+
+    Args:
+        func: The ``_estimate`` implementation to memoize.
 
     Returns:
-    -------
-    Callable
-        Wrapped function with caching
+        The wrapped implementation.
     """
 
     @wraps(func)
-    def wrapper(self: Any, freqdist: FrequencyDistribution) -> None:
-        # Create cache key using configuration parameters
+    def wrapper(self: Any, freqdist: FrequencyDistribution) -> Estimates:
+        # Create cache key using configuration parameters. `_estimate` works in
+        # plain probability space, so `logprob` is not part of the key: one
+        # entry serves both a log-scorer and a plain scorer.
         config_params = {
             "p_value": getattr(self.config, "p_value", None),
             "default_p0": getattr(self.config, "default_p0", None),
             "bins": getattr(self.config, "bins", None),
             "allow_fail": getattr(self.config, "allow_fail", None),
-            "logprob": self.logprob,
         }
 
-        # Try to get cached result
         cached_result = _sgt_cache.get(freqdist, **config_params)
         if cached_result is not None:
-            # Restore cached probability distributions and total_unseen_mass
-            if len(cached_result) == 3:  # New format with _total_unseen_mass
-                self._prob, self._unobs, self._total_unseen_mass = cached_result
-            else:  # Old format without _total_unseen_mass (backward compatibility)
-                self._prob, self._unobs = cached_result
-                self._total_unseen_mass = None
-            return
+            table, reserved, total_unseen_mass = cached_result
+            self._total_unseen_mass = total_unseen_mass
+            # Hand back a copy: the caller owns its table.
+            return dict(table), reserved
 
-        # Compute if not cached
-        func(self, freqdist)
+        table, reserved = func(self, freqdist)
 
-        # Cache the result (deep copy to avoid reference issues)
-        result = (dict(self._prob), self._unobs, self._total_unseen_mass)
-        _sgt_cache.set(freqdist, result, **config_params)
+        _sgt_cache.set(freqdist, (dict(table), reserved, self._total_unseen_mass), **config_params)
+        return table, reserved
 
     return wrapper
 
@@ -167,52 +162,48 @@ def cached_sgt_computation(
 def cached_computation(
     cache_instance: ComputationCache | None = None,
 ) -> Callable[
-    [Callable[[Any, FrequencyDistribution], None]],
-    Callable[[Any, FrequencyDistribution], None],
+    [Callable[[Any, FrequencyDistribution], Estimates]],
+    Callable[[Any, FrequencyDistribution], Estimates],
 ]:
-    """Cache expensive computations.
+    """Cache expensive estimates.
 
-    Parameters
-    ----------
-    cache_instance : ComputationCache, optional
-        Cache instance to use. If None, uses global general cache.
+    Wraps an ``_estimate`` implementation, memoizing it on the frequency
+    distribution and the estimator's configuration.
+
+    Args:
+        cache_instance: Cache to use. Defaults to the shared general cache.
 
     Returns:
-    -------
-    Callable
-        Decorator function
+        The decorator.
     """
     if cache_instance is None:
         cache_instance = _general_cache
 
     def decorator(
-        func: Callable[[Any, FrequencyDistribution], None],
-    ) -> Callable[[Any, FrequencyDistribution], None]:
+        func: Callable[[Any, FrequencyDistribution], Estimates],
+    ) -> Callable[[Any, FrequencyDistribution], Estimates]:
         @wraps(func)
-        def wrapper(self: Any, freqdist: FrequencyDistribution) -> None:
-            # Create cache key using all configuration parameters
+        def wrapper(self: Any, freqdist: FrequencyDistribution) -> Estimates:
+            # Key on every configuration parameter except `logprob`, which does
+            # not reach `_estimate`: it works in plain probability space.
             config_params = {}
             if hasattr(self, "config"):
                 config_params = {
                     attr: getattr(self.config, attr, None)
                     for attr in dir(self.config)
-                    if not attr.startswith("_")
+                    if not attr.startswith("_") and attr != "logprob"
                 }
-            config_params["logprob"] = self.logprob
 
-            # Try to get cached result
             cached_result = cache_instance.get(freqdist, **config_params)
             if cached_result is not None:
-                # Restore cached probability distributions
-                self._prob, self._unobs = cached_result
-                return
+                table, reserved = cached_result
+                # Hand back a copy: the caller owns its table.
+                return dict(table), reserved
 
-            # Compute if not cached
-            func(self, freqdist)
+            table, reserved = func(self, freqdist)
 
-            # Cache the result
-            result = (dict(self._prob), self._unobs)
-            cache_instance.set(freqdist, result, **config_params)
+            cache_instance.set(freqdist, (dict(table), reserved), **config_params)
+            return table, reserved
 
         return wrapper
 

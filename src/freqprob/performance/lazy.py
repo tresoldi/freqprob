@@ -5,12 +5,17 @@ computations until they are actually needed, improving performance
 when only a subset of probabilities are accessed.
 """
 
-import math
 from abc import ABC, abstractmethod
 from collections.abc import Collection, Iterable, Iterator
 from typing import Any
 
-from freqprob.base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
+from freqprob.base import (
+    Element,
+    Estimates,
+    FrequencyDistribution,
+    ScoringMethod,
+    ScoringMethodConfig,
+)
 
 
 class LazyProbabilityComputer(ABC):
@@ -201,12 +206,24 @@ class LazyScoringMethod(ScoringMethod):
         self._computed_elements: set[Element] = set()
         self._unobs_computed = False
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Store frequency distribution for lazy computation."""
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Record the distribution without estimating anything yet.
+
+        Returning an empty table is the lazy part: each element's estimate is
+        produced by :meth:`__call__` the first time it is asked for, and the
+        reserved score by :meth:`_get_unobserved_probability`.
+
+        Args:
+            freqdist: Frequency distribution to score against later.
+
+        Returns:
+            An empty table and a zero reserved mass, both filled in on demand.
+        """
         self._freqdist = freqdist
         self._computed_elements.clear()
         self._unobs_computed = False
-        # Don't compute anything yet - this is the lazy part!
+
+        return {}, 0.0
 
     def support(self) -> Collection[Element]:
         """Return every element of the fitted distribution.
@@ -248,15 +265,7 @@ class LazyScoringMethod(ScoringMethod):
             # Compute probability for this element
             prob = self.lazy_computer.compute_probability(element, self._freqdist, self.config)
 
-            # Convert to log probability if needed
-            if self.logprob:
-                if prob > 0:
-                    self._prob[element] = math.log(prob)
-                else:
-                    self._prob[element] = math.log(1e-10)  # Avoid log(0)
-            else:
-                self._prob[element] = prob
-
+            self._prob[element] = self._score_of(prob)
             self._computed_elements.add(element)
             return self._prob[element]
         # Return unobserved probability
@@ -271,14 +280,7 @@ class LazyScoringMethod(ScoringMethod):
                 self._freqdist, self.config
             )
 
-            if self.logprob:
-                if unobs_prob > 0:
-                    self._unobs = math.log(unobs_prob)
-                else:
-                    self._unobs = math.log(1e-10)
-            else:
-                self._unobs = unobs_prob
-
+            self._unobs = self._score_of(unobs_prob)
             self._unobs_computed = True
 
         return self._unobs
