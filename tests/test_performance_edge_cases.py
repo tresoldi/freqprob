@@ -16,7 +16,6 @@ import pytest
 from freqprob import MLE
 from freqprob.base import Estimates, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 from freqprob.performance.lazy import (
-    LazyBatchScorer,
     LazyLaplaceComputer,
     LazyMLEComputer,
     LazyScoringMethod,
@@ -26,7 +25,6 @@ from freqprob.performance.lazy import (
 from freqprob.performance.vectorized import (
     BatchScorer,
     VectorizedScorer,
-    create_vectorized_batch_scorer,
     elements_to_numpy,
     normalize_scores,
     scores_to_probabilities,
@@ -58,18 +56,6 @@ class TestVectorizedScorerEdgeCases:
         vectorized = VectorizedScorer(_EmptyScorer())
         scores = vectorized.score_batch(["a", "b"])
         assert np.array_equal(scores, np.array([0.0, 0.0]))
-
-    def test_score_parallel(self) -> None:
-        """score_parallel scores each batch independently."""
-        scorer = MLE({"a": 3, "b": 2}, logprob=False)
-        vectorized = VectorizedScorer(scorer)
-
-        batches = [["a", "b"], ["a"], ["unknown"]]
-        results = vectorized.score_parallel(batches)
-
-        assert len(results) == 3
-        assert results[0][0] == scorer("a")
-        assert results[2][0] == scorer("unknown")
 
     def test_score_matrix_empty(self) -> None:
         """An empty 2D input returns an empty array."""
@@ -113,13 +99,6 @@ class TestVectorizedScorerEdgeCases:
 
 class TestBatchScorerEdgeCases:
     """BatchScorer helpers not covered elsewhere."""
-
-    def test_create_vectorized_batch_scorer(self) -> None:
-        """The factory returns a configured BatchScorer."""
-        scorers = {"mle": MLE({"a": 3, "b": 2}, logprob=False)}
-        batch = create_vectorized_batch_scorer(scorers)
-        assert isinstance(batch, BatchScorer)
-        assert "mle" in batch.vectorized_scorers
 
     def test_benchmark_methods(self) -> None:
         """benchmark_methods returns non-negative timings per method."""
@@ -271,34 +250,3 @@ class TestLazyScoringMethodEdgeCases:
         first = lazy("a")
         assert "a" in lazy.get_computed_elements()
         assert lazy("a") == first
-
-
-class TestLazyBatchScorerEdgeCases:
-    """LazyBatchScorer access-pattern branches."""
-
-    def test_score_batch_single_unique_element(self) -> None:
-        """A single unique element skips batch precomputation."""
-        lazy = create_lazy_mle({"a": 3, "b": 2}, logprob=False)
-        batch = LazyBatchScorer(lazy)
-        scores = batch.score_batch(["a", "a", "a"])
-        assert len(scores) == 3
-        assert scores[0] == scores[1] == scores[2]
-
-    def test_access_statistics_empty(self) -> None:
-        """Access statistics on an unused scorer report zeros."""
-        lazy = create_lazy_mle({"a": 3, "b": 2}, logprob=False)
-        batch = LazyBatchScorer(lazy)
-        stats = batch.get_access_statistics()
-        assert stats == {"total_accesses": 0, "unique_elements": 0}
-
-    def test_streaming_triggers_batch_precompute(self) -> None:
-        """Crossing the streaming boundary precomputes seen elements."""
-        freqdist = {f"w{i}": (i + 1) for i in range(120)}
-        lazy = create_lazy_mle(freqdist, logprob=False)
-        batch = LazyBatchScorer(lazy)
-
-        stream = [f"w{i}" for i in range(100)]
-        scores = list(batch.score_streaming(stream))
-
-        assert len(scores) == 100
-        assert len(lazy.get_computed_elements()) >= 100

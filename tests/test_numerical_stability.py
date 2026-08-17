@@ -360,7 +360,9 @@ class TestNumericalStabilityAdvanced:
         large_dist = {f"word_{i}": max(1, int(1000 / (i + 1))) for i in range(1000)}
 
         # Create compressed version
-        compressed = freqprob.create_compressed_distribution(large_dist, quantization_levels=256)
+        compressed = freqprob.CompressedFrequencyDistribution.from_counts(
+            large_dist, quantization_levels=256
+        )
 
         # Test that compression doesn't cause numerical issues
         # Compare some probabilities (allowing for quantization error)

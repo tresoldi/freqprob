@@ -111,21 +111,6 @@ class VectorizedScorer:
 
         return result
 
-    def score_parallel(
-        self, element_batches: Sequence[Sequence[Element]]
-    ) -> list[np.ndarray[Any, Any]]:
-        """Score multiple batches in parallel (when available).
-
-        Args:
-            element_batches: List of element batches to score.
-
-        Returns:
-            List of score arrays, one per input batch.
-        """
-        # For now, this is a sequential implementation
-        # In the future, could use multiprocessing or threading
-        return [self.score_batch(batch) for batch in element_batches]
-
     def score_matrix(self, elements_2d: Sequence[Sequence[Element]]) -> np.ndarray[Any, Any]:
         """Score a 2D array of elements, returning a matrix of scores.
 
@@ -207,27 +192,6 @@ class VectorizedScorer:
             percentile_ranks[i] = rank
 
         return percentile_ranks
-
-
-def create_vectorized_batch_scorer(scorers: dict[str, ScoringMethod]) -> "BatchScorer":
-    """Create a batch scorer handling multiple scoring methods efficiently.
-
-    Args:
-        scorers: Mapping of scorer names to scoring methods.
-
-    Returns:
-        A `BatchScorer` wrapping the given scoring methods.
-
-    Examples:
-        >>> from freqprob import MLE
-        >>> batch_scorer = create_vectorized_batch_scorer(
-        ...     {"mle": MLE({"a": 3, "b": 2}, logprob=False)}
-        ... )
-        >>> scores = batch_scorer.score_batch(["a", "b"])
-        >>> [round(float(x), 4) for x in scores["mle"]]
-        [0.6, 0.4]
-    """
-    return BatchScorer(scorers)
 
 
 class BatchScorer:

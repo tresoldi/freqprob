@@ -179,6 +179,17 @@ Full `BaseEstimator` compliance (`get_params`/`set_params`, cloning, pipeline
 support) is **out of scope** (YAGNI) — revisit only if a concrete
 pipeline/grid-search need appears.
 
+**What the namespace holds.** `__all__` is the compatibility promise, so it
+carries the domain — the estimators, the metrics that evaluate them, the text
+helpers that build a frequency distribution — plus the performance adapters a
+caller reaches for directly. Development and diagnostic tooling
+(`MemoryProfiler`, `MemoryMonitor`, `DistributionMemoryAnalyzer`,
+`StreamingDataProcessor`) is **not** re-exported: it lives one import deeper,
+under `freqprob.performance.*`, where being infrastructure is visible. A name
+earns a place in `__all__` by surviving the deletion test — remove it and see
+whether complexity concentrates elsewhere or simply vanishes.
+`tests/test_public_api.py` holds the surface to this.
+
 **Persistence.** A fitted estimator can be saved and restored without
 re-fitting:
 

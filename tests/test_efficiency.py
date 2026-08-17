@@ -8,7 +8,6 @@ from freqprob import (
     MLE,
     BatchScorer,
     Laplace,
-    LazyBatchScorer,
     SimpleGoodTuring,
     VectorizedScorer,
     WittenBell,
@@ -17,7 +16,7 @@ from freqprob import (
     create_lazy_mle,
     get_cache_stats,
 )
-from freqprob.cache import ComputationCache, MemoizedProperty
+from freqprob.cache import ComputationCache
 from freqprob.performance.lazy import LazyLaplaceComputer, LazyMLEComputer
 from freqprob.performance.vectorized import (
     elements_to_numpy,
@@ -133,30 +132,6 @@ class TestCaching:
         # Second computation with same parameters
         wb2 = WittenBell(freqdist)
         assert wb1("a") == wb2("a")
-
-    def test_memoized_property(self) -> None:
-        """Test memoized property decorator."""
-
-        class TestClass:
-            def __init__(self) -> None:
-                self.computation_count = 0
-
-            @MemoizedProperty
-            def expensive_property(self) -> int:
-                self.computation_count += 1
-                return self.computation_count * 10
-
-        obj = TestClass()
-
-        # First access should compute
-        result1 = obj.expensive_property
-        assert result1 == 10
-        assert obj.computation_count == 1
-
-        # Second access should use cached value
-        result2 = obj.expensive_property
-        assert result2 == 10
-        assert obj.computation_count == 1  # No additional computation
 
 
 class TestVectorization:
@@ -374,38 +349,6 @@ class TestLazyEvaluation:
         computed = lazy_scorer.get_computed_elements()
         assert len(computed) == 3
         assert all(elem in computed for elem in freqdist)
-
-    def test_lazy_batch_scorer(self) -> None:
-        """Test lazy batch scorer."""
-        freqdist = {"a": 3, "b": 2, "c": 1, "d": 1, "e": 1}
-        lazy_scorer = create_lazy_mle(freqdist, logprob=False)
-        batch_scorer = LazyBatchScorer(lazy_scorer)
-
-        # Score a batch
-        elements = ["a", "b", "unknown"]
-        scores = batch_scorer.score_batch(elements)
-
-        assert len(scores) == 3
-        assert scores[0] > 0  # 'a' should have positive score
-        assert scores[2] == 0  # 'unknown' should have zero score
-
-        # Check access statistics
-        stats = batch_scorer.get_access_statistics()
-        assert stats["total_accesses"] == 3
-        assert stats["unique_elements"] == 3
-
-    def test_lazy_streaming(self) -> None:
-        """Test lazy streaming scorer."""
-        freqdist = {"a": 3, "b": 2, "c": 1}
-        lazy_scorer = create_lazy_mle(freqdist, logprob=False)
-        batch_scorer = LazyBatchScorer(lazy_scorer)
-
-        # Stream elements
-        element_stream = ["a", "b", "a", "c", "b", "a"]
-        scores = list(batch_scorer.score_streaming(element_stream))
-
-        assert len(scores) == 6
-        assert scores[0] == scores[2] == scores[5]  # All 'a' scores should be equal
 
     def test_create_lazy_laplace(self) -> None:
         """Test lazy Laplace scorer creation."""

@@ -520,7 +520,7 @@ class TestAdvancedStatisticalProperties:
         }
 
         # Create compressed version with more quantization levels for better accuracy
-        compressed_dist = freqprob.create_compressed_distribution(
+        compressed_dist = freqprob.CompressedFrequencyDistribution.from_counts(
             original_dist, quantization_levels=256
         )
 

@@ -1,4 +1,16 @@
-"""FreqProb: frequency-based probability estimation library."""
+"""FreqProb: frequency-based probability estimation library.
+
+The public namespace is the library's compatibility promise, so it holds the
+domain — the estimators, the metrics you evaluate them with, and the text
+helpers that build a frequency distribution — plus the handful of performance
+adapters that a caller reaches for directly.
+
+Development and diagnostic tooling is deliberately *not* re-exported. It is
+still there, one import deeper, where its being infrastructure is visible:
+
+    from freqprob.performance.profiling import MemoryProfiler
+    from freqprob.performance.streaming import StreamingDataProcessor
+"""
 
 # Version of the freqprob package
 __version__ = "0.7.0"
@@ -32,28 +44,20 @@ from .metrics import (
     sample_coverage,
 )
 
-# Performance infrastructure (lazy/streaming/vectorized/memory/profiling)
-from .performance.lazy import (
-    LazyBatchScorer,
-    LazyScoringMethod,
-    create_lazy_laplace,
-    create_lazy_mle,
-)
+# Performance adapters over the estimator contract, and the compact
+# representations a large distribution can be held in.
+from .performance.lazy import create_lazy_laplace, create_lazy_mle
 from .performance.memory_efficient import (
     CompressedFrequencyDistribution,
     QuantizedProbabilityTable,
     SparseFrequencyDistribution,
-    create_compressed_distribution,
-    create_sparse_distribution,
 )
-from .performance.profiling import DistributionMemoryAnalyzer, MemoryMonitor, MemoryProfiler
 from .performance.streaming import (
-    StreamingDataProcessor,
     StreamingFrequencyDistribution,
     StreamingLaplace,
     StreamingMLE,
 )
-from .performance.vectorized import BatchScorer, VectorizedScorer, create_vectorized_batch_scorer
+from .performance.vectorized import BatchScorer, VectorizedScorer
 from .text import generate_ngrams, ngram_frequency, word_frequency
 
 # Build the namespace
@@ -65,17 +69,12 @@ __all__ = [
     "Bayesian",
     "CertaintyDegree",
     "CompressedFrequencyDistribution",
-    "DistributionMemoryAnalyzer",
     "Interpolated",
     "JelinekMercer",
     "KatzBackoff",
     "KneserNey",
     "Laplace",
-    "LazyBatchScorer",
-    "LazyScoringMethod",
     "Lidstone",
-    "MemoryMonitor",
-    "MemoryProfiler",
     "ModifiedKneserNey",
     "PitmanYor",
     "QuantizedProbabilityTable",
@@ -83,7 +82,6 @@ __all__ = [
     "ScoringMethod",
     "SimpleGoodTuring",
     "SparseFrequencyDistribution",
-    "StreamingDataProcessor",
     "StreamingFrequencyDistribution",
     "StreamingLaplace",
     "StreamingMLE",
@@ -93,11 +91,8 @@ __all__ = [
     "WittenBell",
     "chao_shen_entropy",
     "clear_all_caches",
-    "create_compressed_distribution",
     "create_lazy_laplace",
     "create_lazy_mle",
-    "create_sparse_distribution",
-    "create_vectorized_batch_scorer",
     "cross_entropy",
     "generate_ngrams",
     "get_cache_stats",

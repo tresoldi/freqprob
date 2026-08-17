@@ -6,8 +6,7 @@ when only a subset of probabilities are accessed.
 """
 
 from abc import ABC, abstractmethod
-from collections.abc import Collection, Iterable, Iterator
-from typing import Any
+from collections.abc import Collection
 
 from freqprob.base import (
     Element,
@@ -325,110 +324,6 @@ class LazyScoringMethod(ScoringMethod):
 
         # Also compute unobserved probability
         self._get_unobserved_probability()
-
-
-class LazyBatchScorer:
-    """Batch scorer with lazy evaluation and intelligent caching.
-
-    This scorer optimizes batch operations by:
-
-    1. Using lazy evaluation to avoid unnecessary computations.
-    2. Intelligently ordering computations based on access patterns.
-    3. Providing memory-efficient operations for large datasets.
-
-    Args:
-        lazy_scorer: Lazy scoring method to wrap.
-
-    Examples:
-        Wrap a lazy MLE scorer and score a batch of elements:
-
-        >>> from freqprob import create_lazy_mle
-        >>> lazy_scorer = create_lazy_mle({"a": 3, "b": 2, "c": 1}, logprob=False)
-        >>> batch_scorer = LazyBatchScorer(lazy_scorer)
-        >>> [round(float(x), 4) for x in batch_scorer.score_batch(["a", "c"])]
-        [0.5, 0.1667]
-        >>> stats = batch_scorer.get_access_statistics()
-        >>> stats["total_accesses"]
-        2
-        >>> stats["unique_elements"]
-        2
-    """
-
-    def __init__(self, lazy_scorer: LazyScoringMethod):
-        """Initialize lazy batch scorer.
-
-        Args:
-            lazy_scorer: Lazy scoring method to wrap.
-        """
-        self.lazy_scorer = lazy_scorer
-        self._access_count: dict[Element, int] = {}
-
-    def score_batch(self, elements: list[Element]) -> list[float]:
-        """Score a batch of elements with lazy evaluation.
-
-        Args:
-            elements: Elements to score.
-
-        Returns:
-            Scores for the elements, in the same order as the input.
-        """
-        # Track access patterns
-        for element in elements:
-            self._access_count[element] = self._access_count.get(element, 0) + 1
-
-        # Precompute if this is an efficient strategy
-        unique_elements = set(elements)
-        if len(unique_elements) > 1:
-            self.lazy_scorer.precompute_batch(unique_elements)
-
-        # Score all elements
-        return [self.lazy_scorer(element) for element in elements]
-
-    def score_streaming(self, element_stream: Iterable[Element]) -> Iterator[float]:
-        """Score elements from a stream with adaptive lazy evaluation.
-
-        Args:
-            element_stream: Stream of elements to score.
-
-        Yields:
-            Score for each element in the stream.
-        """
-        seen_elements = set()
-        batch_size = 100  # Adaptive batch size
-
-        for element in element_stream:
-            if element not in seen_elements:
-                seen_elements.add(element)
-
-                # Adaptive precomputation based on stream patterns
-                if len(seen_elements) % batch_size == 0:
-                    # Precompute recent elements
-                    recent_elements = set(list(seen_elements)[-batch_size:])
-                    self.lazy_scorer.precompute_batch(recent_elements)
-
-            yield self.lazy_scorer(element)
-
-    def get_access_statistics(self) -> dict[str, Any]:
-        """Get statistics about element access patterns.
-
-        Returns:
-            Access statistics including total accesses, unique elements, and
-            the most frequently accessed element.
-        """
-        if not self._access_count:
-            return {"total_accesses": 0, "unique_elements": 0}
-
-        total_accesses = sum(self._access_count.values())
-        unique_elements = len(self._access_count)
-        most_accessed = max(self._access_count.items(), key=lambda x: x[1])
-
-        return {
-            "total_accesses": total_accesses,
-            "unique_elements": unique_elements,
-            "most_accessed_element": most_accessed[0],
-            "most_accessed_count": most_accessed[1],
-            "computed_elements": len(self.lazy_scorer.get_computed_elements()),
-        }
 
 
 # Factory functions for creating lazy scorers
