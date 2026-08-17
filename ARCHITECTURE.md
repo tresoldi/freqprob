@@ -46,17 +46,26 @@ so that a genomics or analytics user never trips over linguistic terminology.
 2. **One estimator contract.** Every method is a `ScoringMethod`: construct
    with a frequency distribution, then call it to score an element. There is a
    single, predictable lifecycle. Performance variants (lazy, streaming,
-   vectorized) are *adapters* over this contract, not parallel hierarchies.
-3. **KISS.** Prefer a small, obvious API over configurability nobody asked for.
+   vectorized) are *adapters* over this contract, not parallel hierarchies —
+   and they reach a scorer only through its interface (`support()`,
+   `unobserved_score()`, `revision`, `predict()`), never through its
+   probability table.
+3. **One place where a probability becomes a score.** A method implements
+   `_estimate(freqdist)`, returning a probability table and a reserved mass in
+   *plain probability space*. `fit` applies the `MIN_PROBABILITY` floor,
+   converts to log-probabilities when the scorer is a log-scorer, and installs
+   the result. A method body therefore contains its own mathematics and nothing
+   else: no `self._prob` writes, no `self.logprob` branch, no `math.log`.
+4. **KISS.** Prefer a small, obvious API over configurability nobody asked for.
    A method's constructor takes plain keyword arguments.
-4. **DRY.** No per-method boilerplate that merely restates the base. Shared
+5. **DRY.** No per-method boilerplate that merely restates the base. Shared
    validation and configuration live in exactly one place (`base`).
-5. **YAGNI.** Do not add abstraction, config surface, or "extension points"
+6. **YAGNI.** Do not add abstraction, config surface, or "extension points"
    ahead of a concrete need.
-6. **Namespace-preserving refactors.** Internal reorganization must not break
+7. **Namespace-preserving refactors.** Internal reorganization must not break
    `import freqprob; freqprob.Laplace(...)`. The public surface is defined by
    `freqprob/__init__.py`, independent of file layout.
-7. **Typed and validated.** Full type hints, `py.typed`, strict mypy;
+8. **Typed and validated.** Full type hints, `py.typed`, strict mypy;
    parameter validation raises early with clear messages.
 
 ---
@@ -74,12 +83,15 @@ src/freqprob/
 ├── metrics.py           # perplexity, cross_entropy, kl_divergence, model_comparison
 ├── text.py              # n-gram / word-frequency helpers  (NLP-specific layer)
 ├── methods/             # the estimators, grouped by family
+│   ├── _bigram.py       # the bigram seam: BigramBackoff, context extraction
 │   ├── baselines.py     # Uniform, Random, MLE
 │   ├── additive.py      # Lidstone, Laplace, ELE
 │   ├── goodturing.py    # SimpleGoodTuring, WittenBell
 │   ├── certainty.py     # CertaintyDegree
 │   ├── kneser_ney.py    # KneserNey, ModifiedKneserNey
-│   ├── interpolated.py  # Interpolated
+│   ├── discounting.py   # AbsoluteDiscounting, PitmanYor
+│   ├── backoff.py       # KatzBackoff, StupidBackoff
+│   ├── interpolated.py  # Interpolated, JelinekMercer
 │   └── bayesian.py      # Bayesian
 ├── performance/         # infrastructure, not estimators
 │   ├── lazy.py
@@ -103,11 +115,22 @@ src/freqprob/
   machinery — none of which are smoothing methods — from the estimator core, so
   the package's conceptual surface stays small.
 - `base.py` and `cache.py` are top-level **foundations**. `cache.py` is a
-  memoization utility the *methods* depend on (Simple Good-Turing, Kneser-Ney),
-  so it lives alongside `base` rather than under `performance/` — otherwise
-  `methods/` would have to reach into `performance/`, against the dependency
-  rule below. (This is a deliberate deviation from the original plan, which had
-  sketched `cache.py` under `performance/`.)
+  memoization utility the *methods* depend on (Simple Good-Turing, Witten-Bell,
+  Certainty Degree), so it lives alongside `base` rather than under
+  `performance/` — otherwise `methods/` would have to reach into
+  `performance/`, against the dependency rule below. (This is a deliberate
+  deviation from the original plan, which had sketched `cache.py` under
+  `performance/`.) Its decorators memoize `_estimate`, which works in plain
+  probability space, so one cache entry serves both a log-scorer and a plain
+  scorer.
+- `methods/_bigram.py` is the **bigram seam**. Every estimator that models
+  `P(word | context)` over `(context, word)` pairs — Kneser-Ney, Modified
+  Kneser-Ney, absolute discounting, Pitman-Yor, Katz and Stupid Back-off —
+  subclasses `BigramBackoff` and shares one definition of context extraction
+  and of backing off to a lower-order model. The interpolation family keeps a
+  separate seam on purpose: it takes *two* distributions of arbitrary order,
+  where this one derives its lower-order model from a single distribution of
+  bigrams.
 
 ### Dependency rule
 
@@ -134,6 +157,15 @@ p = scorer(element)  # __call__ scores one element
 - Unobserved elements return the method's reserved/smoothed mass.
 - Re-fitting (`scorer.fit(other_freqdist)`) resets state and behaves like a
   fresh fit.
+
+Three further members exist for callers that need to *index* a scorer rather
+than query it one element at a time — this is what `performance/` uses, in place
+of reaching into the probability table:
+
+- `support()` — the elements holding an explicit estimate.
+- `unobserved_score()` — the score every other element receives.
+- `revision` — a counter that advances whenever the estimates change, so a
+  caller can tell when a cache it derived has gone stale.
 
 **scikit-learn-style aliases** sit alongside the callable contract for the
 data-science audience:
