@@ -192,13 +192,25 @@ annotations.
 
 ### Configuration
 
-The base `ScoringMethodConfig` validates `unobs_prob`, `gamma`, `bins`,
-`logprob`. Per-method config subclasses exist **only** where a method adds a
-genuine parameter (`RandomConfig.seed`, `KneserNeyConfig.discount`,
-`BayesianConfig.alpha`, `InterpolatedConfig.lambda_weight`,
-`SimpleGoodTuringConfig.p_value`/`default_p0`/`allow_fail`). Constructors accept
-plain keyword arguments; the config object is an internal detail users never
-touch.
+`ScoringMethodConfig` carries the three settings more than one method uses —
+`unobs_prob`, `bins`, `logprob` — and validates them. **There are no per-method
+config subclasses.** A method's own parameters (`Random.seed`, `Bayesian.alpha`,
+`Lidstone.gamma`, `KneserNey.discount`, `SimpleGoodTuring.p_value`, and so on)
+are typed attributes on the estimator, validated in its constructor.
+
+The earlier rule — a config subclass "only where a method adds a genuine
+parameter" — permitted unbounded regrowth, and did: the 0.7.0 feature work added
+three more subclasses, for eight in total. None ever overrode `__post_init__`,
+so every method-specific range check lived in the constructor anyway while the
+subclass contributed nothing but a field, and reading that field required a
+`# type: ignore` at fifteen call sites because `self.config` is typed as the
+base class.
+
+Memoized methods declare what their estimates depend on via `_cache_key()`,
+replacing a cache key derived by reflecting over `dir(self.config)` — under
+which adding any config field silently invalidated every entry. Constructors
+accept plain keyword arguments; the config object is an internal detail users
+never touch.
 
 ---
 

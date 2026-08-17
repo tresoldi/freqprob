@@ -1,7 +1,6 @@
 """Kneser-Ney and Modified Kneser-Ney smoothing."""
 
 from collections import Counter
-from dataclasses import dataclass
 
 from freqprob.base import (
     Element,
@@ -11,21 +10,6 @@ from freqprob.base import (
     ScoringMethodConfig,
 )
 from freqprob.methods._bigram import BigramBackoff, continuation_probs, extract_bigram_stats
-
-
-@dataclass
-class KneserNeyConfig(ScoringMethodConfig):
-    """Configuration for Kneser-Ney smoothing.
-
-    Attributes:
-    ----------
-    discount : float
-        Absolute discounting parameter (0 < d < 1, default: 0.75)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    discount: float = 0.75
 
 
 class KneserNey(BigramBackoff):
@@ -84,7 +68,7 @@ class KneserNey(BigramBackoff):
         so it scores at the floor rather than borrowing an average.
     """
 
-    __slots__ = ()
+    __slots__ = ("discount",)
 
     def __init__(
         self,
@@ -96,8 +80,9 @@ class KneserNey(BigramBackoff):
         if not 0 < discount < 1:
             raise ValueError("Discount parameter must be between 0 and 1")
 
-        config = KneserNeyConfig(discount=discount, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.discount = discount
         self.name = "Kneser-Ney"
         self.fit(freqdist)
 
@@ -112,7 +97,7 @@ class KneserNey(BigramBackoff):
             ``P(word | context)`` for each observed bigram, and the fallback for
             a query that is not a bigram.
         """
-        discount = self.config.discount  # type: ignore[attr-defined]
+        discount = self.discount
 
         context_total, context_types, context_word, _unigram, _total = extract_bigram_stats(
             freqdist

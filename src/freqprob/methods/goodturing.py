@@ -1,6 +1,6 @@
 """Good-Turing-family smoothing: Witten-Bell discounting and Simple Good-Turing."""
 
-from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import scipy
@@ -87,29 +87,6 @@ class WittenBell(ScoringMethod):
         return table, reserved
 
 
-@dataclass
-class SimpleGoodTuringConfig(ScoringMethodConfig):
-    """Configuration for Simple Good-Turing smoothing.
-
-    Attributes:
-        p_value: Confidence level for the smoothing threshold (default: ``0.05``).
-        default_p0: Fallback probability for unobserved elements
-            (default: ``None``).
-        bins: Total support size for per-word probability calculation
-            (default: ``None``). If ``None``, uses the heuristic
-            ``bins = V_observed + N1`` (singletons), which determines how ``p0``
-            (total unseen mass) is distributed across unseen words.
-        logprob: Whether to return log-probabilities (default: ``True``).
-        allow_fail: Whether to raise errors on invalid assumptions
-            (default: ``True``).
-    """
-
-    p_value: float = 0.05
-
-    default_p0: float | None = None
-    allow_fail: bool = True
-
-
 class SimpleGoodTuring(ScoringMethod):
     """Simple Good-Turing smoothing.
 
@@ -179,7 +156,7 @@ class SimpleGoodTuring(ScoringMethod):
         0.133
     """
 
-    __slots__ = ()
+    __slots__ = ("allow_fail", "default_p0", "p_value")
 
     def __init__(
         self,
@@ -191,16 +168,20 @@ class SimpleGoodTuring(ScoringMethod):
         allow_fail: bool = True,
     ) -> None:
         """Initialize Simple Good-Turing smoothing."""
-        config = SimpleGoodTuringConfig(
-            p_value=p_value,
-            default_p0=default_p0,
-            bins=bins,
-            logprob=logprob,
-            allow_fail=allow_fail,
-        )
+        if not 0.0 < p_value < 1.0:
+            raise ValueError("The p-value must be between 0.0 and 1.0 (exclusive).")
+
+        config = ScoringMethodConfig(bins=bins, logprob=logprob)
         super().__init__(config)
         self.name = "Simple Good-Turing"
+        self.p_value = p_value
+        self.default_p0 = default_p0
+        self.allow_fail = allow_fail
         self.fit(freqdist)
+
+    def _cache_key(self) -> tuple[Any, ...]:
+        """Extend the shared key with this method's own parameters."""
+        return (*super()._cache_key(), self.p_value, self.default_p0, self.allow_fail)
 
     @property
     def total_unseen_mass(self) -> float:
@@ -240,10 +221,9 @@ class SimpleGoodTuring(ScoringMethod):
                 elements, or if the log-linear fit fails and ``allow_fail``
                 is set.
         """
-        p_value = self.config.p_value  # type: ignore
-
-        default_p0 = self.config.default_p0  # type: ignore
-        allow_fail = self.config.allow_fail  # type: ignore
+        p_value = self.p_value
+        default_p0 = self.default_p0
+        allow_fail = self.allow_fail
 
         # Calculate the confidence level from the p_value.
         confidence_level = scipy.stats.norm.ppf(1.0 - (p_value / 2.0))

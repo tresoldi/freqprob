@@ -44,7 +44,6 @@ class ScoringMethodConfig:
     Attributes:
         unobs_prob: Reserved probability mass for unobserved elements
             (``0.0 <= p <= 1.0``).
-        gamma: Smoothing parameter for additive methods (``gamma >= 0``).
         bins: Total number of possible bins/elements (``bins >= 1``).
         logprob: Whether to return log-probabilities instead of probabilities.
 
@@ -55,14 +54,12 @@ class ScoringMethodConfig:
         >>> config = ScoringMethodConfig(unobs_prob=0.1, logprob=True)
         >>> config.unobs_prob
         0.1
-        >>> config = ScoringMethodConfig(gamma=1.5, bins=1000)
-        >>> config.gamma
-        1.5
+        >>> config = ScoringMethodConfig(bins=1000)
+        >>> config.bins
+        1000
     """
 
     unobs_prob: Probability | None = None
-
-    gamma: float | None = None
     bins: int | None = None
     logprob: bool = True
 
@@ -70,14 +67,11 @@ class ScoringMethodConfig:
         """Validate configuration parameters after initialization.
 
         Raises:
-            ValueError: If ``unobs_prob`` is not in ``[0.0, 1.0]``, ``gamma`` is
-                negative, or ``bins`` is not positive.
+            ValueError: If ``unobs_prob`` is not in ``[0.0, 1.0]`` or ``bins``
+                is not positive.
         """
         if self.unobs_prob is not None and not 0.0 <= self.unobs_prob <= 1.0:
             raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
-
-        if self.gamma is not None and self.gamma < 0:
-            raise ValueError("Gamma must be a non-negative real number.")
 
         if self.bins is not None and self.bins < 1:
             raise ValueError("Number of bins must be a positive integer.")
@@ -95,8 +89,10 @@ class ScoringMethod(ABC):
     estimates a probability ``P(w)`` for every element ``w``. For unobserved
     elements, methods reserve probability mass to avoid returning zero.
 
-    Subclasses must implement :meth:`_compute_probabilities`, which populates the
-    internal probability table and the reserved mass for unobserved elements.
+    Subclasses must implement :meth:`_estimate`, which returns the probability
+    of each observed element together with the mass reserved for the rest. The
+    method's own parameters are attributes on the estimator; the shared
+    :class:`ScoringMethodConfig` carries only what every method may need.
 
     Attributes:
         config: Configuration parameters for the method.
@@ -223,6 +219,21 @@ class ScoringMethod(ABC):
     def _mark_changed(self) -> None:
         """Record that the estimates changed, invalidating callers' caches."""
         self._revision += 1
+
+    def _cache_key(self) -> tuple[Any, ...]:
+        """Return the parameters that affect :meth:`_estimate`.
+
+        Used to memoize estimates. A method that takes parameters of its own
+        extends this, so what a cache entry depends on is written down rather
+        than discovered by reflecting over the configuration object.
+
+        ``logprob`` is deliberately absent: :meth:`_estimate` works in plain
+        probability space, so one entry serves both output spaces.
+
+        Returns:
+            A hashable tuple identifying this estimator's parameters.
+        """
+        return (self.config.unobs_prob, self.config.bins)
 
     def _score_of(self, prob: Probability) -> Probability | LogProbability:
         """Convert a plain probability into this scorer's output space.

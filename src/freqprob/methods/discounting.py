@@ -6,8 +6,6 @@ Pitman-Yor generalizes it with a second (concentration) parameter and has
 absolute discounting as its ``strength = 0`` special case.
 """
 
-from dataclasses import dataclass
-
 from freqprob.base import (
     Element,
     Estimates,
@@ -16,21 +14,6 @@ from freqprob.base import (
     ScoringMethodConfig,
 )
 from freqprob.methods._bigram import BigramBackoff, extract_bigram_stats
-
-
-@dataclass
-class DiscountingConfig(ScoringMethodConfig):
-    """Configuration for absolute-discounting / Pitman-Yor smoothing.
-
-    Attributes:
-        discount: Amount subtracted from each observed count (the ``d``
-            parameter). ``0 <= discount < 1``.
-        strength: Pitman-Yor concentration parameter ``theta`` (``theta >
-            -discount``). ``0`` recovers absolute discounting.
-    """
-
-    discount: float = 0.75
-    strength: float = 0.0
 
 
 class AbsoluteDiscounting(BigramBackoff):
@@ -81,7 +64,7 @@ class AbsoluteDiscounting(BigramBackoff):
         its weight even if it appears in few distinct contexts.
     """
 
-    __slots__ = ()
+    __slots__ = ("discount", "strength")
 
     def __init__(
         self,
@@ -93,8 +76,10 @@ class AbsoluteDiscounting(BigramBackoff):
         if not 0 <= discount < 1:
             raise ValueError("Discount parameter must be in [0, 1)")
 
-        config = DiscountingConfig(discount=discount, strength=0.0, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.discount = discount
+        self.strength = 0.0
         self.name = "Absolute Discounting"
         self.fit(freqdist)
 
@@ -108,7 +93,7 @@ class AbsoluteDiscounting(BigramBackoff):
             ``P(word | context)`` for each observed bigram, and the fallback for
             a query that is not a bigram.
         """
-        discount = self.config.discount  # type: ignore[attr-defined]
+        discount = self.discount
 
         context_total, context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
 
@@ -179,7 +164,7 @@ class PitmanYor(BigramBackoff):
         approximation of the full hierarchical Pitman-Yor process.
     """
 
-    __slots__ = ()
+    __slots__ = ("discount", "strength")
 
     def __init__(
         self,
@@ -194,8 +179,10 @@ class PitmanYor(BigramBackoff):
         if strength <= -discount:
             raise ValueError("Strength parameter must be greater than -discount")
 
-        config = DiscountingConfig(discount=discount, strength=strength, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.discount = discount
+        self.strength = strength
         self.name = "Pitman-Yor"
         self.fit(freqdist)
 
@@ -209,8 +196,8 @@ class PitmanYor(BigramBackoff):
             ``P(word | context)`` for each observed bigram, and the fallback for
             a query that is not a bigram.
         """
-        discount = self.config.discount  # type: ignore[attr-defined]
-        strength = self.config.strength  # type: ignore[attr-defined]
+        discount = self.discount
+        strength = self.strength
 
         context_total, context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
 

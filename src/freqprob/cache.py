@@ -121,9 +121,10 @@ def cached_sgt_computation(
 ) -> Callable[[Any, FrequencyDistribution], Estimates]:
     """Cache Simple Good-Turing estimates.
 
-    Wraps an ``_estimate`` implementation. Simple Good-Turing also reports the
-    total unseen mass, which is cached alongside the estimates so a cache hit
-    reproduces it too.
+    Wraps an ``_estimate`` implementation, keyed on the frequency distribution
+    and on :meth:`~freqprob.base.ScoringMethod._cache_key`. Simple Good-Turing
+    also reports the total unseen mass, which is cached alongside the estimates
+    so a cache hit reproduces it too.
 
     Args:
         func: The ``_estimate`` implementation to memoize.
@@ -134,15 +135,7 @@ def cached_sgt_computation(
 
     @wraps(func)
     def wrapper(self: Any, freqdist: FrequencyDistribution) -> Estimates:
-        # Create cache key using configuration parameters. `_estimate` works in
-        # plain probability space, so `logprob` is not part of the key: one
-        # entry serves both a log-scorer and a plain scorer.
-        config_params = {
-            "p_value": getattr(self.config, "p_value", None),
-            "default_p0": getattr(self.config, "default_p0", None),
-            "bins": getattr(self.config, "bins", None),
-            "allow_fail": getattr(self.config, "allow_fail", None),
-        }
+        config_params = {"params": self._cache_key()}
 
         cached_result = _sgt_cache.get(freqdist, **config_params)
         if cached_result is not None:
@@ -168,7 +161,7 @@ def cached_computation(
     """Cache expensive estimates.
 
     Wraps an ``_estimate`` implementation, memoizing it on the frequency
-    distribution and the estimator's configuration.
+    distribution and on :meth:`~freqprob.base.ScoringMethod._cache_key`.
 
     Args:
         cache_instance: Cache to use. Defaults to the shared general cache.
@@ -184,15 +177,7 @@ def cached_computation(
     ) -> Callable[[Any, FrequencyDistribution], Estimates]:
         @wraps(func)
         def wrapper(self: Any, freqdist: FrequencyDistribution) -> Estimates:
-            # Key on every configuration parameter except `logprob`, which does
-            # not reach `_estimate`: it works in plain probability space.
-            config_params = {}
-            if hasattr(self, "config"):
-                config_params = {
-                    attr: getattr(self.config, attr, None)
-                    for attr in dir(self.config)
-                    if not attr.startswith("_") and attr != "logprob"
-                }
+            config_params = {"params": self._cache_key()}
 
             cached_result = cache_instance.get(freqdist, **config_params)
             if cached_result is not None:

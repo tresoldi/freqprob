@@ -1,7 +1,5 @@
 """Interpolated (linear-combination) smoothing."""
 
-from dataclasses import dataclass
-
 from freqprob.base import (
     MIN_PROBABILITY,
     Element,
@@ -12,21 +10,6 @@ from freqprob.base import (
     ScoringMethod,
     ScoringMethodConfig,
 )
-
-
-@dataclass
-class InterpolatedConfig(ScoringMethodConfig):
-    """Configuration for interpolated smoothing methods.
-
-    Attributes:
-    ----------
-    lambda_weight : float
-        Interpolation weight for higher-order model (0 ≤ λ ≤ 1, default: 0.7)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    lambda_weight: float = 0.7
 
 
 class Interpolated(ScoringMethod):
@@ -95,6 +78,7 @@ class Interpolated(ScoringMethod):
         "_low_order_dist",
         "_low_order_n",
         "_low_probs",
+        "lambda_weight",
     )
 
     def __init__(
@@ -108,8 +92,9 @@ class Interpolated(ScoringMethod):
         if not 0 <= lambda_weight <= 1:
             raise ValueError("Lambda weight must be between 0 and 1")
 
-        config = InterpolatedConfig(lambda_weight=lambda_weight, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.lambda_weight = lambda_weight
         self.name = "Interpolated"
         self._high_order_dist = high_order_dist
         self._low_order_dist = low_order_dist
@@ -210,7 +195,7 @@ class Interpolated(ScoringMethod):
             low_prob = self._low_probs.get(low_context) or MIN_PROBABILITY
 
             # For unseen high-order n-gram, backoff: (1-λ) * P_low
-            lambda_weight = self.config.lambda_weight  # type: ignore[attr-defined]
+            lambda_weight = self.lambda_weight
             interpolated_prob: float = (1 - lambda_weight) * low_prob
 
             return self._score_of(max(interpolated_prob, MIN_PROBABILITY))
@@ -236,7 +221,7 @@ class Interpolated(ScoringMethod):
             The interpolated probability of each element, and the mass an
             unseen element receives by backing off to the low-order model.
         """
-        lambda_weight = self.config.lambda_weight  # type: ignore[attr-defined]
+        lambda_weight = self.lambda_weight
 
         # Compute MLE for both distributions. The low-order model is kept so
         # that scoring an unseen high-order n-gram is a lookup, not a re-scan.

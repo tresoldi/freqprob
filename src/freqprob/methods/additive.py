@@ -68,7 +68,7 @@ class Lidstone(ScoringMethod):
         uniform distribution (higher bias, lower variance).
     """
 
-    __slots__ = ()
+    __slots__ = ("gamma",)
 
     def __init__(
         self,
@@ -78,12 +78,16 @@ class Lidstone(ScoringMethod):
         logprob: bool = True,
     ) -> None:
         """Initialize Lidstone smoothing."""
+        if gamma < 0:
+            raise ValueError("Gamma must be a non-negative real number.")
+
         # Default bins to support size if not specified
         if bins is None:
             bins = len(freqdist)
 
-        config = ScoringMethodConfig(gamma=gamma, bins=bins, logprob=logprob)
+        config = ScoringMethodConfig(bins=bins, logprob=logprob)
         super().__init__(config)
+        self.gamma = gamma
         self.name = "Lidstone"
         self.fit(freqdist)
 
@@ -97,11 +101,10 @@ class Lidstone(ScoringMethod):
             The smoothed probability of each element, and the mass an unseen
             element receives from the same formula with a count of zero.
         """
-        gamma = self.config.gamma
+        gamma = self.gamma
         bins = self.config.bins
 
-        # Ensure gamma and bins are not None (they are set in __init__)
-        assert gamma is not None, "Gamma must be set before computing probabilities"
+        # `bins` is defaulted in __init__, so it is never None here.
         assert bins is not None, "Bins must be set before computing probabilities"
 
         denominator = sum(freqdist.values()) + bins * gamma

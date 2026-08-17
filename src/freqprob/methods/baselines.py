@@ -7,7 +7,6 @@ techniques.
 """
 
 import random
-from dataclasses import dataclass
 
 from freqprob.base import (
     Estimates,
@@ -16,20 +15,6 @@ from freqprob.base import (
     ScoringMethod,
     ScoringMethodConfig,
 )
-
-
-@dataclass
-class RandomConfig(ScoringMethodConfig):
-    """Configuration for the Random distribution.
-
-    Attributes:
-        unobs_prob: Reserved probability mass for unobserved elements
-            (default: ``0.0``).
-        logprob: Whether to return log-probabilities (default: ``True``).
-        seed: Random seed for reproducible results (default: ``None``).
-    """
-
-    seed: int | None = None
 
 
 class Uniform(ScoringMethod):
@@ -131,7 +116,7 @@ class Random(ScoringMethod):
         for comparison. It is not a smoothing method in any meaningful sense.
     """
 
-    __slots__ = ()
+    __slots__ = ("seed",)
 
     def __init__(
         self,
@@ -141,8 +126,9 @@ class Random(ScoringMethod):
         seed: int | None = None,
     ) -> None:
         """Initialize Random distribution."""
-        config = RandomConfig(unobs_prob=unobs_prob, logprob=logprob, seed=seed)
+        config = ScoringMethodConfig(unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
+        self.seed = seed
         self.name = "Random"
         self.fit(freqdist)
 
@@ -161,7 +147,7 @@ class Random(ScoringMethod):
             return {}, unobs_prob
 
         min_count, max_count = min(freqdist.values()), max(freqdist.values())
-        rng = random.Random(self.config.seed)  # type: ignore[attr-defined]
+        rng = random.Random(self.seed)
 
         # Ensure minimum count is at least 1 to avoid zero probabilities
         min_count = max(min_count, 1)

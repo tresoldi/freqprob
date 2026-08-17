@@ -1,26 +1,11 @@
 """Bayesian (Dirichlet-prior) smoothing."""
 
-from dataclasses import dataclass
-
 from freqprob.base import (
     Estimates,
     FrequencyDistribution,
     ScoringMethod,
     ScoringMethodConfig,
 )
-
-
-@dataclass
-class BayesianConfig(ScoringMethodConfig):
-    """Configuration for Bayesian smoothing methods.
-
-    Attributes:
-        alpha: Dirichlet concentration parameter (``alpha > 0``, default:
-            ``1.0``).
-        logprob: Whether to return log-probabilities (default: ``True``).
-    """
-
-    alpha: float = 1.0
 
 
 class Bayesian(ScoringMethod):
@@ -76,7 +61,7 @@ class Bayesian(ScoringMethod):
         ``ValueError``. Equivalent to `Lidstone` with ``gamma = alpha``.
     """
 
-    __slots__ = ()
+    __slots__ = ("alpha",)
 
     def __init__(
         self, freqdist: FrequencyDistribution, alpha: float = 1.0, logprob: bool = True
@@ -85,8 +70,9 @@ class Bayesian(ScoringMethod):
         if alpha <= 0:
             raise ValueError("Alpha must be positive")
 
-        config = BayesianConfig(alpha=alpha, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.alpha = alpha
         self.name = "Bayesian"
         self.fit(freqdist)
 
@@ -100,7 +86,7 @@ class Bayesian(ScoringMethod):
             The posterior mean probability of each element, and the mass an
             unseen element receives from the prior alone.
         """
-        alpha = self.config.alpha  # type: ignore[attr-defined]
+        alpha = self.alpha
 
         denominator = sum(freqdist.values()) + len(freqdist) * alpha
         table = {element: (count + alpha) / denominator for element, count in freqdist.items()}

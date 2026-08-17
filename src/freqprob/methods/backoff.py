@@ -8,7 +8,6 @@ returns unnormalized scores.
 """
 
 from collections import Counter
-from dataclasses import dataclass
 
 from freqprob.base import (
     Element,
@@ -18,31 +17,6 @@ from freqprob.base import (
     ScoringMethodConfig,
 )
 from freqprob.methods._bigram import BigramBackoff, extract_bigram_stats
-
-
-@dataclass
-class KatzBackoffConfig(ScoringMethodConfig):
-    """Configuration for Katz back-off smoothing.
-
-    Attributes:
-        k: Count threshold below which Good-Turing discounting is applied.
-            Counts greater than ``k`` are treated as reliable and left
-            undiscounted (default: ``5``).
-    """
-
-    k: int = 5
-
-
-@dataclass
-class StupidBackoffConfig(ScoringMethodConfig):
-    """Configuration for Stupid Back-off scoring.
-
-    Attributes:
-        alpha: Fixed back-off weight applied at each fall-back to the lower-order
-            model (default: ``0.4``).
-    """
-
-    alpha: float = 0.4
 
 
 class KatzBackoff(BigramBackoff):
@@ -97,7 +71,7 @@ class KatzBackoff(BigramBackoff):
         discounting), leaving little or no mass for unseen bigrams.
     """
 
-    __slots__ = ()
+    __slots__ = ("k",)
 
     def __init__(
         self,
@@ -109,8 +83,9 @@ class KatzBackoff(BigramBackoff):
         if k < 1:
             raise ValueError("Threshold k must be a positive integer")
 
-        config = KatzBackoffConfig(k=k, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.k = k
         self.name = "Katz Back-off"
         self.fit(freqdist)
 
@@ -124,7 +99,7 @@ class KatzBackoff(BigramBackoff):
             ``P(word | context)`` for each observed bigram, and the fallback for
             a query that is not a bigram.
         """
-        k = self.config.k  # type: ignore[attr-defined]
+        k = self.k
 
         context_total, context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
 
@@ -218,7 +193,7 @@ class StupidBackoff(BigramBackoff):
         relative ordering of scores matters.
     """
 
-    __slots__ = ()
+    __slots__ = ("alpha",)
 
     def __init__(
         self,
@@ -230,8 +205,9 @@ class StupidBackoff(BigramBackoff):
         if not 0 < alpha <= 1:
             raise ValueError("Back-off weight alpha must be in (0, 1]")
 
-        config = StupidBackoffConfig(alpha=alpha, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.alpha = alpha
         self.name = "Stupid Back-off"
         self.fit(freqdist)
 
@@ -248,7 +224,7 @@ class StupidBackoff(BigramBackoff):
             The score of each observed bigram, and the fallback for a query that
             is not a bigram.
         """
-        alpha = self.config.alpha  # type: ignore[attr-defined]
+        alpha = self.alpha
 
         context_total, _context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
 
