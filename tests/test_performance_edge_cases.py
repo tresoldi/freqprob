@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 
 from freqprob import MLE
-from freqprob.base import ScoringMethodConfig
+from freqprob.base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 from freqprob.performance.lazy import (
     LazyBatchScorer,
     LazyLaplaceComputer,
@@ -37,19 +37,24 @@ from freqprob.performance.vectorized import (
 # mypy: disable-error-code=arg-type
 
 
-class _EmptyScorer:
-    """A scorer-like object with no usable ``_prob`` table."""
+class _EmptyScorer(ScoringMethod):
+    """A scorer whose support is empty: every element gets the reserved score."""
 
-    def __call__(self, element: object) -> float:
-        """Return a constant score for any element."""
-        return 0.0
+    def __init__(self) -> None:
+        super().__init__(ScoringMethodConfig(logprob=False))
+        self.name = "Empty"
+        self._unobs = 0.0
+
+    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
+        """Leave the probability table empty."""
+        self._unobs = 0.0
 
 
 class TestVectorizedScorerEdgeCases:
     """Degenerate inputs to VectorizedScorer."""
 
-    def test_scorer_without_prob_table(self) -> None:
-        """A scorer lacking a _prob table produces default scores."""
+    def test_scorer_with_empty_support(self) -> None:
+        """A scorer with an empty support produces reserved scores throughout."""
         vectorized = VectorizedScorer(_EmptyScorer())
         scores = vectorized.score_batch(["a", "b"])
         assert np.array_equal(scores, np.array([0.0, 0.0]))

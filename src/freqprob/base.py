@@ -6,7 +6,7 @@ for all smoothing methods in the freqprob library.
 
 import pickle
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, Mapping
+from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar
@@ -106,7 +106,15 @@ class ScoringMethod(ABC):
         0.0
     """
 
-    __slots__ = ("_prob", "_total_unseen_mass", "_unobs", "config", "logprob", "name")
+    __slots__ = (
+        "_prob",
+        "_revision",
+        "_total_unseen_mass",
+        "_unobs",
+        "config",
+        "logprob",
+        "name",
+    )
 
     def __init__(self, config: ScoringMethodConfig) -> None:
         """Initialize the scoring method.
@@ -125,6 +133,7 @@ class ScoringMethod(ABC):
         self._total_unseen_mass: float | None = (
             None  # For methods that track total unseen mass (e.g., SGT)
         )
+        self._revision: int = 0  # bumped whenever the estimates change
         self.logprob: bool | None = config.logprob
         self.name: str | None = None
 
@@ -148,6 +157,65 @@ class ScoringMethod(ABC):
             0.0
         """
         return self._prob.get(element, self._unobs)
+
+    def support(self) -> Collection[Element]:
+        """Return the elements this scorer holds an explicit estimate for.
+
+        Every other element is scored with :meth:`unobserved_score`. Together
+        with :attr:`revision`, this is what lets a caller build its own index
+        over the scorer without reaching into its internals.
+
+        Returns:
+            The elements with an explicit estimate. The result is a read-only
+            view: it must not be mutated, and it may become stale once
+            :attr:`revision` changes.
+
+        Examples:
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> sorted(scorer.support())
+            ['a', 'b']
+        """
+        return self._prob.keys()
+
+    def unobserved_score(self) -> Probability | LogProbability:
+        """Return the score given to every element outside :meth:`support`.
+
+        Returns:
+            The reserved probability (or log-probability) for unobserved
+            elements.
+
+        Examples:
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> scorer.unobserved_score()
+            0.0
+        """
+        return self._unobs
+
+    @property
+    def revision(self) -> int:
+        """Count of how many times this scorer's estimates have changed.
+
+        Starts at ``0`` and increases on every :meth:`fit` and on every
+        streaming update. A caller that caches anything derived from
+        :meth:`support`, :meth:`unobserved_score`, or the scores themselves
+        should record this value alongside the cache and rebuild when it
+        changes.
+
+        Examples:
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> before = scorer.revision
+            >>> _ = scorer.fit({"a": 1})
+            >>> scorer.revision > before
+            True
+        """
+        return self._revision
+
+    def _mark_changed(self) -> None:
+        """Record that the estimates changed, invalidating callers' caches."""
+        self._revision += 1
 
     def __str__(self) -> str:
         """Return a string representation of the smoothing method.
@@ -220,6 +288,7 @@ class ScoringMethod(ABC):
         self._unobs = MIN_PROBABILITY
         self._total_unseen_mass = None
         self._compute_probabilities(freqdist)
+        self._mark_changed()
 
         return self
 
@@ -270,6 +339,9 @@ class ScoringMethod(ABC):
         """Restore ``__slots__`` values from a pickled state."""
         for slot, value in state.items():
             setattr(self, slot, value)
+        # Pickles written before `_revision` existed carry no value for it.
+        if "_revision" not in state:
+            self._revision = 0
 
     def save(self, path: str | Path) -> None:
         """Serialize this fitted scorer to a file.

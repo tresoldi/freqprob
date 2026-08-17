@@ -7,7 +7,7 @@ when only a subset of probabilities are accessed.
 
 import math
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, Iterator
+from collections.abc import Collection, Iterable, Iterator
 from typing import Any
 
 from freqprob.base import Element, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
@@ -207,6 +207,25 @@ class LazyScoringMethod(ScoringMethod):
         self._computed_elements.clear()
         self._unobs_computed = False
         # Don't compute anything yet - this is the lazy part!
+
+    def support(self) -> Collection[Element]:
+        """Return every element of the fitted distribution.
+
+        Overrides the base implementation, which reports only the elements
+        computed so far. The support of a lazy scorer is the whole
+        distribution it was fitted to; laziness is about *when* each estimate
+        is produced, not about which elements have one.
+
+        Returns:
+            The elements of the fitted frequency distribution.
+        """
+        if self._freqdist is None:
+            return ()
+        return self._freqdist.keys()
+
+    def unobserved_score(self) -> float:
+        """Return the reserved score, computing it on first use."""
+        return self._get_unobserved_probability()
 
     def __call__(self, element: Element) -> float:
         """Score element with lazy computation.

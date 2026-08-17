@@ -44,25 +44,34 @@ class VectorizedScorer:
         self._element_cache: dict[Any, int] = {}
         self._prob_array: np.ndarray[Any, Any] = np.array([])
         self._default_prob: float = 0.0
+        self._indexed_revision: int | None = None
         self._build_lookup_arrays()
 
     def _build_lookup_arrays(self) -> None:
-        """Build lookup arrays for fast vectorized access."""
-        if hasattr(self.scorer, "_prob") and self.scorer._prob:
-            # Create element to index mapping
-            elements = list(self.scorer._prob.keys())
+        """Build lookup arrays for fast vectorized access.
+
+        The index is derived entirely from the scorer's public interface
+        (:meth:`~freqprob.base.ScoringMethod.support`,
+        :meth:`~freqprob.base.ScoringMethod.predict` and
+        :meth:`~freqprob.base.ScoringMethod.unobserved_score`), so wrapping a
+        lazy scorer forces the estimates it has not computed yet instead of
+        reading an empty table.
+        """
+        elements = list(self.scorer.support())
+        if elements:
             self._element_cache = {elem: idx for idx, elem in enumerate(elements)}
-
-            # Create probability array
-            probs = [self.scorer._prob[elem] for elem in elements]
-            self._prob_array = np.array(probs, dtype=np.float64)
-
-            # Store default probability for unseen elements
-            self._default_prob = float(self.scorer._unobs)
+            self._prob_array = np.array(self.scorer.predict(elements), dtype=np.float64)
         else:
             self._element_cache = {}
             self._prob_array = np.array([])
-            self._default_prob = 0.0
+
+        self._default_prob = float(self.scorer.unobserved_score())
+        self._indexed_revision = self.scorer.revision
+
+    def _refresh_if_stale(self) -> None:
+        """Rebuild the index if the wrapped scorer has changed since it was built."""
+        if self._indexed_revision != self.scorer.revision:
+            self._build_lookup_arrays()
 
     def score_batch(
         self, elements: Sequence[Element] | np.ndarray[Any, Any]
@@ -85,6 +94,8 @@ class VectorizedScorer:
         """
         if isinstance(elements, np.ndarray):
             elements = elements.tolist()
+
+        self._refresh_if_stale()
 
         # Convert elements to indices, using -1 for unknown elements
         indices = np.array([self._element_cache.get(elem, -1) for elem in elements], dtype=np.int32)
@@ -129,6 +140,8 @@ class VectorizedScorer:
         if not elements_2d:
             return np.array([])
 
+        self._refresh_if_stale()
+
         # Find maximum row length for padding
         max_length = max(len(row) for row in elements_2d)
 
@@ -152,6 +165,8 @@ class VectorizedScorer:
             A tuple of ``(elements, scores)`` for the top-k elements, ordered
             from highest to lowest score.
         """
+        self._refresh_if_stale()
+
         if len(self._prob_array) == 0:
             return [], np.array([])
 

@@ -393,6 +393,7 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         self.name = "Streaming MLE"
 
         # Initialize streaming distribution
+        self._max_vocabulary_size = max_vocabulary_size
         self._stream_dist = StreamingFrequencyDistribution(max_vocabulary_size=max_vocabulary_size)
 
         # Add initial data if provided
@@ -403,14 +404,27 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         self._recompute_probabilities()
 
     def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Override parent method - not used in streaming mode."""
-        # Overridden by _recompute_probabilities
+        """Refit the streaming distribution to ``freqdist``.
+
+        Honors the base contract that a re-fit behaves like a fresh fit: the
+        accumulated stream is discarded and replaced by the given counts.
+        Streaming updates continue from there.
+        """
+        self._stream_dist = StreamingFrequencyDistribution(
+            max_vocabulary_size=self._max_vocabulary_size
+        )
+        for element, count in freqdist.items():
+            self._stream_dist.update(element, count)
+
+        self._recompute_probabilities()
 
     def _recompute_probabilities(self) -> None:
         """Recompute probabilities from streaming distribution."""
         total_count = self._stream_dist.get_total_count()
 
         unobs_prob = getattr(self.config, "unobs_prob", None)
+
+        self._mark_changed()
 
         if total_count == 0:
             self._unobs = 0.0 if not self.logprob else math.log(1e-10)
@@ -444,8 +458,11 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         """Update with a single element observation."""
         self._stream_dist.update(element, count)
 
-        # Efficient incremental update instead of full recomputation
-        self._incremental_update(element, count)
+        # A single observation shifts the denominator for *every* element, so
+        # there is no sub-linear update to be had; recomputing keeps one
+        # definition of the estimator's mathematics, which subclasses override
+        # in exactly one place.
+        self._recompute_probabilities()
 
     def update_batch(self, elements: list[Element], counts: list[int] | None = None) -> None:
         """Update with multiple element observations."""
@@ -457,51 +474,9 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         # Recompute probabilities after batch update
         self._recompute_probabilities()
 
-    def _incremental_update(self, element: Element, count: int) -> None:
-        """Efficiently update probabilities for a single element change."""
-        total_count = self._stream_dist.get_total_count()
-
-        element_count = self._stream_dist.get_count(element)
-
-        if total_count == 0:
-            return
-
-        # Update probability for this element
-        prob = element_count / total_count
-        unobs_prob = getattr(self.config, "unobs_prob", None)
-
-        if unobs_prob is not None:
-            prob *= 1.0 - unobs_prob
-
-        if self.logprob:
-            self._prob[element] = math.log(prob) if prob > 0 else math.log(1e-10)
-        else:
-            self._prob[element] = prob
-
-        # Update probabilities for all other elements (they've been diluted)
-        if count > 0:  # Only if we actually added count
-            for other_element in self._prob:
-                if other_element != element:
-                    old_prob = (
-                        math.exp(self._prob[other_element])
-                        if self.logprob
-                        else self._prob[other_element]
-                    )
-                    new_prob = old_prob * (total_count - count) / total_count
-
-                    if unobs_prob is not None:
-                        new_prob *= 1.0 - unobs_prob
-
-                    if self.logprob:
-                        self._prob[other_element] = (
-                            math.log(new_prob) if new_prob > 0 else math.log(1e-10)
-                        )
-                    else:
-                        self._prob[other_element] = new_prob
-
     def get_update_count(self) -> int:
         """Get the number of updates performed."""
-        return self._stream_dist._update_count
+        return int(self._stream_dist.get_statistics()["update_count"])
 
     def get_streaming_statistics(self) -> dict[str, Any]:
         """Get statistics about the streaming distribution."""
@@ -549,11 +524,15 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
             state = pickle.load(f)
 
         instance = cls.__new__(cls)
-        instance.config = state["config"]
+        # Initialize the base scorer rather than hand-setting its attributes, so
+        # every piece of base state (including the revision counter adapters
+        # rely on) exists on the restored instance.
+        ScoringMethod.__init__(instance, state["config"])
         instance.name = state["name"]
 
         # Reconstruct the streaming distribution
         stream_dist_data = state["stream_dist_data"]
+        instance._max_vocabulary_size = stream_dist_data["_max_vocab_size"]
         instance._stream_dist = StreamingFrequencyDistribution(
             max_vocabulary_size=stream_dist_data["_max_vocab_size"],
             min_count_threshold=stream_dist_data["_min_count_threshold"],
@@ -567,10 +546,6 @@ class StreamingMLE(ScoringMethod, IncrementalScoringMethod):
         instance._stream_dist._update_count = stream_dist_data["_update_count"]
         instance._stream_dist._creation_order = stream_dist_data["_creation_order"]
         instance._stream_dist._last_access = stream_dist_data["_last_access"]
-
-        instance._prob = {}
-        instance._unobs = 0.0
-        instance.logprob = state["config"].logprob
 
         instance._recompute_probabilities()
         return instance
@@ -635,6 +610,7 @@ class StreamingLaplace(StreamingMLE):
         if bins == 0:
             bins = 1  # Avoid division by zero
 
+        self._mark_changed()
         self._prob.clear()
 
         # Laplace smoothing: (count + 1) / (total + bins)
