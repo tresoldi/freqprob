@@ -7,37 +7,16 @@ probability distribution; Stupid Back-off skips normalization for speed and
 returns unnormalized scores.
 """
 
-import math
 from collections import Counter
-from dataclasses import dataclass
 
-from freqprob.base import FrequencyDistribution, ScoringMethodConfig
+from freqprob.base import (
+    Element,
+    Estimates,
+    FrequencyDistribution,
+    Probability,
+    ScoringMethodConfig,
+)
 from freqprob.methods._bigram import BigramBackoff, extract_bigram_stats
-
-
-@dataclass
-class KatzBackoffConfig(ScoringMethodConfig):
-    """Configuration for Katz back-off smoothing.
-
-    Attributes:
-        k: Count threshold below which Good-Turing discounting is applied.
-            Counts greater than ``k`` are treated as reliable and left
-            undiscounted (default: ``5``).
-    """
-
-    k: int = 5
-
-
-@dataclass
-class StupidBackoffConfig(ScoringMethodConfig):
-    """Configuration for Stupid Back-off scoring.
-
-    Attributes:
-        alpha: Fixed back-off weight applied at each fall-back to the lower-order
-            model (default: ``0.4``).
-    """
-
-    alpha: float = 0.4
 
 
 class KatzBackoff(BigramBackoff):
@@ -92,7 +71,7 @@ class KatzBackoff(BigramBackoff):
         discounting), leaving little or no mass for unseen bigrams.
     """
 
-    __slots__ = ()
+    __slots__ = ("k",)
 
     def __init__(
         self,
@@ -104,14 +83,23 @@ class KatzBackoff(BigramBackoff):
         if k < 1:
             raise ValueError("Threshold k must be a positive integer")
 
-        config = KatzBackoffConfig(k=k, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.k = k
         self.name = "Katz Back-off"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Katz back-off probabilities."""
-        k = self.config.k  # type: ignore[attr-defined]
+    def _estimate_bigrams(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Discount counts up to ``k`` by Good-Turing, then normalize the back-off.
+
+        Args:
+            freqdist: Mapping of ``(context, word)`` bigrams to counts.
+
+        Returns:
+            ``P(word | context)`` for each observed bigram, and the fallback for
+            a query that is not a bigram.
+        """
+        k = self.k
 
         context_total, context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
 
@@ -138,13 +126,14 @@ class KatzBackoff(BigramBackoff):
             return discount_ratio.get(count, 1.0) if count <= k else 1.0
 
         # Observed-bigram probabilities and per-context back-off weights.
+        table: dict[Element, Probability] = {}
         for context, ctotal in context_total.items():
             used = 0.0
             remaining_lower = 1.0
             for word in context_types[context]:
                 count = context_word[(context, word)]
                 prob = discount(count) * count / ctotal
-                self._store_observed((context, word), prob)
+                table[(context, word)] = prob
                 used += prob
                 remaining_lower -= lower.get(word, 0.0)
 
@@ -154,8 +143,7 @@ class KatzBackoff(BigramBackoff):
             else:
                 self._backoff[context] = 0.0
 
-        self._unknown_context_weight = 1.0
-        self._finalize(lower, len(unigram))
+        return table, self._record_lower(lower, len(unigram))
 
 
 class StupidBackoff(BigramBackoff):
@@ -205,7 +193,7 @@ class StupidBackoff(BigramBackoff):
         relative ordering of scores matters.
     """
 
-    __slots__ = ()
+    __slots__ = ("alpha",)
 
     def __init__(
         self,
@@ -217,28 +205,39 @@ class StupidBackoff(BigramBackoff):
         if not 0 < alpha <= 1:
             raise ValueError("Back-off weight alpha must be in (0, 1]")
 
-        config = StupidBackoffConfig(alpha=alpha, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.alpha = alpha
         self.name = "Stupid Back-off"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Stupid Back-off scores."""
-        alpha = self.config.alpha  # type: ignore[attr-defined]
+    def _estimate_bigrams(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Score each bigram by its relative frequency, backing off by a flat ``alpha``.
+
+        The scores are deliberately not normalized: Stupid Back-off is a ranking
+        score, not a probability distribution.
+
+        Args:
+            freqdist: Mapping of ``(context, word)`` bigrams to counts.
+
+        Returns:
+            The score of each observed bigram, and the fallback for a query that
+            is not a bigram.
+        """
+        alpha = self.alpha
 
         context_total, _context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
 
         lower = {word: count / total for word, count in unigram.items()} if total else {}
 
-        for (context, word), count in context_word.items():
-            ctotal = context_total[context]
-            self._store_observed((context, word), count / ctotal)
+        table: dict[Element, Probability] = {
+            (context, word): count / context_total[context]
+            for (context, word), count in context_word.items()
+        }
 
         # Every context (seen or unseen) uses the same alpha weight, so leave
         # self._backoff empty and let the unknown-context weight handle both.
         self._unknown_context_weight = alpha
 
-        vocab_size = len(unigram)
-        self._lower = lower
-        fallback = alpha / vocab_size if vocab_size else 1e-10
-        self._unobs = math.log(fallback) if self.logprob else fallback
+        # The fallback carries the same alpha the unseen-bigram path applies.
+        return table, alpha * self._record_lower(lower, len(unigram))

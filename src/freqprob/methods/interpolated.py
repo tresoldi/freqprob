@@ -1,31 +1,15 @@
 """Interpolated (linear-combination) smoothing."""
 
-import math
-from dataclasses import dataclass
-
 from freqprob.base import (
+    MIN_PROBABILITY,
     Element,
+    Estimates,
     FrequencyDistribution,
     LogProbability,
     Probability,
     ScoringMethod,
     ScoringMethodConfig,
 )
-
-
-@dataclass
-class InterpolatedConfig(ScoringMethodConfig):
-    """Configuration for interpolated smoothing methods.
-
-    Attributes:
-    ----------
-    lambda_weight : float
-        Interpolation weight for higher-order model (0 ≤ λ ≤ 1, default: 0.7)
-    logprob : bool
-        Whether to return log-probabilities (default: True)
-    """
-
-    lambda_weight: float = 0.7
 
 
 class Interpolated(ScoringMethod):
@@ -88,7 +72,14 @@ class Interpolated(ScoringMethod):
         held-out data.
     """
 
-    __slots__ = ("_high_order_dist", "_high_order_n", "_low_order_dist", "_low_order_n")
+    __slots__ = (
+        "_high_order_dist",
+        "_high_order_n",
+        "_low_order_dist",
+        "_low_order_n",
+        "_low_probs",
+        "lambda_weight",
+    )
 
     def __init__(
         self,
@@ -101,8 +92,9 @@ class Interpolated(ScoringMethod):
         if not 0 <= lambda_weight <= 1:
             raise ValueError("Lambda weight must be between 0 and 1")
 
-        config = InterpolatedConfig(lambda_weight=lambda_weight, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.lambda_weight = lambda_weight
         self.name = "Interpolated"
         self._high_order_dist = high_order_dist
         self._low_order_dist = low_order_dist
@@ -154,24 +146,16 @@ class Interpolated(ScoringMethod):
 
         return lengths.pop()
 
-    def _extract_lower_context(self, high_order_ngram: tuple) -> tuple:
-        """Extract lower-order context from higher-order n-gram.
+    def _extract_lower_context(self, high_order_ngram: Element) -> Element:
+        """Extract the lower-order context of a higher-order n-gram.
 
-        For trigram (w1, w2, w3) with bigram model, extracts (w2, w3).
-        For 4-gram (w1, w2, w3, w4) with trigram model, extracts (w2, w3, w4).
-
-        Parameters
-        ----------
-        high_order_ngram : tuple
-            Higher-order n-gram
+        Args:
+            high_order_ngram: The higher-order n-gram.
 
         Returns:
-        -------
-        tuple
-            Lower-order context (suffix of length low_order_n)
+            The key to look up in the lower-order model.
         """
-        assert self._low_order_n is not None
-        return high_order_ngram[-self._low_order_n :]
+        return lower_order_context(high_order_ngram, self._low_order_n)
 
     def __call__(self, element: Element) -> Probability | LogProbability:
         """Score a single element with n-gram interpolation support.
@@ -205,57 +189,49 @@ class Interpolated(ScoringMethod):
             and isinstance(element, tuple)
             and len(element) == self._high_order_n
         ):
-            # Extract lower-order context
+            # Look the context up in the low-order model computed at fit time,
+            # rather than re-normalizing the whole distribution per query.
             low_context = self._extract_lower_context(element)
-
-            # Compute MLE for lower-order context
-            low_total = sum(self._low_order_dist.values()) or 1
-            low_count = self._low_order_dist.get(low_context, 0)
-            low_prob = low_count / low_total if low_count > 0 else 1e-10
+            low_prob = self._low_probs.get(low_context) or MIN_PROBABILITY
 
             # For unseen high-order n-gram, backoff: (1-λ) * P_low
-            lambda_weight = self.config.lambda_weight  # type: ignore[attr-defined]
+            lambda_weight = self.lambda_weight
             interpolated_prob: float = (1 - lambda_weight) * low_prob
-            interpolated_prob = max(interpolated_prob, 1e-10)
 
-            if self.logprob:
-                return math.log(interpolated_prob)
-            return interpolated_prob
+            return self._score_of(max(interpolated_prob, MIN_PROBABILITY))
 
         # Fallback to default behavior
         return self._unobs
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute interpolated probabilities.
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Blend the high-order and low-order models with weight ``lambda_weight``.
 
         Supports two modes:
-        1. N-gram interpolation: Different n-gram orders (e.g., trigrams + bigrams)
-           - Extracts lower-order context from higher-order n-grams
-           - Interpolates: λ * P_high(ngram) + (1-λ) * P_low(context)
 
-        2. Same-type interpolation: Same element types (both strings or same-length tuples)
-           - Direct key matching
-           - Interpolates: λ * P_high(elem) + (1-λ) * P_low(elem)
+        1. N-gram interpolation, when the two distributions have different
+           orders: the lower-order context is extracted from each higher-order
+           n-gram, giving ``λ * P_high(ngram) + (1-λ) * P_low(context)``.
+        2. Same-type interpolation, when the keys match directly, giving
+           ``λ * P_high(elem) + (1-λ) * P_low(elem)``.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Primary (high-order) frequency distribution
+        Args:
+            freqdist: Primary (high-order) frequency distribution.
+
+        Returns:
+            The interpolated probability of each element, and the mass an
+            unseen element receives by backing off to the low-order model.
         """
-        lambda_weight = self.config.lambda_weight  # type: ignore
+        lambda_weight = self.lambda_weight
 
-        # Compute MLE for both distributions
-        high_total = sum(self._high_order_dist.values()) or 1
-        low_total = sum(self._low_order_dist.values()) or 1
-
-        high_probs = {
-            element: count / high_total for element, count in self._high_order_dist.items()
-        }
-        low_probs = {element: count / low_total for element, count in self._low_order_dist.items()}
+        # Compute MLE for both distributions. The low-order model is kept so
+        # that scoring an unseen high-order n-gram is a lookup, not a re-scan.
+        high_probs, _ = _mle(self._high_order_dist)
+        low_probs, _ = _mle(self._low_order_dist)
+        self._low_probs = low_probs
 
         # Compute unseen probability for low-order model (MLE-based)
         # For MLE: P(unseen) = 0, but we use small value for numerical stability
-        low_unseen_prob = 1e-10
+        low_unseen_prob = MIN_PROBABILITY
 
         # Determine interpolation mode
         is_ngram_interpolation = (
@@ -264,59 +240,36 @@ class Interpolated(ScoringMethod):
             and self._high_order_n > self._low_order_n
         )
 
+        table: dict[Element, Probability] = {}
+
         if is_ngram_interpolation:
             # N-gram interpolation mode: extract lower-order context
             for high_ngram in self._high_order_dist:
-                # Get high-order probability
                 high_prob = high_probs.get(high_ngram, 0)
 
-                # Extract lower-order context and get its probability
-                low_context = self._extract_lower_context(high_ngram)  # type: ignore
+                low_context = self._extract_lower_context(high_ngram)
                 low_prob = low_probs.get(low_context, low_unseen_prob)
 
-                # Interpolate
-                interpolated_prob = lambda_weight * high_prob + (1 - lambda_weight) * low_prob
-
-                # Ensure minimum probability for numerical stability
-                interpolated_prob = max(interpolated_prob, 1e-10)
-
-                if self.logprob:
-                    self._prob[high_ngram] = math.log(interpolated_prob)
-                else:
-                    self._prob[high_ngram] = interpolated_prob
+                interpolated = lambda_weight * high_prob + (1 - lambda_weight) * low_prob
+                table[high_ngram] = max(interpolated, MIN_PROBABILITY)
         else:
             # Same-type interpolation mode: direct key matching
-            all_elements = set(high_probs.keys()) | set(low_probs.keys())
-
-            for element in all_elements:
+            for element in set(high_probs.keys()) | set(low_probs.keys()):
                 high_prob = high_probs.get(element, 0)
                 low_prob = low_probs.get(element, 0)
 
-                interpolated_prob = lambda_weight * high_prob + (1 - lambda_weight) * low_prob
+                interpolated = lambda_weight * high_prob + (1 - lambda_weight) * low_prob
+                table[element] = max(interpolated, MIN_PROBABILITY)
 
-                # Ensure minimum probability for numerical stability
-                interpolated_prob = max(interpolated_prob, 1e-10)
-
-                if self.logprob:
-                    self._prob[element] = math.log(interpolated_prob)
-                else:
-                    self._prob[element] = interpolated_prob
-
-        # Set unobserved probability
-        # For n-gram interpolation, unseen elements get backed-off to low-order model
+        # An unseen element backs off to the low-order model. Under n-gram
+        # interpolation only the low-order term survives; with matching keys
+        # both models contribute their unseen mass.
         if is_ngram_interpolation:
-            # Unseen high-order n-grams backoff to low-order unseen probability
-            interpolated_unseen = (1 - lambda_weight) * low_unseen_prob
+            reserved = (1 - lambda_weight) * low_unseen_prob
         else:
-            # Same-type: both models contribute to unseen
-            interpolated_unseen = lambda_weight * 1e-10 + (1 - lambda_weight) * 1e-10
+            reserved = lambda_weight * low_unseen_prob + (1 - lambda_weight) * low_unseen_prob
 
-        interpolated_unseen = max(interpolated_unseen, 1e-10)
-
-        if self.logprob:
-            self._unobs = math.log(interpolated_unseen)
-        else:
-            self._unobs = interpolated_unseen
+        return table, max(reserved, MIN_PROBABILITY)
 
 
 def _mle(dist: FrequencyDistribution) -> tuple[dict[Element, float], int]:
@@ -325,6 +278,27 @@ def _mle(dist: FrequencyDistribution) -> tuple[dict[Element, float], int]:
     if total == 0:
         return {}, 0
     return {element: count / total for element, count in dist.items()}, total
+
+
+def lower_order_context(ngram: Element, low_order_n: int | None) -> Element:
+    """Return the lower-order context of an n-gram.
+
+    The context of a higher-order n-gram is its suffix of length
+    ``low_order_n``: the bigram ``(w2, w3)`` for the trigram ``(w1, w2, w3)``.
+    An n-gram that is not a long-enough tuple is its own context, which is what
+    same-type interpolation wants.
+
+    Args:
+        ngram: The higher-order n-gram.
+        low_order_n: The order of the lower-order model, or ``None`` when the
+            keys are not n-grams at all.
+
+    Returns:
+        The key to look up in the lower-order model.
+    """
+    if low_order_n is not None and isinstance(ngram, tuple) and len(ngram) >= low_order_n:
+        return ngram[-low_order_n:]
+    return ngram
 
 
 def _estimate_jm_lambda(
@@ -351,11 +325,7 @@ def _estimate_jm_lambda(
         if count <= 0:
             continue
         p_high = high_probs.get(ngram, 0.0)
-        if low_order_n is not None and isinstance(ngram, tuple) and len(ngram) >= low_order_n:
-            context: Element = ngram[-low_order_n:]
-        else:
-            context = ngram
-        p_low = low_probs.get(context, 0.0)
+        p_low = low_probs.get(lower_order_context(ngram, low_order_n), 0.0)
         if p_high <= 0.0 and p_low <= 0.0:
             continue
         observations.append((p_high, p_low, float(count)))

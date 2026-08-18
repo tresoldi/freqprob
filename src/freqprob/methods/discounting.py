@@ -6,25 +6,14 @@ Pitman-Yor generalizes it with a second (concentration) parameter and has
 absolute discounting as its ``strength = 0`` special case.
 """
 
-from dataclasses import dataclass
-
-from freqprob.base import FrequencyDistribution, ScoringMethodConfig
+from freqprob.base import (
+    Element,
+    Estimates,
+    FrequencyDistribution,
+    Probability,
+    ScoringMethodConfig,
+)
 from freqprob.methods._bigram import BigramBackoff, extract_bigram_stats
-
-
-@dataclass
-class DiscountingConfig(ScoringMethodConfig):
-    """Configuration for absolute-discounting / Pitman-Yor smoothing.
-
-    Attributes:
-        discount: Amount subtracted from each observed count (the ``d``
-            parameter). ``0 <= discount < 1``.
-        strength: Pitman-Yor concentration parameter ``theta`` (``theta >
-            -discount``). ``0`` recovers absolute discounting.
-    """
-
-    discount: float = 0.75
-    strength: float = 0.0
 
 
 class AbsoluteDiscounting(BigramBackoff):
@@ -75,7 +64,7 @@ class AbsoluteDiscounting(BigramBackoff):
         its weight even if it appears in few distinct contexts.
     """
 
-    __slots__ = ()
+    __slots__ = ("discount", "strength")
 
     def __init__(
         self,
@@ -87,14 +76,24 @@ class AbsoluteDiscounting(BigramBackoff):
         if not 0 <= discount < 1:
             raise ValueError("Discount parameter must be in [0, 1)")
 
-        config = DiscountingConfig(discount=discount, strength=0.0, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.discount = discount
+        self.strength = 0.0
         self.name = "Absolute Discounting"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute absolute-discounting probabilities."""
-        discount = self.config.discount  # type: ignore[attr-defined]
+    def _estimate_bigrams(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Subtract a fixed discount from each count and back the freed mass off.
+
+        Args:
+            freqdist: Mapping of ``(context, word)`` bigrams to counts.
+
+        Returns:
+            ``P(word | context)`` for each observed bigram, and the fallback for
+            a query that is not a bigram.
+        """
+        discount = self.discount
 
         context_total, context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
 
@@ -104,14 +103,13 @@ class AbsoluteDiscounting(BigramBackoff):
             n1_plus = len(context_types[context])
             self._backoff[context] = discount * n1_plus / ctotal
 
+        table: dict[Element, Probability] = {}
         for (context, word), count in context_word.items():
             ctotal = context_total[context]
             main = max(count - discount, 0.0) / ctotal
-            prob = main + self._backoff[context] * lower.get(word, 0.0)
-            self._store_observed((context, word), prob)
+            table[(context, word)] = main + self._backoff[context] * lower.get(word, 0.0)
 
-        self._unknown_context_weight = 1.0
-        self._finalize(lower, len(unigram))
+        return table, self._record_lower(lower, len(unigram))
 
 
 class PitmanYor(BigramBackoff):
@@ -166,7 +164,7 @@ class PitmanYor(BigramBackoff):
         approximation of the full hierarchical Pitman-Yor process.
     """
 
-    __slots__ = ()
+    __slots__ = ("discount", "strength")
 
     def __init__(
         self,
@@ -181,15 +179,25 @@ class PitmanYor(BigramBackoff):
         if strength <= -discount:
             raise ValueError("Strength parameter must be greater than -discount")
 
-        config = DiscountingConfig(discount=discount, strength=strength, logprob=logprob)
+        config = ScoringMethodConfig(logprob=logprob)
         super().__init__(config)
+        self.discount = discount
+        self.strength = strength
         self.name = "Pitman-Yor"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Pitman-Yor probabilities."""
-        discount = self.config.discount  # type: ignore[attr-defined]
-        strength = self.config.strength  # type: ignore[attr-defined]
+    def _estimate_bigrams(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Apply the Pitman-Yor discount, tempered by the concentration ``strength``.
+
+        Args:
+            freqdist: Mapping of ``(context, word)`` bigrams to counts.
+
+        Returns:
+            ``P(word | context)`` for each observed bigram, and the fallback for
+            a query that is not a bigram.
+        """
+        discount = self.discount
+        strength = self.strength
 
         context_total, context_types, context_word, unigram, total = extract_bigram_stats(freqdist)
 
@@ -199,14 +207,13 @@ class PitmanYor(BigramBackoff):
             num_types = len(context_types[context])
             self._backoff[context] = (strength + discount * num_types) / (strength + ctotal)
 
+        table: dict[Element, Probability] = {}
         for (context, word), count in context_word.items():
             ctotal = context_total[context]
             num_types = len(context_types[context])
             numerator = (count - discount) + (strength + discount * num_types) * lower.get(
                 word, 0.0
             )
-            prob = numerator / (strength + ctotal)
-            self._store_observed((context, word), prob)
+            table[(context, word)] = numerator / (strength + ctotal)
 
-        self._unknown_context_weight = 1.0
-        self._finalize(lower, len(unigram))
+        return table, self._record_lower(lower, len(unigram))

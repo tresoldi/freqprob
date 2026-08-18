@@ -323,25 +323,26 @@ class TestPropertyBasedSmoothing:
             "laplace": freqprob.Laplace(freq_dist, bins=len(freq_dist) * 2, logprob=True),
         }
 
+        # `model_comparison` can legitimately reject a model or overflow on a
+        # degenerate draw; anything else, including a failed assertion below,
+        # must surface.
         try:
             results = freqprob.model_comparison(models, test_data)
+        except (ValueError, OverflowError, ZeroDivisionError):
+            return
 
-            # All models should have results
-            assert len(results) == len(models)
+        # All models should have results
+        assert len(results) == len(models)
 
-            for _, metrics in results.items():
-                # Should have standard metrics
-                assert "perplexity" in metrics
-                assert "cross_entropy" in metrics
+        for _, metrics in results.items():
+            # Should have standard metrics
+            assert "perplexity" in metrics
+            assert "cross_entropy" in metrics
 
-                # Values should be reasonable
-                if math.isfinite(metrics["perplexity"]):
-                    assert metrics["perplexity"] > 0
-                assert metrics["cross_entropy"] > 0
-
-        except Exception:
-            # Some combinations might fail due to infinite perplexity, which is acceptable
-            pass
+            # Values should be reasonable
+            if math.isfinite(metrics["perplexity"]):
+                assert metrics["perplexity"] > 0
+            assert metrics["cross_entropy"] > 0
 
 
 class TestPropertyBasedUtilities:
@@ -460,7 +461,8 @@ class FreqProbStateMachine(RuleBasedStateMachine):
         """Add or update a word in the frequency distribution."""
         self.freq_dist[word] = self.freq_dist.get(word, 0) + count
 
-        # Recreate methods with updated distribution
+        # Recreate methods with updated distribution. A rejected parameter is a
+        # legitimate outcome; any other failure is a defect.
         try:
             self.methods["mle"] = freqprob.MLE(self.freq_dist, logprob=False)  # type: ignore[arg-type]
             self.methods["laplace"] = freqprob.Laplace(
@@ -468,21 +470,16 @@ class FreqProbStateMachine(RuleBasedStateMachine):
                 bins=len(self.freq_dist) * 2,
                 logprob=False,
             )
-        except Exception:
-            # Some operations might fail, which is acceptable
+        except ValueError:
             pass
 
     @rule(word=st.text(min_size=1, max_size=10))
     def query_word(self, word: str) -> None:
         """Query probability of a word."""
         for method_name, method in self.methods.items():
-            try:
-                prob = method(word)
-                assert 0 <= prob <= 1, f"Invalid probability from {method_name}: {prob}"
-                assert not math.isnan(prob), f"NaN probability from {method_name}"
-            except Exception:
-                # Some queries might fail, which is acceptable
-                pass
+            prob = method(word)
+            assert 0 <= prob <= 1, f"Invalid probability from {method_name}: {prob}"
+            assert not math.isnan(prob), f"NaN probability from {method_name}"
 
     @invariant()
     def probability_axioms_hold(self) -> None:
@@ -491,15 +488,11 @@ class FreqProbStateMachine(RuleBasedStateMachine):
             return
 
         for method_name, method in self.methods.items():
-            try:
-                # Test a few words from the distribution
-                for word in list(self.freq_dist.keys())[:3]:
-                    prob = method(word)
-                    assert 0 <= prob <= 1, f"Probability axiom violation in {method_name}"
-                    assert not math.isnan(prob), f"NaN in {method_name}"
-            except Exception:
-                # Some methods might fail, which is acceptable
-                pass
+            # Test a few words from the distribution
+            for word in list(self.freq_dist.keys())[:3]:
+                prob = method(word)
+                assert 0 <= prob <= 1, f"Probability axiom violation in {method_name}"
+                assert not math.isnan(prob), f"NaN in {method_name}"
 
     @invariant()
     def consistency_between_methods(self) -> None:
@@ -507,21 +500,17 @@ class FreqProbStateMachine(RuleBasedStateMachine):
         if len(self.methods) < 2:
             return
 
-        try:
-            # All methods should agree on relative ordering for observed words
-            if len(self.freq_dist) >= 2:
-                words = list(self.freq_dist.keys())[:2]
-                word1, word2 = words[0], words[1]
+        # All methods should agree on relative ordering for observed words
+        if len(self.freq_dist) >= 2:
+            words = list(self.freq_dist.keys())[:2]
+            word1, word2 = words[0], words[1]
 
-                if self.freq_dist[word1] > self.freq_dist[word2]:
-                    for method in self.methods.values():
-                        prob1 = method(word1)
-                        prob2 = method(word2)
-                        # Smoothing might change ordering, so we use >= instead of >
-                        assert prob1 >= prob2 * 0.5, "Severe ordering violation between methods"
-        except Exception:
-            # Some comparisons might fail, which is acceptable
-            pass
+            if self.freq_dist[word1] > self.freq_dist[word2]:
+                for method in self.methods.values():
+                    prob1 = method(word1)
+                    prob2 = method(word2)
+                    # Smoothing might change ordering, so we use >= instead of >
+                    assert prob1 >= prob2 * 0.5, "Severe ordering violation between methods"
 
 
 # Only run stateful testing if explicitly requested (it's slow)

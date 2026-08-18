@@ -483,16 +483,23 @@ assert round(lazy("a"), 2) == 0.75
 
 ### Compact storage
 
-`create_compressed_distribution` and `create_sparse_distribution` trade a little
-speed for much lower memory on large, skewed count tables. `MemoryProfiler`
-helps you measure the difference — see the API reference for details.
+`CompressedFrequencyDistribution` and `SparseFrequencyDistribution` trade a
+little speed for much lower memory on large, skewed count tables. Build either
+from a mapping of counts with `from_counts`.
 
 ```python
 import freqprob
 
-compact = freqprob.create_compressed_distribution({"a": 100, "b": 50, "c": 1})
+compact = freqprob.CompressedFrequencyDistribution.from_counts(
+    {"a": 100, "b": 50, "c": 1}
+)
 assert compact.get_memory_usage()["total"] > 0
 ```
+
+To measure the difference, `freqprob.performance.profiling` provides
+`MemoryProfiler` and `DistributionMemoryAnalyzer`. They are development tooling
+rather than part of the estimation API, so they are not re-exported at the top
+level — import them from that module directly.
 
 ---
 

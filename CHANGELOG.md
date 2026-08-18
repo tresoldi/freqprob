@@ -5,6 +5,71 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Internal-architecture release. The estimators and their mathematics are
+unchanged except where noted; what changed is where the code lives and what the
+package promises.
+
+### Changed
+
+- **Estimators expose an interface for indexing them.** `support()`,
+  `unobserved_score()` and `revision` give a caller the facts it needs to build
+  its own index over a scorer. `performance/` now uses these instead of reading
+  the private probability table, which fixes four defects: `VectorizedScorer`
+  served stale scores after a re-fit and returned all zeros when wrapping a lazy
+  scorer, `StreamingMLE.fit()` destroyed the model instead of replacing it, and
+  `StreamingLaplace.update_single` ran the MLE increment while `update_batch`
+  ran Laplace.
+- **One place converts a probability into a score.** A method implements
+  `_estimate`, returning a probability table and a reserved mass in plain
+  probability space; `fit` applies the floor and the log conversion. The 17
+  per-method `logprob` branches are gone.
+- **The bigram estimators share one seam.** Kneser-Ney and Modified Kneser-Ney
+  join absolute discounting, Pitman-Yor and the back-off methods on
+  `methods/_bigram.py`.
+- **Per-method config subclasses are gone.** A method's parameters are typed
+  attributes on the estimator, validated in its constructor;
+  `ScoringMethodConfig` keeps `unobs_prob`, `bins` and `logprob`.
+
+### Fixed
+
+- Pickling a lazy or streaming scorer silently dropped the state that is not in
+  `__slots__`, producing an object that scored correctly and then failed on
+  first use.
+- `str()` on a lazy scorer reported zero elements regardless of what it was
+  fitted to.
+- Modified Kneser-Ney estimated its discounts from all keys, including the
+  non-bigram ones it documents as ignored.
+- An unseen bigram under Kneser-Ney is scored through its context's back-off
+  weight rather than a single flat average, so it is now context-sensitive. A
+  word absent from the data scores at the floor instead of borrowing the
+  average.
+- An empty distribution scored by a log-scorer returns `log(1e-10)` rather than
+  the raw `1e-10`, which as a log-probability meant `p == 1.0`.
+- `SimpleGoodTuring` validates its `p_value`.
+
+### Removed
+
+The top-level namespace goes from 50 names to 41. Every removed name was a
+pass-through, a false promise, or development tooling; nothing lost a
+capability.
+
+- Deleted: `LazyBatchScorer`, `create_vectorized_batch_scorer`,
+  `VectorizedScorer.score_parallel` (whose body was sequential),
+  `create_compressed_distribution`, `create_sparse_distribution`,
+  `memory_usage_comparison` (no callers anywhere), and `MemoizedProperty`
+  (no production callers; it raised on any `__slots__` class).
+- Use `CompressedFrequencyDistribution.from_counts` and
+  `SparseFrequencyDistribution.from_counts` in place of the two deleted
+  factories.
+- No longer re-exported at the top level, still importable from their modules:
+  `MemoryProfiler`, `MemoryMonitor`, `DistributionMemoryAnalyzer`
+  (`freqprob.performance.profiling`), `StreamingDataProcessor`
+  (`freqprob.performance.streaming`), and `LazyScoringMethod`
+  (`freqprob.performance.lazy`; build one with `create_lazy_mle` or
+  `create_lazy_laplace`).
+
 ## [0.7.0] - 2026-07-31
 
 Feature release: new smoothing estimators and entropy metrics, together with the

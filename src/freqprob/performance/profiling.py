@@ -384,8 +384,8 @@ class DistributionMemoryAnalyzer:
             and profiling metrics.
         """
         from .memory_efficient import (
-            create_compressed_distribution,
-            create_sparse_distribution,
+            CompressedFrequencyDistribution,
+            SparseFrequencyDistribution,
         )
 
         results: dict[str, Any] = {}
@@ -397,19 +397,21 @@ class DistributionMemoryAnalyzer:
 
         # Test compressed distribution
         with self.profiler.profile_operation("create_compressed"):
-            compressed_dist = create_compressed_distribution(freqdist)
+            compressed_dist = CompressedFrequencyDistribution.from_counts(freqdist)
             compressed_memory = compressed_dist.get_memory_usage()
         results["compressed"] = compressed_memory
 
         # Test quantized compressed distribution
         with self.profiler.profile_operation("create_quantized"):
-            quantized_dist = create_compressed_distribution(freqdist, quantization_levels=1024)
+            quantized_dist = CompressedFrequencyDistribution.from_counts(
+                freqdist, quantization_levels=1024
+            )
             quantized_memory = quantized_dist.get_memory_usage()
         results["quantized"] = quantized_memory
 
         # Test sparse distribution
         with self.profiler.profile_operation("create_sparse"):
-            sparse_dist = create_sparse_distribution(freqdist)
+            sparse_dist = SparseFrequencyDistribution.from_counts(freqdist)
             sparse_memory = sparse_dist.get_memory_usage()
         results["sparse"] = sparse_memory
 

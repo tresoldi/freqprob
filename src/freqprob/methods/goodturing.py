@@ -1,14 +1,13 @@
 """Good-Turing-family smoothing: Witten-Bell discounting and Simple Good-Turing."""
 
-import math
-from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import scipy
 import scipy.linalg
 import scipy.stats
 
-from freqprob.base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
+from freqprob.base import Estimates, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 from freqprob.cache import cached_computation, cached_sgt_computation
 
 
@@ -66,50 +65,26 @@ class WittenBell(ScoringMethod):
         self.fit(freqdist)
 
     @cached_computation()
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Witten-Bell probabilities."""
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Reserve mass in proportion to how many distinct elements were seen.
+
+        Args:
+            freqdist: Frequency distribution with element counts.
+
+        Returns:
+            The probability of each observed element, and the mass each unseen
+            element receives once the reserved total is split ``z`` ways.
+        """
         bins = self.config.bins
 
-        # Store the probabilities
         n = sum(freqdist.values())
         t = len(freqdist)
         z = 1.0 if bins is None or bins == t else bins - t
 
-        if self.logprob:
-            self._prob = {sample: math.log(count / (n + t)) for sample, count in freqdist.items()}
-            if n == 0:
-                self._unobs = math.log(1.0 / z)
-            else:
-                self._unobs = math.log(t / (z * (n + t)))
-        else:
-            self._prob = {sample: count / (n + t) for sample, count in freqdist.items()}
-            if n == 0:
-                self._unobs = 1.0 / z
-            else:
-                self._unobs = t / (z * (n + t))
+        table = {sample: count / (n + t) for sample, count in freqdist.items()}
+        reserved = 1.0 / z if n == 0 else t / (z * (n + t))
 
-
-@dataclass
-class SimpleGoodTuringConfig(ScoringMethodConfig):
-    """Configuration for Simple Good-Turing smoothing.
-
-    Attributes:
-        p_value: Confidence level for the smoothing threshold (default: ``0.05``).
-        default_p0: Fallback probability for unobserved elements
-            (default: ``None``).
-        bins: Total support size for per-word probability calculation
-            (default: ``None``). If ``None``, uses the heuristic
-            ``bins = V_observed + N1`` (singletons), which determines how ``p0``
-            (total unseen mass) is distributed across unseen words.
-        logprob: Whether to return log-probabilities (default: ``True``).
-        allow_fail: Whether to raise errors on invalid assumptions
-            (default: ``True``).
-    """
-
-    p_value: float = 0.05
-
-    default_p0: float | None = None
-    allow_fail: bool = True
+        return table, reserved
 
 
 class SimpleGoodTuring(ScoringMethod):
@@ -181,7 +156,7 @@ class SimpleGoodTuring(ScoringMethod):
         0.133
     """
 
-    __slots__ = ()
+    __slots__ = ("allow_fail", "default_p0", "p_value")
 
     def __init__(
         self,
@@ -193,16 +168,20 @@ class SimpleGoodTuring(ScoringMethod):
         allow_fail: bool = True,
     ) -> None:
         """Initialize Simple Good-Turing smoothing."""
-        config = SimpleGoodTuringConfig(
-            p_value=p_value,
-            default_p0=default_p0,
-            bins=bins,
-            logprob=logprob,
-            allow_fail=allow_fail,
-        )
+        if not 0.0 < p_value < 1.0:
+            raise ValueError("The p-value must be between 0.0 and 1.0 (exclusive).")
+
+        config = ScoringMethodConfig(bins=bins, logprob=logprob)
         super().__init__(config)
         self.name = "Simple Good-Turing"
+        self.p_value = p_value
+        self.default_p0 = default_p0
+        self.allow_fail = allow_fail
         self.fit(freqdist)
+
+    def _cache_key(self) -> tuple[Any, ...]:
+        """Extend the shared key with this method's own parameters."""
+        return (*super()._cache_key(), self.p_value, self.default_p0, self.allow_fail)
 
     @property
     def total_unseen_mass(self) -> float:
@@ -227,12 +206,24 @@ class SimpleGoodTuring(ScoringMethod):
         return getattr(self, "_total_unseen_mass", 0.0)
 
     @cached_sgt_computation
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Simple Good-Turing probabilities."""
-        p_value = self.config.p_value  # type: ignore
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Re-estimate each count from the frequency of its frequency.
 
-        default_p0 = self.config.default_p0  # type: ignore
-        allow_fail = self.config.allow_fail  # type: ignore
+        Args:
+            freqdist: Frequency distribution with element counts.
+
+        Returns:
+            The renormalized probability of each observed element, and the
+            share of the unseen mass ``p0`` each unseen element receives.
+
+        Raises:
+            ValueError: If ``bins`` does not exceed the number of observed
+                elements, or if the log-linear fit fails and ``allow_fail``
+                is set.
+        """
+        p_value = self.p_value
+        default_p0 = self.default_p0
+        allow_fail = self.allow_fail
 
         # Calculate the confidence level from the p_value.
         confidence_level = scipy.stats.norm.ppf(1.0 - (p_value / 2.0))
@@ -366,21 +357,12 @@ class SimpleGoodTuring(ScoringMethod):
         # Calculate per-word unseen probability
         p_per_unseen = p0 / v_unseen
 
-        # Build the probability distribution for the observed samples and for
-        # unobserved ones.
-        if self.logprob:
-            self._unobs = math.log(p_per_unseen)
-            for sample, count in freqdist.items():
-                prob = (1.0 - p0) * (r_smoothed[count] / smooth_sum)
-                if prob == 0.0:
-                    self._prob[sample] = math.log(p_per_unseen)
-                else:
-                    self._prob[sample] = math.log(prob)
-        else:
-            self._unobs = p_per_unseen
-            for sample, count in freqdist.items():
-                prob = (1.0 - p0) * (r_smoothed[count] / smooth_sum)
-                if prob == 0.0:
-                    self._prob[sample] = p_per_unseen
-                else:
-                    self._prob[sample] = prob
+        # Build the probability distribution for the observed samples. A sample
+        # whose renormalized probability underflows to zero falls back to the
+        # per-unseen share rather than to nothing at all.
+        table = {}
+        for sample, count in freqdist.items():
+            prob = (1.0 - p0) * (r_smoothed[count] / smooth_sum)
+            table[sample] = p_per_unseen if prob == 0.0 else prob
+
+        return table, p_per_unseen

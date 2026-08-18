@@ -6,7 +6,7 @@ compatibility and correctness.
 """
 
 import math
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pytest
@@ -476,41 +476,6 @@ class TestReferenceDataRegression:
         expected_ce = math.log(3)
         assert abs(ce - expected_ce) < 1e-14
 
-    @pytest.mark.parametrize(
-        ("smoothing_method", "params"),
-        [
-            ("Laplace", {"bins": 100}),
-            ("ELE", {"bins": 100}),
-            ("Lidstone", {"gamma": 0.5, "bins": 100}),
-        ],
-    )
-    def test_smoothing_monotonicity_regression(
-        self, smoothing_method: str, params: dict[str, Any]
-    ) -> None:
-        """Test monotonicity properties across smoothing methods."""
-        # Create distribution with clear frequency ordering
-        ordered_counts = {
-            "most_frequent": 1000,
-            "very_frequent": 500,
-            "frequent": 100,
-            "medium": 50,
-            "rare": 10,
-            "very_rare": 1,
-        }
-
-        method_class = getattr(freqprob, smoothing_method)
-        method = method_class(ordered_counts, logprob=False, **params)
-
-        # Test strict ordering is preserved
-        words = list(ordered_counts.keys())
-        probabilities = [method(word) for word in words]
-
-        # Should be in descending order
-        for i in range(len(probabilities) - 1):
-            assert probabilities[i] >= probabilities[i + 1], (
-                f"{smoothing_method} violates monotonicity: {words[i]} vs {words[i + 1]}"
-            )
-
     def test_mathematical_identities_regression(self) -> None:
         """Test mathematical identities that should hold."""
         counts = {"alpha": 25, "beta": 15, "gamma": 10}
@@ -631,27 +596,22 @@ class TestLiteratureRegression:
         freq_dist["common_1"] = 10
         freq_dist["common_2"] = 15
 
-        try:
-            sgt = freqprob.SimpleGoodTuring(cast("FrequencyDistribution", freq_dist), logprob=False)
+        sgt = freqprob.SimpleGoodTuring(cast("FrequencyDistribution", freq_dist), logprob=False)
 
-            # Good-Turing should redistribute probability mass
-            # Words with count 1 should get less probability than their MLE estimate
+        # Good-Turing should redistribute probability mass
+        # Words with count 1 should get less probability than their MLE estimate
 
-            hapax_word = "hapax_0"
-            sgt_prob = sgt(hapax_word)
+        hapax_word = "hapax_0"
+        sgt_prob = sgt(hapax_word)
 
-            # SGT typically reduces probability of low-frequency words
-            # (though this can vary depending on the frequency distribution)
-            assert sgt_prob > 0
-            assert not math.isnan(sgt_prob)
+        # SGT typically reduces probability of low-frequency words
+        # (though this can vary depending on the frequency distribution)
+        assert sgt_prob > 0
+        assert not math.isnan(sgt_prob)
 
-            # Unknown words should have positive probability
-            unknown_prob = sgt("unknown_word")
-            assert unknown_prob > 0
-
-        except (ValueError, RuntimeError):
-            # SGT can fail on some distributions, which is expected behavior
-            pytest.skip("Simple Good-Turing failed on this distribution (expected)")
+        # Unknown words should have positive probability
+        unknown_prob = sgt("unknown_word")
+        assert unknown_prob > 0
 
 
 if __name__ == "__main__":

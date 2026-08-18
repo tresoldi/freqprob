@@ -46,17 +46,26 @@ so that a genomics or analytics user never trips over linguistic terminology.
 2. **One estimator contract.** Every method is a `ScoringMethod`: construct
    with a frequency distribution, then call it to score an element. There is a
    single, predictable lifecycle. Performance variants (lazy, streaming,
-   vectorized) are *adapters* over this contract, not parallel hierarchies.
-3. **KISS.** Prefer a small, obvious API over configurability nobody asked for.
+   vectorized) are *adapters* over this contract, not parallel hierarchies —
+   and they reach a scorer only through its interface (`support()`,
+   `unobserved_score()`, `revision`, `predict()`), never through its
+   probability table.
+3. **One place where a probability becomes a score.** A method implements
+   `_estimate(freqdist)`, returning a probability table and a reserved mass in
+   *plain probability space*. `fit` applies the `MIN_PROBABILITY` floor,
+   converts to log-probabilities when the scorer is a log-scorer, and installs
+   the result. A method body therefore contains its own mathematics and nothing
+   else: no `self._prob` writes, no `self.logprob` branch, no `math.log`.
+4. **KISS.** Prefer a small, obvious API over configurability nobody asked for.
    A method's constructor takes plain keyword arguments.
-4. **DRY.** No per-method boilerplate that merely restates the base. Shared
+5. **DRY.** No per-method boilerplate that merely restates the base. Shared
    validation and configuration live in exactly one place (`base`).
-5. **YAGNI.** Do not add abstraction, config surface, or "extension points"
+6. **YAGNI.** Do not add abstraction, config surface, or "extension points"
    ahead of a concrete need.
-6. **Namespace-preserving refactors.** Internal reorganization must not break
+7. **Namespace-preserving refactors.** Internal reorganization must not break
    `import freqprob; freqprob.Laplace(...)`. The public surface is defined by
    `freqprob/__init__.py`, independent of file layout.
-7. **Typed and validated.** Full type hints, `py.typed`, strict mypy;
+8. **Typed and validated.** Full type hints, `py.typed`, strict mypy;
    parameter validation raises early with clear messages.
 
 ---
@@ -74,12 +83,15 @@ src/freqprob/
 ├── metrics.py           # perplexity, cross_entropy, kl_divergence, model_comparison
 ├── text.py              # n-gram / word-frequency helpers  (NLP-specific layer)
 ├── methods/             # the estimators, grouped by family
+│   ├── _bigram.py       # the bigram seam: BigramBackoff, context extraction
 │   ├── baselines.py     # Uniform, Random, MLE
 │   ├── additive.py      # Lidstone, Laplace, ELE
 │   ├── goodturing.py    # SimpleGoodTuring, WittenBell
 │   ├── certainty.py     # CertaintyDegree
 │   ├── kneser_ney.py    # KneserNey, ModifiedKneserNey
-│   ├── interpolated.py  # Interpolated
+│   ├── discounting.py   # AbsoluteDiscounting, PitmanYor
+│   ├── backoff.py       # KatzBackoff, StupidBackoff
+│   ├── interpolated.py  # Interpolated, JelinekMercer
 │   └── bayesian.py      # Bayesian
 ├── performance/         # infrastructure, not estimators
 │   ├── lazy.py
@@ -103,11 +115,22 @@ src/freqprob/
   machinery — none of which are smoothing methods — from the estimator core, so
   the package's conceptual surface stays small.
 - `base.py` and `cache.py` are top-level **foundations**. `cache.py` is a
-  memoization utility the *methods* depend on (Simple Good-Turing, Kneser-Ney),
-  so it lives alongside `base` rather than under `performance/` — otherwise
-  `methods/` would have to reach into `performance/`, against the dependency
-  rule below. (This is a deliberate deviation from the original plan, which had
-  sketched `cache.py` under `performance/`.)
+  memoization utility the *methods* depend on (Simple Good-Turing, Witten-Bell,
+  Certainty Degree), so it lives alongside `base` rather than under
+  `performance/` — otherwise `methods/` would have to reach into
+  `performance/`, against the dependency rule below. (This is a deliberate
+  deviation from the original plan, which had sketched `cache.py` under
+  `performance/`.) Its decorators memoize `_estimate`, which works in plain
+  probability space, so one cache entry serves both a log-scorer and a plain
+  scorer.
+- `methods/_bigram.py` is the **bigram seam**. Every estimator that models
+  `P(word | context)` over `(context, word)` pairs — Kneser-Ney, Modified
+  Kneser-Ney, absolute discounting, Pitman-Yor, Katz and Stupid Back-off —
+  subclasses `BigramBackoff` and shares one definition of context extraction
+  and of backing off to a lower-order model. The interpolation family keeps a
+  separate seam on purpose: it takes *two* distributions of arbitrary order,
+  where this one derives its lower-order model from a single distribution of
+  bigrams.
 
 ### Dependency rule
 
@@ -135,6 +158,15 @@ p = scorer(element)  # __call__ scores one element
 - Re-fitting (`scorer.fit(other_freqdist)`) resets state and behaves like a
   fresh fit.
 
+Three further members exist for callers that need to *index* a scorer rather
+than query it one element at a time — this is what `performance/` uses, in place
+of reaching into the probability table:
+
+- `support()` — the elements holding an explicit estimate.
+- `unobserved_score()` — the score every other element receives.
+- `revision` — a counter that advances whenever the estimates change, so a
+  caller can tell when a cache it derived has gone stale.
+
 **scikit-learn-style aliases** sit alongside the callable contract for the
 data-science audience:
 
@@ -146,6 +178,17 @@ These are conveniences over the one estimator contract, not a second hierarchy.
 Full `BaseEstimator` compliance (`get_params`/`set_params`, cloning, pipeline
 support) is **out of scope** (YAGNI) — revisit only if a concrete
 pipeline/grid-search need appears.
+
+**What the namespace holds.** `__all__` is the compatibility promise, so it
+carries the domain — the estimators, the metrics that evaluate them, the text
+helpers that build a frequency distribution — plus the performance adapters a
+caller reaches for directly. Development and diagnostic tooling
+(`MemoryProfiler`, `MemoryMonitor`, `DistributionMemoryAnalyzer`,
+`StreamingDataProcessor`) is **not** re-exported: it lives one import deeper,
+under `freqprob.performance.*`, where being infrastructure is visible. A name
+earns a place in `__all__` by surviving the deletion test — remove it and see
+whether complexity concentrates elsewhere or simply vanishes.
+`tests/test_public_api.py` holds the surface to this.
 
 **Persistence.** A fitted estimator can be saved and restored without
 re-fitting:
@@ -160,13 +203,25 @@ annotations.
 
 ### Configuration
 
-The base `ScoringMethodConfig` validates `unobs_prob`, `gamma`, `bins`,
-`logprob`. Per-method config subclasses exist **only** where a method adds a
-genuine parameter (`RandomConfig.seed`, `KneserNeyConfig.discount`,
-`BayesianConfig.alpha`, `InterpolatedConfig.lambda_weight`,
-`SimpleGoodTuringConfig.p_value`/`default_p0`/`allow_fail`). Constructors accept
-plain keyword arguments; the config object is an internal detail users never
-touch.
+`ScoringMethodConfig` carries the three settings more than one method uses —
+`unobs_prob`, `bins`, `logprob` — and validates them. **There are no per-method
+config subclasses.** A method's own parameters (`Random.seed`, `Bayesian.alpha`,
+`Lidstone.gamma`, `KneserNey.discount`, `SimpleGoodTuring.p_value`, and so on)
+are typed attributes on the estimator, validated in its constructor.
+
+The earlier rule — a config subclass "only where a method adds a genuine
+parameter" — permitted unbounded regrowth, and did: the 0.7.0 feature work added
+three more subclasses, for eight in total. None ever overrode `__post_init__`,
+so every method-specific range check lived in the constructor anyway while the
+subclass contributed nothing but a field, and reading that field required a
+`# type: ignore` at fifteen call sites because `self.config` is typed as the
+base class.
+
+Memoized methods declare what their estimates depend on via `_cache_key()`,
+replacing a cache key derived by reflecting over `dir(self.config)` — under
+which adding any config field silently invalidated every entry. Constructors
+accept plain keyword arguments; the config object is an internal detail users
+never touch.
 
 ---
 
