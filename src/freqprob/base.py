@@ -4,9 +4,10 @@ This module provides the abstract base class and common functionality
 for all smoothing methods in the freqprob library.
 """
 
+import math
 import pickle
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, Mapping
+from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar
@@ -17,6 +18,12 @@ Count = int
 Probability = float
 LogProbability = float
 FrequencyDistribution = Mapping[Element, Count]
+
+# What a smoothing method returns from `_estimate`: the probability of each
+# observed element, and the probability reserved for everything unobserved.
+# Always in plain probability space -- `ScoringMethod.fit` handles the floor and
+# the conversion to log-probabilities.
+Estimates = tuple[Mapping[Element, Probability], Probability]
 
 # Smallest probability used as a floor to avoid log(0) domain errors. Kept as a
 # module constant so methods can use it directly rather than reading `_unobs`
@@ -37,7 +44,6 @@ class ScoringMethodConfig:
     Attributes:
         unobs_prob: Reserved probability mass for unobserved elements
             (``0.0 <= p <= 1.0``).
-        gamma: Smoothing parameter for additive methods (``gamma >= 0``).
         bins: Total number of possible bins/elements (``bins >= 1``).
         logprob: Whether to return log-probabilities instead of probabilities.
 
@@ -48,14 +54,12 @@ class ScoringMethodConfig:
         >>> config = ScoringMethodConfig(unobs_prob=0.1, logprob=True)
         >>> config.unobs_prob
         0.1
-        >>> config = ScoringMethodConfig(gamma=1.5, bins=1000)
-        >>> config.gamma
-        1.5
+        >>> config = ScoringMethodConfig(bins=1000)
+        >>> config.bins
+        1000
     """
 
     unobs_prob: Probability | None = None
-
-    gamma: float | None = None
     bins: int | None = None
     logprob: bool = True
 
@@ -63,14 +67,11 @@ class ScoringMethodConfig:
         """Validate configuration parameters after initialization.
 
         Raises:
-            ValueError: If ``unobs_prob`` is not in ``[0.0, 1.0]``, ``gamma`` is
-                negative, or ``bins`` is not positive.
+            ValueError: If ``unobs_prob`` is not in ``[0.0, 1.0]`` or ``bins``
+                is not positive.
         """
         if self.unobs_prob is not None and not 0.0 <= self.unobs_prob <= 1.0:
             raise ValueError("The reserved mass probability must be between 0.0 and 1.0")
-
-        if self.gamma is not None and self.gamma < 0:
-            raise ValueError("Gamma must be a non-negative real number.")
 
         if self.bins is not None and self.bins < 1:
             raise ValueError("Number of bins must be a positive integer.")
@@ -88,8 +89,10 @@ class ScoringMethod(ABC):
     estimates a probability ``P(w)`` for every element ``w``. For unobserved
     elements, methods reserve probability mass to avoid returning zero.
 
-    Subclasses must implement :meth:`_compute_probabilities`, which populates the
-    internal probability table and the reserved mass for unobserved elements.
+    Subclasses must implement :meth:`_estimate`, which returns the probability
+    of each observed element together with the mass reserved for the rest. The
+    method's own parameters are attributes on the estimator; the shared
+    :class:`ScoringMethodConfig` carries only what every method may need.
 
     Attributes:
         config: Configuration parameters for the method.
@@ -106,7 +109,15 @@ class ScoringMethod(ABC):
         0.0
     """
 
-    __slots__ = ("_prob", "_total_unseen_mass", "_unobs", "config", "logprob", "name")
+    __slots__ = (
+        "_prob",
+        "_revision",
+        "_total_unseen_mass",
+        "_unobs",
+        "config",
+        "logprob",
+        "name",
+    )
 
     def __init__(self, config: ScoringMethodConfig) -> None:
         """Initialize the scoring method.
@@ -125,6 +136,7 @@ class ScoringMethod(ABC):
         self._total_unseen_mass: float | None = (
             None  # For methods that track total unseen mass (e.g., SGT)
         )
+        self._revision: int = 0  # bumped whenever the estimates change
         self.logprob: bool | None = config.logprob
         self.name: str | None = None
 
@@ -148,6 +160,103 @@ class ScoringMethod(ABC):
             0.0
         """
         return self._prob.get(element, self._unobs)
+
+    def support(self) -> Collection[Element]:
+        """Return the elements this scorer holds an explicit estimate for.
+
+        Every other element is scored with :meth:`unobserved_score`. Together
+        with :attr:`revision`, this is what lets a caller build its own index
+        over the scorer without reaching into its internals.
+
+        Returns:
+            The elements with an explicit estimate. The result is a read-only
+            view: it must not be mutated, and it may become stale once
+            :attr:`revision` changes.
+
+        Examples:
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> sorted(scorer.support())
+            ['a', 'b']
+        """
+        return self._prob.keys()
+
+    def unobserved_score(self) -> Probability | LogProbability:
+        """Return the score given to every element outside :meth:`support`.
+
+        Returns:
+            The reserved probability (or log-probability) for unobserved
+            elements.
+
+        Examples:
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> scorer.unobserved_score()
+            0.0
+        """
+        return self._unobs
+
+    @property
+    def revision(self) -> int:
+        """Count of how many times this scorer's estimates have changed.
+
+        Starts at ``0`` and increases on every :meth:`fit` and on every
+        streaming update. A caller that caches anything derived from
+        :meth:`support`, :meth:`unobserved_score`, or the scores themselves
+        should record this value alongside the cache and rebuild when it
+        changes.
+
+        Examples:
+            >>> from freqprob import MLE
+            >>> scorer = MLE({"a": 2, "b": 1}, logprob=False)
+            >>> before = scorer.revision
+            >>> _ = scorer.fit({"a": 1})
+            >>> scorer.revision > before
+            True
+        """
+        return self._revision
+
+    def _mark_changed(self) -> None:
+        """Record that the estimates changed, invalidating callers' caches."""
+        self._revision += 1
+
+    def _cache_key(self) -> tuple[Any, ...]:
+        """Return the parameters that affect :meth:`_estimate`.
+
+        Used to memoize estimates. A method that takes parameters of its own
+        extends this, so what a cache entry depends on is written down rather
+        than discovered by reflecting over the configuration object.
+
+        ``logprob`` is deliberately absent: :meth:`_estimate` works in plain
+        probability space, so one entry serves both output spaces.
+
+        Returns:
+            A hashable tuple identifying this estimator's parameters.
+        """
+        return (self.config.unobs_prob, self.config.bins)
+
+    def _score_of(self, prob: Probability) -> Probability | LogProbability:
+        """Convert a plain probability into this scorer's output space.
+
+        This is where the log/plain duality lives. Estimators compute in plain
+        probability space and hand the result here.
+
+        A log-scorer substitutes :data:`MIN_PROBABILITY` for a probability of
+        zero, which keeps :func:`math.log` in its domain without disturbing
+        small-but-genuine estimates. A plain scorer returns the probability
+        untouched, so it can still report an exact ``0.0`` for an element it
+        gives no mass to.
+
+        Args:
+            prob: A probability in ``[0.0, 1.0]``.
+
+        Returns:
+            The log of the probability for a log-scorer, otherwise the
+            probability unchanged.
+        """
+        if self.logprob:
+            return math.log(prob) if prob > 0.0 else math.log(MIN_PROBABILITY)
+        return prob
 
     def __str__(self) -> str:
         """Return a string representation of the smoothing method.
@@ -173,23 +282,32 @@ class ScoringMethod(ABC):
         else:
             buffer.append(f"{self.name} scorer")
 
-        buffer.append(f"{len(self._prob)} elements.")
+        # Report the support rather than the probability table: a lazy scorer
+        # fills its table on demand, so the table would understate what the
+        # scorer was fitted to.
+        buffer.append(f"{len(self.support())} elements.")
 
         return ", ".join(buffer)
 
     @abstractmethod
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute probabilities for the given frequency distribution.
+    def _estimate(self, freqdist: FrequencyDistribution) -> "Estimates":
+        """Estimate probabilities for the given frequency distribution.
 
-        This method must be implemented by subclasses to compute the actual
-        probability values according to their specific smoothing strategy.
+        This is the one method a smoothing method must implement, and it should
+        contain nothing but that method's mathematics. Work in **plain
+        probability space** and return the result; :meth:`fit` applies the
+        :data:`MIN_PROBABILITY` floor, converts to log-probabilities when the
+        scorer is a log-scorer, and installs the result. An implementation
+        therefore never writes ``self._prob``, never branches on
+        ``self.logprob``, and never calls :func:`math.log`.
 
         Args:
             freqdist: Frequency distribution mapping elements to their observed
                 counts.
 
-        Note:
-            Implementations should populate ``self._prob`` and ``self._unobs``.
+        Returns:
+            The probability of each observed element, and the probability
+            reserved for everything else.
         """
 
     def fit(self, freqdist: FrequencyDistribution) -> "ScoringMethod":
@@ -213,15 +331,32 @@ class ScoringMethod(ABC):
             0.6666666666666666
         """
         # Reset state so re-fitting an already-fitted scorer behaves like a
-        # fresh fit: methods that assign into self._prob incrementally would
-        # otherwise leave stale keys, and self._unobs (which holds the previous
-        # output) would otherwise pollute epsilon floors on a second fit.
+        # fresh fit: an estimator that carries auxiliary state would otherwise
+        # leave stale keys behind.
         self._prob = {}
         self._unobs = MIN_PROBABILITY
         self._total_unseen_mass = None
-        self._compute_probabilities(freqdist)
+
+        self._install(self._estimate(freqdist))
 
         return self
+
+    def _install(self, estimates: "Estimates") -> None:
+        """Convert estimates into this scorer's output space and adopt them.
+
+        The single place where a probability becomes a score. Called by
+        :meth:`fit`, and by any estimator that revises its estimates outside a
+        fit (the streaming scorers do this on every update).
+
+        Args:
+            estimates: A probability table and a reserved mass, both in plain
+                probability space.
+        """
+        table, reserved = estimates
+
+        self._prob = {element: self._score_of(prob) for element, prob in table.items()}
+        self._unobs = self._score_of(reserved)
+        self._mark_changed()
 
     def score(self, element: Element) -> Probability | LogProbability:
         """Score a single element (scikit-learn-style alias for ``__call__``).
@@ -258,18 +393,28 @@ class ScoringMethod(ABC):
         return [self(element) for element in elements]
 
     def __getstate__(self) -> dict[str, Any]:
-        """Collect all ``__slots__`` values across the class hierarchy for pickling."""
+        """Collect this scorer's state for pickling.
+
+        Walks ``__slots__`` across the class hierarchy, then adds ``__dict__``:
+        a subclass that declares no ``__slots__`` of its own keeps its
+        attributes there, and leaving them out produced a restored object that
+        scored correctly but broke on first use.
+        """
         state: dict[str, Any] = {}
         for klass in type(self).__mro__:
             for slot in getattr(klass, "__slots__", ()):
                 if hasattr(self, slot):
                     state[slot] = getattr(self, slot)
+        state.update(getattr(self, "__dict__", {}))
         return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         """Restore ``__slots__`` values from a pickled state."""
         for slot, value in state.items():
             setattr(self, slot, value)
+        # Pickles written before `_revision` existed carry no value for it.
+        if "_revision" not in state:
+            self._revision = 0
 
     def save(self, path: str | Path) -> None:
         """Serialize this fitted scorer to a file.

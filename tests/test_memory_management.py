@@ -6,19 +6,21 @@ from typing import TYPE_CHECKING
 
 from freqprob import (
     CompressedFrequencyDistribution,
-    DistributionMemoryAnalyzer,
-    MemoryMonitor,
-    MemoryProfiler,
     QuantizedProbabilityTable,
     SparseFrequencyDistribution,
-    StreamingDataProcessor,
     StreamingFrequencyDistribution,
     StreamingLaplace,
     StreamingMLE,
-    create_compressed_distribution,
-    create_sparse_distribution,
 )
-from freqprob.performance.profiling import HAS_PSUTIL, get_object_memory_usage, profile_memory_usage
+from freqprob.performance.profiling import (
+    HAS_PSUTIL,
+    DistributionMemoryAnalyzer,
+    MemoryMonitor,
+    MemoryProfiler,
+    get_object_memory_usage,
+    profile_memory_usage,
+)
+from freqprob.performance.streaming import StreamingDataProcessor
 
 if TYPE_CHECKING:
     from freqprob.base import Element
@@ -464,15 +466,17 @@ class TestMemoryEfficientRepresentations:
         original_data: dict[Element, int] = {"a": 100, "b": 50, "c": 1}
 
         # Test compressed creation
-        compressed = create_compressed_distribution(original_data)
+        compressed = CompressedFrequencyDistribution.from_counts(original_data)
         assert compressed.get_count("a") == 100
 
         # Test sparse creation
-        sparse = create_sparse_distribution(original_data)
+        sparse = SparseFrequencyDistribution.from_counts(original_data)
         assert sparse.get_count("a") == 100
 
         # Test with quantization
-        quantized = create_compressed_distribution(original_data, quantization_levels=16)
+        quantized = CompressedFrequencyDistribution.from_counts(
+            original_data, quantization_levels=16
+        )
         assert quantized.get_count("a") > 0  # Should be approximately preserved
 
 
@@ -652,11 +656,11 @@ class TestMemoryManagementIntegration:
 
         # Profile compressed distribution creation
         with profiler.profile_operation("create_compressed"):
-            create_compressed_distribution(test_data, quantization_levels=256)
+            CompressedFrequencyDistribution.from_counts(test_data, quantization_levels=256)
 
         # Profile sparse distribution creation
         with profiler.profile_operation("create_sparse"):
-            create_sparse_distribution(test_data)
+            SparseFrequencyDistribution.from_counts(test_data)
 
         # Check both operations were profiled
         all_metrics = profiler.get_all_metrics()

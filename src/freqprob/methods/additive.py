@@ -6,9 +6,7 @@ and Expected Likelihood Estimation (gamma=0.5). These methods add virtual
 counts to observed data to handle the zero probability problem.
 """
 
-import math
-
-from freqprob.base import FrequencyDistribution, ScoringMethod, ScoringMethodConfig
+from freqprob.base import Estimates, FrequencyDistribution, ScoringMethod, ScoringMethodConfig
 
 
 class Lidstone(ScoringMethod):
@@ -70,7 +68,7 @@ class Lidstone(ScoringMethod):
         uniform distribution (higher bias, lower variance).
     """
 
-    __slots__ = ()
+    __slots__ = ("gamma",)
 
     def __init__(
         self,
@@ -80,44 +78,39 @@ class Lidstone(ScoringMethod):
         logprob: bool = True,
     ) -> None:
         """Initialize Lidstone smoothing."""
+        if gamma < 0:
+            raise ValueError("Gamma must be a non-negative real number.")
+
         # Default bins to support size if not specified
         if bins is None:
             bins = len(freqdist)
 
-        config = ScoringMethodConfig(gamma=gamma, bins=bins, logprob=logprob)
+        config = ScoringMethodConfig(bins=bins, logprob=logprob)
         super().__init__(config)
+        self.gamma = gamma
         self.name = "Lidstone"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Lidstone smoothed probabilities.
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Add ``gamma`` to every count, then normalize.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution with element counts
+        Args:
+            freqdist: Frequency distribution with element counts.
+
+        Returns:
+            The smoothed probability of each element, and the mass an unseen
+            element receives from the same formula with a count of zero.
         """
-        gamma = self.config.gamma
+        gamma = self.gamma
         bins = self.config.bins
 
-        # Ensure gamma and bins are not None (they are set in __init__)
-        assert gamma is not None, "Gamma must be set before computing probabilities"
+        # `bins` is defaulted in __init__, so it is never None here.
         assert bins is not None, "Bins must be set before computing probabilities"
 
-        # Calculate normalization factors
-        total_count = sum(freqdist.values())
-        denominator = total_count + bins * gamma
+        denominator = sum(freqdist.values()) + bins * gamma
+        table = {elem: (count + gamma) / denominator for elem, count in freqdist.items()}
 
-        if self.logprob:
-            # Log-probability computation
-            self._prob = {
-                elem: math.log((count + gamma) / denominator) for elem, count in freqdist.items()
-            }
-            self._unobs = math.log(gamma / denominator)
-        else:
-            # Regular probability computation
-            self._prob = {elem: (count + gamma) / denominator for elem, count in freqdist.items()}
-            self._unobs = gamma / denominator
+        return table, gamma / denominator
 
 
 class Laplace(Lidstone):

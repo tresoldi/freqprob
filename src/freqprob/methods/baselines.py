@@ -6,31 +6,15 @@ serve as building blocks and baselines for more sophisticated smoothing
 techniques.
 """
 
-import math
 import random
-from dataclasses import dataclass
 
 from freqprob.base import (
-    MIN_PROBABILITY,
+    Estimates,
     FrequencyDistribution,
     Probability,
     ScoringMethod,
     ScoringMethodConfig,
 )
-
-
-@dataclass
-class RandomConfig(ScoringMethodConfig):
-    """Configuration for the Random distribution.
-
-    Attributes:
-        unobs_prob: Reserved probability mass for unobserved elements
-            (default: ``0.0``).
-        logprob: Whether to return log-probabilities (default: ``True``).
-        seed: Random seed for reproducible results (default: ``None``).
-    """
-
-    seed: int | None = None
 
 
 class Uniform(ScoringMethod):
@@ -81,29 +65,20 @@ class Uniform(ScoringMethod):
         self.name = "Uniform"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute uniform probabilities for all elements.
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Spread the available mass evenly over the observed elements.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution (counts are ignored, only support size used)
+        Args:
+            freqdist: Frequency distribution; counts are ignored, only the
+                support size is used.
+
+        Returns:
+            The uniform probability for each element, and the reserved mass.
         """
         unobs_prob = self.config.unobs_prob or 0.0
+        uniform_prob = (1.0 - unobs_prob) / len(freqdist)
 
-        vocab_size = len(freqdist)
-
-        if self.logprob:
-            # Avoid domain errors by ensuring unobs_prob >= machine epsilon
-            unobs_prob = max(unobs_prob, MIN_PROBABILITY)
-            uniform_prob = (1.0 - unobs_prob) / vocab_size
-            log_uniform_prob = math.log(uniform_prob)
-            self._prob = dict.fromkeys(freqdist, log_uniform_prob)
-            self._unobs = math.log(unobs_prob)
-        else:
-            uniform_prob = (1.0 - unobs_prob) / vocab_size
-            self._prob = dict.fromkeys(freqdist, uniform_prob)
-            self._unobs = unobs_prob
+        return dict.fromkeys(freqdist, uniform_prob), unobs_prob
 
 
 class Random(ScoringMethod):
@@ -141,7 +116,7 @@ class Random(ScoringMethod):
         for comparison. It is not a smoothing method in any meaningful sense.
     """
 
-    __slots__ = ()
+    __slots__ = ("seed",)
 
     def __init__(
         self,
@@ -151,48 +126,41 @@ class Random(ScoringMethod):
         seed: int | None = None,
     ) -> None:
         """Initialize Random distribution."""
-        config = RandomConfig(unobs_prob=unobs_prob, logprob=logprob, seed=seed)
+        config = ScoringMethodConfig(unobs_prob=unobs_prob, logprob=logprob)
         super().__init__(config)
+        self.seed = seed
         self.name = "Random"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute random probabilities based on randomized counts.
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Draw a random count per element, then normalize.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Original frequency distribution used to determine count range
+        Args:
+            freqdist: Frequency distribution used to determine the count range.
+
+        Returns:
+            The randomized probability of each element, and the reserved mass.
         """
         unobs_prob = self.config.unobs_prob or 0.0
 
-        # Generate random counts within the observed range
         if not freqdist:
-            return  # Handle empty distribution
+            return {}, unobs_prob
 
         min_count, max_count = min(freqdist.values()), max(freqdist.values())
-        random.seed(self.config.seed)  # type: ignore
+        rng = random.Random(self.seed)
 
         # Ensure minimum count is at least 1 to avoid zero probabilities
         min_count = max(min_count, 1)
-        random_counts = {elem: random.randint(min_count, max_count) for elem in freqdist}
+        random_counts = {elem: rng.randint(min_count, max_count) for elem in freqdist}
         total_random_counts = sum(random_counts.values())
 
-        if self.logprob:
-            unobs_prob = max(unobs_prob, MIN_PROBABILITY)  # Avoid domain errors
-            available_mass = 1.0 - unobs_prob
-            self._prob = {
-                elem: math.log((count / total_random_counts) * available_mass)
-                for elem, count in random_counts.items()
-            }
-            self._unobs = math.log(unobs_prob)
-        else:
-            available_mass = 1.0 - unobs_prob
-            self._prob = {
-                elem: (count / total_random_counts) * available_mass
-                for elem, count in random_counts.items()
-            }
-            self._unobs = unobs_prob
+        available_mass = 1.0 - unobs_prob
+        table = {
+            elem: (count / total_random_counts) * available_mass
+            for elem, count in random_counts.items()
+        }
+
+        return table, unobs_prob
 
 
 class MLE(ScoringMethod):
@@ -251,34 +219,23 @@ class MLE(ScoringMethod):
         self.name = "MLE"
         self.fit(freqdist)
 
-    def _compute_probabilities(self, freqdist: FrequencyDistribution) -> None:
-        """Compute Maximum Likelihood probability estimates.
+    def _estimate(self, freqdist: FrequencyDistribution) -> Estimates:
+        """Divide each count by the total, scaled by the available mass.
 
-        Parameters
-        ----------
-        freqdist : FrequencyDistribution
-            Frequency distribution with element counts
+        Args:
+            freqdist: Frequency distribution with element counts.
+
+        Returns:
+            The relative frequency of each element, and the reserved mass.
         """
         unobs_prob = self.config.unobs_prob or 0.0
-
-        # Calculate total count for normalization
         total_count = sum(freqdist.values())
 
         if total_count == 0:
-            # Handle empty distribution edge case
-            return
+            # Handle empty distribution edge case: there is no mass anywhere.
+            return {}, 0.0
 
         available_mass = 1.0 - unobs_prob
+        table = {elem: (count / total_count) * available_mass for elem, count in freqdist.items()}
 
-        if self.logprob:
-            unobs_prob = max(unobs_prob, MIN_PROBABILITY)  # Avoid domain errors
-            self._prob = {
-                elem: math.log((count / total_count) * available_mass)
-                for elem, count in freqdist.items()
-            }
-            self._unobs = math.log(unobs_prob)
-        else:
-            self._prob = {
-                elem: (count / total_count) * available_mass for elem, count in freqdist.items()
-            }
-            self._unobs = unobs_prob
+        return table, unobs_prob

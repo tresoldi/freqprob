@@ -138,6 +138,34 @@ class CompressedFrequencyDistribution:
         normalized = quantized_count / self._max_quantized_value
         return int(self._original_count_range[0] + normalized * range_size)
 
+    @classmethod
+    def from_counts(
+        cls,
+        freqdist: FrequencyDistribution,
+        quantization_levels: int = 65536,
+        use_compression: bool = True,
+    ) -> "CompressedFrequencyDistribution":
+        """Build a compressed distribution from a mapping of counts.
+
+        Args:
+            freqdist: Mapping of elements to observed counts.
+            quantization_levels: Number of distinct count levels to keep.
+            use_compression: Whether to compress the stored element names.
+
+        Returns:
+            A compressed distribution holding those counts.
+
+        Examples:
+            >>> dist = CompressedFrequencyDistribution.from_counts({"a": 10, "b": 5})
+            >>> dist.get_count("a")
+            10
+            >>> dist.get_vocabulary_size()
+            2
+        """
+        compressed = cls(quantization_levels=quantization_levels, use_compression=use_compression)
+        compressed.update(freqdist)
+        return compressed
+
     def update(self, freqdist: FrequencyDistribution) -> None:
         """Update with a frequency distribution.
 
@@ -355,6 +383,32 @@ class SparseFrequencyDistribution:
         if use_sorted_storage:
             self._sorted_elements: list[tuple[int, Element]] = []  # (count, element)
             self._needs_resort = False
+
+    @classmethod
+    def from_counts(
+        cls,
+        freqdist: FrequencyDistribution,
+        default_count: int = 0,
+    ) -> "SparseFrequencyDistribution":
+        """Build a sparse distribution from a mapping of counts.
+
+        Args:
+            freqdist: Mapping of elements to observed counts.
+            default_count: Count reported for an element that is not stored.
+
+        Returns:
+            A sparse distribution holding those counts.
+
+        Examples:
+            >>> dist = SparseFrequencyDistribution.from_counts({"a": 10, "b": 5})
+            >>> dist.get_count("a")
+            10
+            >>> dist.get_count("unseen")
+            0
+        """
+        sparse = cls(default_count=default_count)
+        sparse.update(freqdist)
+        return sparse
 
     def update(self, freqdist: FrequencyDistribution) -> None:
         """Update with a frequency distribution.
@@ -702,93 +756,4 @@ class QuantizedProbabilityTable:
         }
 
 
-def memory_usage_comparison(
-    original_dict: dict[Element, int],
-    compressed_dist: CompressedFrequencyDistribution,
-    sparse_dist: SparseFrequencyDistribution,
-) -> dict[str, dict[str, int]]:
-    """Compare memory usage between different representations.
-
-    Parameters
-    ----------
-    original_dict : Dict[Element, int]
-        Original dictionary representation
-    compressed_dist : CompressedFrequencyDistribution
-        Compressed distribution
-    sparse_dist : SparseFrequencyDistribution
-        Sparse distribution
-
-    Returns:
-    -------
-    Dict[str, Dict[str, int]]
-        Memory usage comparison
-    """
-    # Calculate original dictionary size
-    original_size = sys.getsizeof(original_dict)
-    for k, v in original_dict.items():
-        original_size += sys.getsizeof(k) + sys.getsizeof(v)
-
-    return {
-        "original_dict": {"total": original_size},
-        "compressed": compressed_dist.get_memory_usage(),
-        "sparse": sparse_dist.get_memory_usage(),
-    }
-
-
 # Utility functions for creating memory-efficient representations
-
-
-def create_compressed_distribution(
-    freqdist: FrequencyDistribution,
-    quantization_levels: int | None = None,
-    use_compression: bool = True,
-) -> CompressedFrequencyDistribution:
-    """Create a compressed frequency distribution from a regular one.
-
-    Args:
-        freqdist: Original frequency distribution.
-        quantization_levels: Number of quantization levels for compression, or
-            ``None`` for exact counts. Defaults to ``None``.
-        use_compression: Whether to use data compression when serializing.
-            Defaults to ``True``.
-
-    Returns:
-        A compressed distribution populated from ``freqdist``.
-
-    Examples:
-        >>> dist = create_compressed_distribution({"a": 10, "b": 5})
-        >>> dist.get_count("a")
-        10
-        >>> dist.get_vocabulary_size()
-        2
-    """
-    compressed = CompressedFrequencyDistribution(
-        quantization_levels=quantization_levels, use_compression=use_compression
-    )
-    compressed.update(freqdist)
-    return compressed
-
-
-def create_sparse_distribution(
-    freqdist: FrequencyDistribution, default_count: int = 0
-) -> SparseFrequencyDistribution:
-    """Create a sparse frequency distribution from a regular one.
-
-    Args:
-        freqdist: Original frequency distribution.
-        default_count: Default count for unobserved elements. Defaults to
-            ``0``.
-
-    Returns:
-        A sparse distribution populated from ``freqdist``.
-
-    Examples:
-        >>> dist = create_sparse_distribution({"a": 10, "b": 5})
-        >>> dist.get_count("a")
-        10
-        >>> dist.get_count("unseen")
-        0
-    """
-    sparse = SparseFrequencyDistribution(default_count=default_count)
-    sparse.update(freqdist)
-    return sparse

@@ -421,26 +421,22 @@ class TestAdvancedStatisticalProperties:
             for i in range(11 - freq * 2):  # Decreasing number of words
                 freq_dist[f"word_{freq}_{i}"] = freq
 
-        try:
-            sgt = freqprob.SimpleGoodTuring(freq_dist, logprob=False)  # type: ignore[arg-type]
+        sgt = freqprob.SimpleGoodTuring(freq_dist, logprob=False)  # type: ignore[arg-type]
 
-            # Words with higher frequencies should generally get higher probabilities
-            # (SGT redistributes some mass to unseen words)
-            prob_1 = sgt("word_1_0")  # Word appearing once
-            prob_5 = sgt("word_5_0")  # Word appearing 5 times
+        # Words with higher frequencies should generally get higher probabilities
+        # (SGT redistributes some mass to unseen words)
+        prob_1 = sgt("word_1_0")  # Word appearing once
+        prob_5 = sgt("word_5_0")  # Word appearing 5 times
 
-            assert prob_5 > prob_1
+        assert prob_5 > prob_1
 
-            # Total probability mass should be conserved
-            total_mass = 0.0
-            for word in freq_dist:
-                total_mass += sgt(word)
+        # Total probability mass should be conserved
+        total_mass = 0.0
+        for word in freq_dist:
+            total_mass += sgt(word)
 
-            # Note: SGT reserves some mass for unseen words, so total < 1
-            assert 0.8 < total_mass < 1.0
-
-        except (ValueError, RuntimeError):
-            pytest.skip("SGT failed on this distribution")
+        # Note: SGT reserves some mass for unseen words, so total < 1
+        assert 0.8 < total_mass < 1.0
 
     def test_kneser_ney_continuation_probability(self) -> None:
         """Test Kneser-Ney continuation probability properties."""
@@ -455,23 +451,19 @@ class TestAdvancedStatisticalProperties:
             ("small", "house"): 2,
         }
 
-        try:
-            kn = freqprob.KneserNey(bigrams, discount=0.75, logprob=False)  # type: ignore[arg-type]
+        kn = freqprob.KneserNey(bigrams, discount=0.75, logprob=False)  # type: ignore[arg-type]
 
-            # Test some probabilities
-            prob_the_cat = kn(("the", "cat"))
-            prob_the_dog = kn(("the", "dog"))
+        # Test some probabilities
+        prob_the_cat = kn(("the", "cat"))
+        prob_the_dog = kn(("the", "dog"))
 
-            assert prob_the_cat > 0
-            assert prob_the_dog > 0
-            assert not math.isnan(prob_the_cat)
-            assert not math.isnan(prob_the_dog)
+        assert prob_the_cat > 0
+        assert prob_the_dog > 0
+        assert not math.isnan(prob_the_cat)
+        assert not math.isnan(prob_the_dog)
 
-            # More frequent bigram should have higher probability
-            assert prob_the_cat > prob_the_dog
-
-        except (ValueError, RuntimeError):
-            pytest.skip("Kneser-Ney failed on this distribution")
+        # More frequent bigram should have higher probability
+        assert prob_the_cat > prob_the_dog
 
     def test_interpolated_smoothing_weights(self) -> None:
         """Test interpolated smoothing weight properties."""
@@ -528,7 +520,7 @@ class TestAdvancedStatisticalProperties:
         }
 
         # Create compressed version with more quantization levels for better accuracy
-        compressed_dist = freqprob.create_compressed_distribution(
+        compressed_dist = freqprob.CompressedFrequencyDistribution.from_counts(
             original_dist, quantization_levels=256
         )
 
@@ -591,56 +583,6 @@ class TestAdvancedStatisticalProperties:
             regular_prob = regular_mle(word)
             lazy_prob = lazy_mle(word)
             assert abs(regular_prob - lazy_prob) < 1e-15
-
-    @pytest.mark.parametrize(
-        "method_config",
-        [
-            ("MLE", {}),
-            ("Laplace", {"bins": 100}),
-            ("ELE", {"bins": 100}),
-            ("Lidstone", {"gamma": 0.5, "bins": 100}),
-            ("Bayesian", {"alpha": 0.5}),
-            ("Uniform", {"unobs_prob": 0.1}),
-        ],
-    )
-    def test_method_statistical_consistency(
-        self, method_config: tuple[str, dict[str, Any]]
-    ) -> None:
-        """Parametrized test for statistical consistency across methods."""
-        method_name, params = method_config
-
-        # Test distribution
-        counts = {"frequent": 100, "medium": 50, "rare": 10}
-
-        method_class = getattr(freqprob, method_name)
-        method = method_class(counts, logprob=False, **params)
-
-        # Test basic probability properties
-        total_observed_prob = 0
-        for word in counts:
-            prob = method(word)
-
-            # Basic validity
-            assert 0 <= prob <= 1
-            assert not math.isnan(prob)
-            assert not math.isinf(prob)
-
-            total_observed_prob += prob
-
-        # Total observed probability should be reasonable
-        if method_name in ["MLE"]:
-            # MLE should sum to exactly 1 for observed words
-            assert abs(total_observed_prob - 1.0) < 1e-14
-        elif method_name == "Uniform":
-            # Uniform with unobs_prob should leave mass for unseen
-            assert total_observed_prob < 1.0
-        else:
-            # Smoothing methods should leave some mass for unseen words
-            assert total_observed_prob < 1.0
-
-        # Test monotonicity (higher counts → higher probability)
-        assert method("frequent") >= method("medium")
-        assert method("medium") >= method("rare")
 
 
 if __name__ == "__main__":

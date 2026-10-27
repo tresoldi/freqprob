@@ -44,25 +44,34 @@ class VectorizedScorer:
         self._element_cache: dict[Any, int] = {}
         self._prob_array: np.ndarray[Any, Any] = np.array([])
         self._default_prob: float = 0.0
+        self._indexed_revision: int | None = None
         self._build_lookup_arrays()
 
     def _build_lookup_arrays(self) -> None:
-        """Build lookup arrays for fast vectorized access."""
-        if hasattr(self.scorer, "_prob") and self.scorer._prob:
-            # Create element to index mapping
-            elements = list(self.scorer._prob.keys())
+        """Build lookup arrays for fast vectorized access.
+
+        The index is derived entirely from the scorer's public interface
+        (:meth:`~freqprob.base.ScoringMethod.support`,
+        :meth:`~freqprob.base.ScoringMethod.predict` and
+        :meth:`~freqprob.base.ScoringMethod.unobserved_score`), so wrapping a
+        lazy scorer forces the estimates it has not computed yet instead of
+        reading an empty table.
+        """
+        elements = list(self.scorer.support())
+        if elements:
             self._element_cache = {elem: idx for idx, elem in enumerate(elements)}
-
-            # Create probability array
-            probs = [self.scorer._prob[elem] for elem in elements]
-            self._prob_array = np.array(probs, dtype=np.float64)
-
-            # Store default probability for unseen elements
-            self._default_prob = float(self.scorer._unobs)
+            self._prob_array = np.array(self.scorer.predict(elements), dtype=np.float64)
         else:
             self._element_cache = {}
             self._prob_array = np.array([])
-            self._default_prob = 0.0
+
+        self._default_prob = float(self.scorer.unobserved_score())
+        self._indexed_revision = self.scorer.revision
+
+    def _refresh_if_stale(self) -> None:
+        """Rebuild the index if the wrapped scorer has changed since it was built."""
+        if self._indexed_revision != self.scorer.revision:
+            self._build_lookup_arrays()
 
     def score_batch(
         self, elements: Sequence[Element] | np.ndarray[Any, Any]
@@ -86,6 +95,8 @@ class VectorizedScorer:
         if isinstance(elements, np.ndarray):
             elements = elements.tolist()
 
+        self._refresh_if_stale()
+
         # Convert elements to indices, using -1 for unknown elements
         indices = np.array([self._element_cache.get(elem, -1) for elem in elements], dtype=np.int32)
 
@@ -100,21 +111,6 @@ class VectorizedScorer:
 
         return result
 
-    def score_parallel(
-        self, element_batches: Sequence[Sequence[Element]]
-    ) -> list[np.ndarray[Any, Any]]:
-        """Score multiple batches in parallel (when available).
-
-        Args:
-            element_batches: List of element batches to score.
-
-        Returns:
-            List of score arrays, one per input batch.
-        """
-        # For now, this is a sequential implementation
-        # In the future, could use multiprocessing or threading
-        return [self.score_batch(batch) for batch in element_batches]
-
     def score_matrix(self, elements_2d: Sequence[Sequence[Element]]) -> np.ndarray[Any, Any]:
         """Score a 2D array of elements, returning a matrix of scores.
 
@@ -128,6 +124,8 @@ class VectorizedScorer:
         """
         if not elements_2d:
             return np.array([])
+
+        self._refresh_if_stale()
 
         # Find maximum row length for padding
         max_length = max(len(row) for row in elements_2d)
@@ -152,6 +150,8 @@ class VectorizedScorer:
             A tuple of ``(elements, scores)`` for the top-k elements, ordered
             from highest to lowest score.
         """
+        self._refresh_if_stale()
+
         if len(self._prob_array) == 0:
             return [], np.array([])
 
@@ -192,27 +192,6 @@ class VectorizedScorer:
             percentile_ranks[i] = rank
 
         return percentile_ranks
-
-
-def create_vectorized_batch_scorer(scorers: dict[str, ScoringMethod]) -> "BatchScorer":
-    """Create a batch scorer handling multiple scoring methods efficiently.
-
-    Args:
-        scorers: Mapping of scorer names to scoring methods.
-
-    Returns:
-        A `BatchScorer` wrapping the given scoring methods.
-
-    Examples:
-        >>> from freqprob import MLE
-        >>> batch_scorer = create_vectorized_batch_scorer(
-        ...     {"mle": MLE({"a": 3, "b": 2}, logprob=False)}
-        ... )
-        >>> scores = batch_scorer.score_batch(["a", "b"])
-        >>> [round(float(x), 4) for x in scores["mle"]]
-        [0.6, 0.4]
-    """
-    return BatchScorer(scorers)
 
 
 class BatchScorer:
