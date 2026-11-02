@@ -7,7 +7,9 @@ Covers ``AbsoluteDiscounting``, ``PitmanYor``, ``KatzBackoff``,
 
 import math
 
+import numpy as np
 import pytest
+from scipy.special import gammaln, polygamma, psi
 
 from freqprob import (
     AbsoluteDiscounting,
@@ -20,6 +22,7 @@ from freqprob import (
     sample_coverage,
 )
 from freqprob.base import Element, ScoringMethod
+from freqprob.metrics import _NSB_CHUNK, _nsb_alphabet_terms, _nsb_grid
 
 # Bigram data with a spread of low counts, suitable for every method here.
 BIGRAM_DATA: dict[Element, int] = {
@@ -274,3 +277,80 @@ def test_nsb_entropy_rejects_too_few_bins() -> None:
     too_few: dict[Element, int] = {"a": 1, "b": 1, "c": 1}
     with pytest.raises(ValueError, match="bins"):
         nsb_entropy(too_few, bins=2)
+
+
+def _nsb_entropy_per_type(freqdist: dict[Element, int], bins: int | None = None) -> float:
+    """The original NSB implementation: one pass over the grid per observed type.
+
+    Kept verbatim as an independent reference for the grouped, chunked
+    implementation in ``freqprob.metrics``.
+    """
+    counts = [int(count) for count in freqdist.values() if count > 0]
+    n_observed_types = len(counts)
+    if bins is None:
+        bins = n_observed_types
+    total = sum(counts)
+    if total == 0 or bins <= 1:
+        return 0.0
+
+    k, n = float(bins), float(total)
+    a = np.geomspace(1e-8, 1e8, 6000)
+    ka = k * a
+    log_evidence = gammaln(ka) - gammaln(n + ka)
+    for count in counts:
+        log_evidence = log_evidence + gammaln(count + a) - gammaln(a)
+    jacobian = np.clip(k * polygamma(1, ka + 1.0) - polygamma(1, a + 1.0), 0.0, None)
+    denom = n + ka
+    observed_term = np.zeros_like(a)
+    for count in counts:
+        observed_term = observed_term + (count + a) * psi(count + a + 1.0)
+    unobserved_term = (k - n_observed_types) * a * psi(a + 1.0)
+    mean_entropy = psi(denom + 1.0) - (observed_term + unobserved_term) / denom
+    with np.errstate(divide="ignore"):
+        log_weight = (
+            log_evidence + np.log(np.where(jacobian > 0, jacobian, 1.0)) + np.log(np.gradient(a))
+        )
+    log_weight = np.where(jacobian > 0, log_weight, -np.inf)
+    finite = np.isfinite(log_weight)
+    if not finite.any():
+        return 0.0
+    weight = np.where(finite, np.exp(log_weight - np.max(log_weight[finite])), 0.0)
+    normalizer = float(np.sum(weight))
+    return 0.0 if normalizer <= 0.0 else float(np.sum(weight * mean_entropy) / normalizer)
+
+
+def test_nsb_entropy_matches_the_per_type_reference() -> None:
+    """Grouping equal counts and chunking only reorders the floating-point sums."""
+    rng = np.random.default_rng(20261102)
+    cases: list[tuple[dict[Element, int], int | None]] = []
+    for _ in range(60):
+        n_types = int(rng.integers(1, 80))
+        counts = rng.geometric(rng.uniform(0.05, 0.9), size=n_types)
+        freqdist: dict[Element, int] = {i: int(c) for i, c in enumerate(counts)}
+        cases.append((freqdist, None))
+        cases.append((freqdist, n_types + int(rng.integers(1, 60))))
+    # More distinct counts than one chunk holds, so several chunks are summed.
+    many_distinct: dict[Element, int] = {i: i + 1 for i in range(3 * _NSB_CHUNK + 7)}
+    cases.append((many_distinct, None))
+    cases.append((many_distinct, len(many_distinct) + 50))
+    # Edge cases: singletons, a dominant type, and a single observed type.
+    cases.append(({"a": 1, "b": 1, "c": 1}, None))
+    cases.append(({"a": 10000, "b": 1, "c": 1}, 10))
+    cases.append(({"a": 5}, 4))
+
+    for freqdist, bins in cases:
+        expected = _nsb_entropy_per_type(freqdist, bins)
+        assert nsb_entropy(freqdist, bins=bins) == pytest.approx(expected, rel=1e-10, abs=1e-12), (
+            bins,
+            freqdist,
+        )
+
+
+def test_nsb_cached_terms_are_shared_and_read_only() -> None:
+    """The cached grid terms are shared across calls, so callers must not be able to mutate them."""
+    grid, alphabet = _nsb_grid(), _nsb_alphabet_terms(7.0)
+    assert grid is _nsb_grid()
+    assert alphabet is _nsb_alphabet_terms(7.0)
+    for term in (*grid, *alphabet):
+        with pytest.raises(ValueError, match="read-only"):
+            term[0] = 0.0
