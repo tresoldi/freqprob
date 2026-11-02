@@ -32,10 +32,10 @@ from freqprob import (
     clear_all_caches,
     get_cache_stats,
 )
-from freqprob.base import ScoringMethodConfig
+from freqprob.base import Element, ScoringMethodConfig
 
-UNIGRAMS = {"a": 8, "b": 5, "c": 3, "d": 2, "e": 1, "f": 1}
-BIGRAMS = {
+UNIGRAMS: dict[Element, int] = {"a": 8, "b": 5, "c": 3, "d": 2, "e": 1, "f": 1}
+BIGRAMS: dict[Element, int] = {
     ("the", "cat"): 5,
     ("the", "dog"): 3,
     ("a", "cat"): 2,
@@ -43,8 +43,8 @@ BIGRAMS = {
     ("big", "cat"): 1,
     ("small", "dog"): 1,
 }
-TRIGRAMS = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
-LOW_ORDER = {("big", "cat"): 5, ("big", "dog"): 3}
+TRIGRAMS: dict[Element, int] = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
+LOW_ORDER: dict[Element, int] = {("big", "cat"): 5, ("big", "dog"): 3}
 
 
 class TestParametersLiveOnTheEstimator:

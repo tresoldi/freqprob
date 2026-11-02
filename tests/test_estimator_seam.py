@@ -20,6 +20,8 @@ The interface these tests exercise is ``support()`` / ``unobserved_score()`` /
 reaching past it.
 """
 
+from collections.abc import Mapping
+
 import pytest
 
 from freqprob import (
@@ -209,7 +211,7 @@ class TestAdaptersUseOnlyTheInterface:
         class MinimalScorer(ScoringMethod):
             """An estimator exposing nothing beyond the interface."""
 
-            def _estimate(self, freqdist: dict[Element, int]) -> Estimates:
+            def _estimate(self, freqdist: Mapping[Element, int]) -> Estimates:
                 total = sum(freqdist.values())
                 table = {element: count / total for element, count in freqdist.items()}
                 return table, 0.0
