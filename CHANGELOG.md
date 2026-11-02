@@ -48,6 +48,11 @@ package promises.
 - An empty distribution scored by a log-scorer returns `log(1e-10)` rather than
   the raw `1e-10`, which as a log-probability meant `p == 1.0`.
 - `SimpleGoodTuring` validates its `p_value`.
+- `chao_shen_entropy` no longer returns `0.0` when every observation is a
+  singleton. Zero coverage used to short-circuit the estimate, placing it below
+  even the plug-in entropy in exactly the undersampled regime the estimator is
+  for; it now takes the singleton count as `N - 1`, as in Chao and Shen (2003)
+  and R's `entropy::entropy.ChaoShen`.
 
 ### Removed
 
