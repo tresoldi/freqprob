@@ -71,6 +71,8 @@ dev = [
     # versions (unpinned ruff/mypy drift silently changes check results).
     "ruff==0.16.1",
     "mypy==2.4.1",
+    "ruff==0.17.3",
+    "mypy==2.3.0",
     "bandit[toml]>=1.7.0",
 
     # Bound the stub-bearing scientific deps for the type-check (quality) job,
