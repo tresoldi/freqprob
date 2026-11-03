@@ -56,6 +56,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   code, which the API reference renders.
 - The `docs` extra adds `mkdocs-redirects` and `matplotlib`.
 
+### Fixed
+
+- **`kl_divergence` counted repeated elements more than once.** It summed `P(w)
+  log(P(w)/Q(w))` over every element of `test_data`, so an element listed twice
+  contributed twice and the result was not a divergence between the two
+  distributions. It now sums over the distinct elements given. **This changes
+  results** when `test_data` has repeats.
+- **The n-gram methods returned `1e-10` instead of `0.0` with `logprob=False`**
+  for a bigram whose word never occurs in the data. `KneserNey`,
+  `ModifiedKneserNey`, `AbsoluteDiscounting`, `PitmanYor`, `KatzBackoff` and
+  `StupidBackoff` now return `0.0` in plain space, like the other estimators; in
+  log space they still return the floor, `log(1e-10)`.
+
 ## [0.8.1] - 2026-11-03
 
 Documentation and citation-metadata release, the first archived on Zenodo.

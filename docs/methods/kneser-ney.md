@@ -67,7 +67,8 @@ $0.75 \times 0.5 = 0.375$.
   (Chen & Goodman, 1999).
 - **Normalized**: the probabilities of the words after each context sum to one.
 - **Bigrams only.** Keys must be `(context, word)` pairs; other keys are
-  ignored. A word never seen in any bigram scores the floor $10^{-10}$.
+  ignored. A word never seen in any bigram scores 0 (the floor, in log
+  space).
 - **The discount** is typically between 0.5 and 0.8; 0.75 is a robust default.
   `ModifiedKneserNey` estimates its discounts and needs enough variety in the
   counts to do so.

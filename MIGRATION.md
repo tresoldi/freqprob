@@ -1,5 +1,26 @@
 # Migration Guide
 
+## Migrating to the next release (unreleased)
+
+### `kl_divergence` counts each element once
+
+`kl_divergence(p, q, elements)` now sums over the distinct elements given. If
+you passed a sample with repeats, such as a held-out corpus, earlier results
+weighted each element by how often it occurred, and are not comparable. Pass
+the support you want to compare the two models on; the result is the same as
+before when `elements` has no repeats.
+
+```python
+kl_divergence(p, q, ["a", "b", "a", "c"])
+# before: "a" counted twice
+# now:    the same as kl_divergence(p, q, ["a", "b", "c"])
+```
+
+### n-gram methods return 0.0 for unknown words in plain space
+
+With `logprob=False`, the n-gram methods now return `0.0`, not `1e-10`, for a
+bigram whose word never occurs in the data. Log-space scores are unchanged.
+
 ## Migrating to 0.8.0
 
 Version 0.8.0 shrinks the top-level `freqprob` namespace from 50 names to 41.

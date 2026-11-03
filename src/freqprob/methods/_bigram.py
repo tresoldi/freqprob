@@ -140,7 +140,8 @@ class BigramBackoff(ScoringMethod):
             context, word = element
             lower = self._lower.get(word, 0.0)
             weight = self._backoff.get(context, self._unknown_context_weight)
-            return self._score_of(max(weight * lower, MIN_PROBABILITY))
+            # `_score_of` floors a zero for a log-scorer; a plain scorer reports it as 0.0.
+            return self._score_of(weight * lower)
 
         return self._unobs
 

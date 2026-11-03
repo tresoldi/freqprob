@@ -19,11 +19,11 @@ $$
 
 `cross_entropy` returns $H$ in nats and `perplexity` returns $\mathrm{PP}$: the
 effective number of equally likely choices the model faces at each element.
-Lower is better for both. `kl_divergence(p, q, elements)` sums
-$P(w) \ln \big(P(w)/Q(w)\big)$ over the given elements: pass each element of
-the support once to obtain the Kullback–Leibler divergence of $Q$ from $P$ over
-that support (an element listed twice is counted twice). `model_comparison`
-returns the perplexity and cross-entropy of several models at once.
+Lower is better for both. `kl_divergence(p, q, elements)` is the
+Kullback–Leibler divergence of $Q$ from $P$ over the support formed by the
+distinct elements given, $\sum_w P(w) \ln \big(P(w)/Q(w)\big)$; an element
+listed more than once counts once. `model_comparison` returns the perplexity and
+cross-entropy of several models at once.
 
 ## Example
 
