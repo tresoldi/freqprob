@@ -397,7 +397,7 @@ p_approx_old = sgt("unseen_word") * estimated_unseen
 
 ### Fixed
 - Windows timing precision issue in MemoryProfiler for cross-platform compatibility
-- Type import organization in test files following Python best practices  
+- Type import organization in test files following Python best practices
 - Pre-commit hook issues with proper TYPE_CHECKING block usage
 
 ### Improved
