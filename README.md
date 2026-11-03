@@ -15,8 +15,8 @@ statistical tool: natural language processing is one use among many, alongside
 information retrieval, ecology, genomics and categorical data.
 
 If you use FreqProb in research, please cite it:
-[doi:10.5281/zenodo.23917394](https://doi.org/10.5281/zenodo.23917394)
-(version 0.8.1; see [Citation](#citation)).
+[doi:10.5281/zenodo.23917393](https://doi.org/10.5281/zenodo.23917393)
+(version 0.9.0; see [Citation](#citation)).
 
 ## Install
 
@@ -151,16 +151,14 @@ If you use FreqProb in published work, please cite the version you used:
   title   = {{FreqProb}: A {Python} library for probability smoothing and
              frequency-based estimation},
   year    = {2026},
-  version = {0.8.1},
-  doi     = {10.5281/zenodo.23917394},
+  version = {0.9.0},
+  doi     = {10.5281/zenodo.23917393},
   url     = {https://freqprob.tresoldi.org/}
 }
 ```
 
-The DOI [10.5281/zenodo.23917394](https://doi.org/10.5281/zenodo.23917394)
-identifies version 0.8.1;
-[10.5281/zenodo.23917393](https://doi.org/10.5281/zenodo.23917393) always
-resolves to the latest version. See
+The DOI [10.5281/zenodo.23917393](https://doi.org/10.5281/zenodo.23917393) always resolves to the latest
+version, and the Zenodo record lists the DOI of each version. See
 [How to cite](https://freqprob.tresoldi.org/citing/) for APA and classic BibTeX
 forms, and [References](https://freqprob.tresoldi.org/references/) for the papers
 behind each method. Citation metadata is also in
