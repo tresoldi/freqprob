@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-03
+
 Internal-architecture release. The estimators and their mathematics are
 unchanged except where noted; what changed is where the code lives and what the
 package promises.
@@ -31,6 +33,12 @@ package promises.
 - **Per-method config subclasses are gone.** A method's parameters are typed
   attributes on the estimator, validated in its constructor;
   `ScoringMethodConfig` keeps `unobs_prob`, `bins` and `logprob`.
+- **`nsb_entropy` is several times faster.** It sums over distinct counts
+  rather than over types (types with equal counts contribute identically),
+  computes the integration grid's fixed terms once, and reuses the terms that
+  depend only on the alphabet size across calls with the same `bins`. Results
+  are unchanged up to floating-point rounding; working memory stays bounded for
+  inputs with many distinct counts.
 
 ### Fixed
 
@@ -48,6 +56,11 @@ package promises.
 - An empty distribution scored by a log-scorer returns `log(1e-10)` rather than
   the raw `1e-10`, which as a log-probability meant `p == 1.0`.
 - `SimpleGoodTuring` validates its `p_value`.
+- `chao_shen_entropy` no longer returns `0.0` when every observation is a
+  singleton. Zero coverage used to short-circuit the estimate, placing it below
+  even the plug-in entropy in exactly the undersampled regime the estimator is
+  for; it now takes the singleton count as `N - 1`, as in Chao and Shen (2003)
+  and R's `entropy::entropy.ChaoShen`.
 
 ### Removed
 

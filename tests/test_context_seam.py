@@ -27,6 +27,7 @@ from freqprob import (
     PitmanYor,
     StupidBackoff,
 )
+from freqprob.base import Element
 from freqprob.methods._bigram import (
     BigramBackoff,
     continuation_probs,
@@ -34,7 +35,7 @@ from freqprob.methods._bigram import (
 )
 from freqprob.methods.interpolated import lower_order_context
 
-BIGRAMS = {
+BIGRAMS: dict[Element, int] = {
     ("the", "cat"): 5,
     ("the", "dog"): 3,
     ("a", "cat"): 2,
@@ -45,7 +46,7 @@ BIGRAMS = {
 
 # Contexts with markedly different weights: 'the' is observed 8 times over two
 # words, 'big' just once. 'bird' is a known word that follows neither.
-UNEVEN_CONTEXTS = {
+UNEVEN_CONTEXTS: dict[Element, int] = {
     ("the", "cat"): 5,
     ("the", "dog"): 3,
     ("a", "cat"): 2,
@@ -161,7 +162,7 @@ class TestKneserNeyIsAbsoluteDiscountingOverContinuations:
         """The property that makes Kneser-Ney worth its complexity."""
         # 'diverse' follows five different contexts once each; 'narrow' follows
         # one context ten times.
-        data = {
+        data: dict[Element, int] = {
             ("c1", "diverse"): 1,
             ("c2", "diverse"): 1,
             ("c3", "diverse"): 1,
@@ -209,9 +210,9 @@ class TestExtractBigramStatsIsTheOnlyExtractor:
         """A distribution may mix bigrams with other bookkeeping entries."""
         clean = factory()  # type: ignore[operator]
 
-        polluted_data = {**BIGRAMS, "a-string-key": 7, ("a", "b", "c"): 3}
+        polluted_data: dict[Element, int] = {**BIGRAMS, "a-string-key": 7, ("a", "b", "c"): 3}
         polluted = clean.__class__.__new__(clean.__class__)
-        polluted.__init__(polluted_data, logprob=False)  # type: ignore[misc]
+        polluted.__init__(polluted_data, logprob=False)
 
         for bigram in BIGRAMS:
             assert polluted(bigram) == pytest.approx(clean(bigram))
@@ -248,8 +249,8 @@ class TestInterpolationFamilyContext:
 
     def test_interpolated_uses_the_shared_slice(self) -> None:
         """The estimator's own accessor and the shared function agree."""
-        trigrams = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
-        bigrams = {("big", "cat"): 5, ("big", "dog"): 3}
+        trigrams: dict[Element, int] = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
+        bigrams: dict[Element, int] = {("big", "cat"): 5, ("big", "dog"): 3}
         interp = Interpolated(trigrams, bigrams, lambda_weight=0.7, logprob=False)
 
         for ngram in trigrams:
@@ -257,8 +258,8 @@ class TestInterpolationFamilyContext:
 
     def test_scoring_an_unseen_ngram_needs_no_rescan(self) -> None:
         """The low-order model is built once at fit time, then looked up."""
-        trigrams = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
-        bigrams = {("big", "cat"): 5, ("big", "dog"): 3, ("small", "cat"): 2}
+        trigrams: dict[Element, int] = {("the", "big", "cat"): 3, ("a", "big", "dog"): 2}
+        bigrams: dict[Element, int] = {("big", "cat"): 5, ("big", "dog"): 3, ("small", "cat"): 2}
         interp = Interpolated(trigrams, bigrams, lambda_weight=0.7, logprob=False)
 
         # 0.3 * P_low(('big', 'cat')) = 0.3 * 5/10
