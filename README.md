@@ -110,7 +110,7 @@ If you use FreqProb in published work, please cite the version you used:
   title   = {{FreqProb}: A {Python} library for probability smoothing and
              frequency-based estimation},
   year    = {2026},
-  version = {0.8.0},
+  version = {0.8.1},
   url     = {https://freqprob.tresoldi.org/}
 }
 ```
