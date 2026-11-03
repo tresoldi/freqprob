@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>freqprob — frequency-based probability estimation</title>
+<meta name="description" content="A small, well-tested Python library that turns frequency counts into smoothed probability estimates, with consistent handling of unobserved elements.">
+<link rel="canonical" href="https://freqprob.tresoldi.org/dev">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --ink-2: #474747;
+    --ink-3: #737373;
+    --rule: #d8d8d8;
+    --rule-2: #ececec;
+    --link: #234a86;
+    --code-bg: #f6f6f6;
+    --fig-ink: #1a1a1a;
+    --fig-grey: #8f8f8f;
+    --fig-light: #c9c9c9;
+    --serif: "Times New Roman", Times, Georgia, "Nimbus Roman", serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    --measure: 42rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #121212; --ink: #e6e6e6; --ink-2: #b2b2b2; --ink-3: #8a8a8a;
+      --rule: #2d2d2d; --rule-2: #242424; --link: #8fb0e6;
+      --code-bg: #1a1a1a; --fig-ink: #e6e6e6; --fig-grey: #969696; --fig-light: #575757;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--serif); font-size: 18px; line-height: 1.55;
+    text-rendering: optimizeLegibility;
+  }
+  .page { max-width: var(--measure); margin: 0 auto; padding: 0 26px 80px; }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+
+  header.mast { padding: 60px 0 22px; border-bottom: 1px solid var(--ink); }
+  .title { font-size: 1.9rem; font-weight: 700; margin: 0 0 8px; }
+  .title .mono { font-family: var(--mono); font-weight: 600; letter-spacing: -0.02em; }
+  .dek { font-size: 1.05rem; color: var(--ink-2); margin: 0 0 18px; max-width: 34em; }
+  .meta { font-size: 0.9rem; color: var(--ink-3); }
+  .meta a { color: var(--ink-2); }
+  .meta .sep { padding: 0 6px; color: var(--rule); }
+
+  main > section { padding: 26px 0; border-bottom: 1px solid var(--rule-2); }
+  main > section:last-of-type { border-bottom: 0; }
+  h2 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin: 0 0 12px; }
+  p { margin: 0 0 14px; } p:last-child { margin-bottom: 0; }
+  .lead { font-size: 1.08rem; } .lead b { font-weight: 700; }
+
+  code { font-family: var(--mono); font-size: 0.84em; }
+  pre {
+    margin: 4px 0 0; background: var(--code-bg); border: 1px solid var(--rule);
+    padding: 14px 16px; overflow-x: auto; font-family: var(--mono);
+    font-size: 13.5px; line-height: 1.65; color: var(--ink);
+  }
+  pre.install { padding: 10px 14px; }
+  .c-com { color: var(--ink-3); }
+  .after-code { font-size: 0.96rem; color: var(--ink-2); margin-top: 12px; }
+
+  figure { margin: 4px 0 0; }
+  .fig-frame { border: 1px solid var(--rule); background: var(--paper); padding: 12px 14px 6px; }
+  canvas { width: 100%; height: 190px; display: block; }
+  .fig-legend { font-size: 0.8rem; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--rule-2); }
+  .fig-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .fig-legend i { width: 14px; height: 10px; display: inline-block; border: 1px solid var(--fig-ink); }
+  .fig-legend i.solid { background: var(--fig-grey); border-color: var(--fig-grey); }
+  .fig-legend i.line { height: 0; border: 0; border-top: 2px solid var(--fig-ink); }
+  .fig-legend i.open { background: var(--paper); border: 1px dashed var(--fig-ink); }
+  figcaption { font-size: 0.9rem; color: var(--ink-2); line-height: 1.5; margin-top: 10px; }
+  figcaption b { font-weight: 700; color: var(--ink); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  thead th { font-size: 0.82rem; color: var(--ink-2); font-weight: 700; text-align: left; padding: 0 14px 7px 0; border-bottom: 1px solid var(--ink); }
+  tbody td { padding: 8px 14px 8px 0; border-bottom: 1px solid var(--rule-2); vertical-align: baseline; }
+  tbody tr:last-child td { border-bottom: 1px solid var(--ink); }
+  td.m { font-family: var(--mono); font-size: 0.82rem; color: var(--ink); white-space: nowrap; }
+  td.k { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-3); white-space: nowrap; }
+  .tbl-scroll { overflow-x: auto; }
+
+  ul.plain { margin: 0; padding: 0; list-style: none; }
+  ul.plain li { padding: 6px 0; border-bottom: 1px solid var(--rule-2); }
+  ul.plain li:last-child { border-bottom: 0; }
+  ul.plain b { font-weight: 700; } ul.plain .d { color: var(--ink-2); }
+
+  .links-row { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 0.98rem; }
+
+  nav.top { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 14px 0 0; font-size: 0.95rem; }
+  nav.top a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  nav.top a:hover { border-bottom-color: var(--link); color: var(--link); }
+
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .cards { grid-template-columns: 1fr; } }
+  a.card { display: block; border: 1px solid var(--rule); padding: 12px 14px; color: var(--ink); text-decoration: none; }
+  a.card:hover { border-color: var(--link); }
+  a.card b { display: block; font-size: 1rem; color: var(--link); margin-bottom: 4px; }
+  a.card span { display: block; font-size: 0.9rem; color: var(--ink-2); line-height: 1.45; }
+
+  .mass { display: flex; height: 18px; margin: 10px 0 2px; font-family: var(--mono); font-size: 0.72rem; line-height: 18px; }
+  .mass .seen { background: var(--fig-light); color: var(--ink); padding-left: 6px; white-space: nowrap; overflow: hidden; }
+  .mass .unseen { border: 1px dashed var(--fig-ink); color: var(--ink-2); padding-left: 6px; white-space: nowrap; overflow: hidden; line-height: 16px; }
+
+  footer { padding-top: 24px; margin-top: 6px; border-top: 1px solid var(--ink); font-size: 0.85rem; color: var(--ink-3); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="mast">
+    <h1 class="title"><span class="mono">freqprob</span></h1>
+    <p class="dek">Frequency-based probability estimation with smoothing — a small,
+      well-tested Python library.</p>
+    <div class="meta">
+      v0.9.0<span class="sep">·</span><a href="https://doi.org/10.5281/zenodo.23917393">DOI 10.5281/zenodo.23917393</a><span class="sep">·</span>MIT<span class="sep">·</span>Python 3.10–3.12<span class="sep">·</span><a href="https://github.com/tresoldi/freqprob">GitHub</a><span class="sep">·</span><a href="https://pypi.org/project/freqprob/">PyPI</a>
+    </div>
+    <nav class="top" aria-label="Documentation">
+      <a href="./getting-started/tutorial/">Tutorial</a>
+      <a href="./concepts/estimators/">Concepts</a>
+      <a href="./methods/">Methods</a>
+      <a href="./evaluation/model-metrics/">Evaluation</a>
+      <a href="./how-to/">How-to guides</a>
+      <a href="./api/">API</a>
+      <a href="./references/">References</a>
+      <a href="./citing/">Cite</a>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <p class="lead">The central difficulty in working with frequency counts is the
+        unobserved: how much probability to assign to events that never appeared in
+        the data. FreqProb converts counts into <b>smoothed</b> probability estimates
+        that address this directly — reserving a principled share of mass for what was
+        not seen — and offers a range of classical smoothing methods, from Laplace and
+        Lidstone to Simple Good-Turing and Kneser-Ney, behind a single, consistent
+        interface.</p>
+    </section>
+
+    <section>
+      <div class="cards">
+        <a class="card" href="./getting-started/tutorial/"><b>Get started</b><span>A ten-minute tutorial, from raw text to smoothed probabilities, held-out evaluation and n-grams.</span></a>
+        <a class="card" href="./methods/"><b>Methods</b><span>What each estimator does, how it is defined, and when to use it.</span></a>
+        <a class="card" href="./how-to/"><b>How-to guides</b><span>Building counts, choosing bins, log space, scaling, persistence and worked examples by domain.</span></a>
+        <a class="card" href="./api/"><b>API reference</b><span>Every public class and function, generated from the source.</span></a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Installation</h2>
+      <pre class="install">pip install freqprob</pre>
+    </section>
+
+    <section id="quick-start">
+      <h2>Quick start</h2>
+<pre class="pycon"><span class="c-com">&gt;&gt;&gt;</span> import freqprob
+<span class="c-com">&gt;&gt;&gt;</span> counts = {"the": 100, "cat": 50, "dog": 30, "bird": 10}
+<span class="c-com">&gt;&gt;&gt;</span> freqprob.MLE(counts, logprob=False)("elephant")
+0.0
+<span class="c-com">&gt;&gt;&gt;</span> laplace = freqprob.Laplace(counts, bins=10_000,
+<span class="c-com">...</span>                            logprob=False)
+<span class="c-com">&gt;&gt;&gt;</span> round(laplace("cat"), 4)  <span class="c-com"># observed</span>
+0.005
+<span class="c-com">&gt;&gt;&gt;</span> round(laplace("elephant"), 4)  <span class="c-com"># unseen</span>
+0.0001</pre>
+      <p class="after-code">A raw relative-frequency estimate gives the unseen
+        <code>"elephant"</code> probability 0, which breaks any model that multiplies
+        probabilities or takes their logarithm. Smoothing reserves some mass for what
+        has not been seen yet; every estimator is built from counts and called the
+        same way, so swapping methods does not change the call site.</p>
+    </section>
+
+    <section>
+      <h2>The estimate</h2>
+      <figure>
+        <div class="fig-frame">
+          <canvas id="viz" width="720" height="210"></canvas>
+          <div class="mass" role="img" aria-label="Simple Good-Turing keeps 58% of the probability mass for observed words and reserves 42% for unseen words">
+            <span class="seen" style="width: 58%">observed words 58%</span>
+            <span class="unseen" style="width: 42%">unseen words 42%</span>
+          </div>
+          <div class="fig-legend">
+            <span><i class="solid"></i>relative frequency (MLE)</span>
+            <span><i class="line"></i>Simple Good–Turing estimate</span>
+            <span><i class="open"></i>mass reserved for the unseen</span>
+          </div>
+        </div>
+        <figcaption><b>Figure 1.</b> Computed with FreqProb on the 143 words of
+          <i>The Zen of Python</i> (<code>import this</code>): 85 distinct words, 60
+          of them seen only once. Bars show the relative frequency of the eleven words
+          seen at least three times; the line shows their Simple Good–Turing
+          estimates. Because so many words are singletons, the estimator infers that
+          many more remain unseen and moves 42% of the probability mass to them (strip
+          below), taking it mostly from the rarer observed words.</figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <h2>Methods</h2>
+      <div class="tbl-scroll">
+        <table>
+          <thead>
+            <tr><th>Estimator</th><th>Appropriate when</th><th>Parameter</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="m">MLE</td><td>relative frequencies are wanted, without smoothing</td><td class="k">—</td></tr>
+            <tr><td class="m">Laplace, Lidstone, ELE</td><td>simple additive smoothing suffices</td><td class="k">bins, gamma</td></tr>
+            <tr><td class="m">SimpleGoodTuring</td><td>the distribution is heavy-tailed with many rare types</td><td class="k">p_value</td></tr>
+            <tr><td class="m">WittenBell</td><td>a parameter-free discount tied to the number of distinct types is wanted</td><td class="k">bins</td></tr>
+            <tr><td class="m">KneserNey, ModifiedKneserNey</td><td>estimating an n-gram language model</td><td class="k">discount</td></tr>
+            <tr><td class="m">AbsoluteDiscounting, PitmanYor</td><td>bigram discounting with back-off to a unigram model</td><td class="k">discount, strength</td></tr>
+            <tr><td class="m">KatzBackoff, StupidBackoff</td><td>bigram back-off, normalised (Katz) or fast and unnormalised (Stupid)</td><td class="k">k, alpha</td></tr>
+            <tr><td class="m">Bayesian</td><td>a Dirichlet prior is assumed</td><td class="k">alpha</td></tr>
+            <tr><td class="m">Interpolated, JelinekMercer</td><td>a specific and a general model are combined, with a fixed or EM-fitted weight</td><td class="k">lambda_weight</td></tr>
+            <tr><td class="m">CertaintyDegree</td><td>mass is reserved by how fully the support has been observed (experimental)</td><td class="k">bins</td></tr>
+            <tr><td class="m">Uniform, Random</td><td>a non-informative baseline is needed</td><td class="k">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Beyond text</h2>
+      <p>The problem — estimating probabilities from counts, including for the
+        unobserved — recurs across fields. FreqProb is domain-neutral:</p>
+      <ul class="plain">
+        <li><b>Text.</b> <span class="d">n-gram and word-frequency models; term weighting.</span></li>
+        <li><b>Ecology.</b> <span class="d">species-abundance data and the classical unseen-species problem.</span></li>
+        <li><b>Genomics.</b> <span class="d">k-mer frequencies over the space of possible subsequences.</span></li>
+        <li><b>Categorical data.</b> <span class="d">smoothed category priors for features and event counts.</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Documentation</h2>
+      <div class="links-row">
+        <a href="./getting-started/tutorial/">Tutorial →</a>
+        <a href="./concepts/pitfalls/">Pitfalls →</a>
+        <a href="./methods/">Methods →</a>
+        <a href="./evaluation/model-metrics/">Evaluation →</a>
+        <a href="./api/">API Reference →</a>
+        <a href="./references/">References →</a>
+        <a href="./citing/">How to cite →</a>
+        <a href="https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md">Changelog →</a>
+        <a href="https://github.com/tresoldi/freqprob/blob/main/MIGRATION.md">Migration guide →</a>
+        <a href="https://github.com/tresoldi/freqprob">Source (GitHub) →</a>
+        <a href="https://pypi.org/project/freqprob/">Package (PyPI) →</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Related projects</h2>
+      <ul class="plain">
+        <li><b><a href="https://www.nltk.org/api/nltk.probability.html">nltk.probability</a>.</b> <span class="d">several of the same estimators (Laplace, Lidstone, ELE, Simple Good–Turing, Kneser–Ney, Witten–Bell) within a broader NLP toolkit; FreqProb is standalone, works on any frequency counts, and is tested against NLTK.</span></li>
+        <li><b><a href="https://asymcat.tresoldi.org/">ASymCat</a>.</b> <span class="d">uses FreqProb for smoothing and bias-corrected entropy in its directional measures of association between categorical variables.</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Citation</h2>
+      <p>Please cite the version you used. See
+        <a href="./citing/">How to cite</a> for APA and classic
+        BibTeX forms, and <a href="./references/">References</a>
+        for the papers behind each method.</p>
+<pre>@software{tresoldi_freqprob,
+  author  = {Tresoldi, Tiago},
+  title   = {{FreqProb}: A {Python} library for probability smoothing
+             and frequency-based estimation},
+  year    = {2026},
+  version = {0.9.0},
+  doi     = {10.5281/zenodo.23917393},
+  url     = {https://freqprob.tresoldi.org/}
+}</pre>
+    </section>
+  </main>
+
+  <footer>
+    <span>MIT License</span>
+    <span>© 2023–2026 Tiago Tresoldi</span>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var canvas = document.getElementById("viz");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+    function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+    // Word counts from The Zen of Python (lower-cased, [a-z']+ tokens); mle is
+    // count / 143 and sgt is SimpleGoodTuring(counts, logprob=False)(word), for
+    // the eleven words seen at least three times, rounded to four decimals.
+    var words = [
+      { word: "is", mle: 0.0699, sgt: 0.0582 },
+      { word: "better", mle: 0.0559, sgt: 0.0454 },
+      { word: "than", mle: 0.0559, sgt: 0.0454 },
+      { word: "the", mle: 0.0420, sgt: 0.0326 },
+      { word: "to", mle: 0.0350, sgt: 0.0263 },
+      { word: "although", mle: 0.0210, sgt: 0.0140 },
+      { word: "be", mle: 0.0210, sgt: 0.0140 },
+      { word: "idea", mle: 0.0210, sgt: 0.0140 },
+      { word: "never", mle: 0.0210, sgt: 0.0140 },
+      { word: "of", mle: 0.0210, sgt: 0.0140 },
+      { word: "one", mle: 0.0210, sgt: 0.0140 }
+    ];
+    var top = 0.07;
+
+    function dims() {
+      var ratio = window.devicePixelRatio || 1;
+      var w = canvas.clientWidth, h = canvas.clientHeight;
+      canvas.width = w * ratio; canvas.height = h * ratio;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { w: w, h: h };
+    }
+    function draw() {
+      var d = dims(), w = d.w, h = d.h;
+      ctx.clearRect(0, 0, w, h);
+      var fig = css("--fig-ink"), grey = css("--fig-grey"),
+          rule = css("--rule"), ink3 = css("--ink-3"), mono = css("--mono");
+      var padL = 34, padR = 4, padB = 46, padT = 10;
+      var plotH = h - padT - padB, plotW = w - padL - padR;
+      var n = words.length, slot = plotW / n, barW = slot * 0.55;
+      var base = padT + plotH, i;
+      function y(p) { return base - (p / top) * plotH; }
+
+      // axis ticks
+      ctx.font = "10px " + mono; ctx.fillStyle = ink3; ctx.textAlign = "right";
+      ctx.strokeStyle = rule; ctx.lineWidth = 1;
+      [0, 0.02, 0.04, 0.06].forEach(function (t) {
+        var ty = Math.round(y(t)) + 0.5;
+        ctx.beginPath(); ctx.moveTo(padL, ty); ctx.lineTo(w - padR, ty); ctx.stroke();
+        ctx.fillText(t.toFixed(2), padL - 4, ty + 3);
+      });
+
+      // relative frequencies: solid grey bars
+      ctx.fillStyle = grey;
+      for (i = 0; i < n; i++) {
+        var cx = padL + slot * (i + 0.5);
+        ctx.fillRect(cx - barW / 2, y(words[i].mle), barW, base - y(words[i].mle));
+      }
+
+      // Simple Good-Turing estimates: line with points
+      ctx.strokeStyle = fig; ctx.fillStyle = fig; ctx.lineWidth = 1.75; ctx.beginPath();
+      for (i = 0; i < n; i++) {
+        var px = padL + slot * (i + 0.5), py = y(words[i].sgt);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      for (i = 0; i < n; i++) {
+        ctx.beginPath(); ctx.arc(padL + slot * (i + 0.5), y(words[i].sgt), 2.5, 0, 2 * Math.PI); ctx.fill();
+      }
+
+      // word labels, rotated so they fit on narrow screens
+      ctx.fillStyle = ink3; ctx.textAlign = "right";
+      for (i = 0; i < n; i++) {
+        ctx.save();
+        ctx.translate(padL + slot * (i + 0.5) + 3, base + 8);
+        ctx.rotate(-Math.PI / 4);
+        ctx.fillText(words[i].word, 0, 0);
+        ctx.restore();
+      }
+    }
+    draw();
+    window.addEventListener("resize", draw);
+  })();
+</script>
+</body>
+</html>
