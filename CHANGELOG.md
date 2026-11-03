@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-03
+
+Restructured, fully tested and versioned documentation, and two fixes that
+change results: `kl_divergence` now sums over distinct elements, and the n-gram
+methods return `0.0` for unknown words with `logprob=False`. See `MIGRATION.md`.
+
 ### Added
 
 - Zenodo DOIs: 10.5281/zenodo.23917394 for version 0.8.1, and 10.5281/zenodo.23917393 for all versions. They are in

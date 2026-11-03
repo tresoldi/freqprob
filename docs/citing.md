@@ -31,8 +31,8 @@ Releases before 0.8.1 have no DOI; cite them by version number and URL.
 **APA**
 
 > Tresoldi, T. (2026). *FreqProb: A Python library for probability smoothing and
-> frequency-based estimation* (Version 0.8.1) [Computer software]. Zenodo.
-> https://doi.org/10.5281/zenodo.23917394
+> frequency-based estimation* (Version 0.9.0) [Computer software]. Zenodo.
+> https://doi.org/10.5281/zenodo.23917393
 
 **BibTeX** (biblatex, or any style that supports `@software`)
 
@@ -42,8 +42,8 @@ Releases before 0.8.1 have no DOI; cite them by version number and URL.
   title   = {{FreqProb}: A {Python} library for probability smoothing and
              frequency-based estimation},
   year    = {2026},
-  version = {0.8.1},
-  doi     = {10.5281/zenodo.23917394},
+  version = {0.9.0},
+  doi     = {10.5281/zenodo.23917393},
   url     = {https://freqprob.tresoldi.org/}
 }
 ```
@@ -57,9 +57,9 @@ templates)
   title        = {{FreqProb}: A {Python} library for probability smoothing and
                   frequency-based estimation},
   year         = {2026},
-  note         = {Version 0.8.1},
-  doi          = {10.5281/zenodo.23917394},
-  howpublished = {\url{https://doi.org/10.5281/zenodo.23917394}}
+  note         = {Version 0.9.0},
+  doi          = {10.5281/zenodo.23917393},
+  howpublished = {\url{https://doi.org/10.5281/zenodo.23917393}}
 }
 ```
 

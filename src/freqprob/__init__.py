@@ -13,7 +13,7 @@ still there, one import deeper, where its being infrastructure is visible:
 """
 
 # Version of the freqprob package
-__version__ = "0.8.1"
+__version__ = "0.9.0"
 __author__ = "Tiago Tresoldi"
 __email__ = "tiago.tresoldi@lingfil.uu.se"
 

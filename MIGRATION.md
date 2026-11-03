@@ -1,6 +1,6 @@
 # Migration Guide
 
-## Migrating to the next release (unreleased)
+## Migrating to 0.9.0
 
 ### `kl_divergence` counts each element once
 
