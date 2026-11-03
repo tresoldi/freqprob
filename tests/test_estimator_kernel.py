@@ -35,10 +35,10 @@ from freqprob import (
     WittenBell,
     clear_all_caches,
 )
-from freqprob.base import MIN_PROBABILITY, ScoringMethod
+from freqprob.base import MIN_PROBABILITY, Element, ScoringMethod
 
-UNIGRAMS = {"a": 8, "b": 5, "c": 3, "d": 2, "e": 1, "f": 1}
-BIGRAMS = {
+UNIGRAMS: dict[Element, int] = {"a": 8, "b": 5, "c": 3, "d": 2, "e": 1, "f": 1}
+BIGRAMS: dict[Element, int] = {
     ("the", "cat"): 5,
     ("the", "dog"): 3,
     ("a", "cat"): 2,

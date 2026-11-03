@@ -20,7 +20,7 @@ from typing import ClassVar
 import pytest
 from conftest import UNIGRAMS, UNSEEN, EstimatorCase
 
-from freqprob.base import ScoringMethod
+from freqprob.base import Element, ScoringMethod
 
 
 class TestScoresAreWellFormed:
@@ -127,7 +127,7 @@ class TestMassAccounting:
 class TestExtremeMagnitudes:
     """The contract holds on counts spanning six orders of magnitude."""
 
-    EXTREME: ClassVar[dict[str, int]] = {
+    EXTREME: ClassVar[dict[Element, int]] = {
         "very_frequent": 10**6,
         "frequent": 10**4,
         "medium": 10**2,

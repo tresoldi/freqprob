@@ -490,9 +490,7 @@ from a mapping of counts with `from_counts`.
 ```python
 import freqprob
 
-compact = freqprob.CompressedFrequencyDistribution.from_counts(
-    {"a": 100, "b": 50, "c": 1}
-)
+compact = freqprob.CompressedFrequencyDistribution.from_counts({"a": 100, "b": 50, "c": 1})
 assert compact.get_memory_usage()["total"] > 0
 ```
 
