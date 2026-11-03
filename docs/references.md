@@ -110,8 +110,8 @@ estimator, and `sample_coverage` is the Good–Turing estimate of sample coverag
 ## Methods without a separate reference
 
 `MLE`, `Uniform` and `Random` are standard baselines. `CertaintyDegree` is an
-experimental method with no published reference; its behaviour is documented in
-the [API Reference](reference.md).
+experimental method with no published reference; its behaviour is documented on
+its [method page](methods/certainty-degree.md).
 
 ## Software
 

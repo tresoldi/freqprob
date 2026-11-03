@@ -122,7 +122,7 @@ def cached_sgt_computation(
     """Cache Simple Good-Turing estimates.
 
     Wraps an ``_estimate`` implementation, keyed on the frequency distribution
-    and on :meth:`~freqprob.base.ScoringMethod._cache_key`. Simple Good-Turing
+    and on `freqprob.base.ScoringMethod._cache_key`. Simple Good-Turing
     also reports the total unseen mass, which is cached alongside the estimates
     so a cache hit reproduces it too.
 
@@ -161,7 +161,7 @@ def cached_computation(
     """Cache expensive estimates.
 
     Wraps an ``_estimate`` implementation, memoizing it on the frequency
-    distribution and on :meth:`~freqprob.base.ScoringMethod._cache_key`.
+    distribution and on `freqprob.base.ScoringMethod._cache_key`.
 
     Args:
         cache_instance: Cache to use. Defaults to the shared general cache.

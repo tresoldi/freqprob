@@ -354,7 +354,7 @@ class JelinekMercer(Interpolated):
     """Jelinek-Mercer smoothing with an EM-estimated interpolation weight.
 
     Jelinek-Mercer smoothing linearly interpolates a higher-order model with a
-    lower-order one, exactly as :class:`Interpolated` does, but chooses the
+    lower-order one, exactly as `Interpolated` does, but chooses the
     interpolation weight ``lambda`` by *deleted interpolation*: given a held-out
     distribution, the weight is fitted with the Expectation-Maximization
     algorithm to maximize the likelihood of that held-out data. Without held-out

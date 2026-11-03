@@ -89,7 +89,7 @@ class StreamingFrequencyDistribution:
     def __getstate__(self) -> dict[str, Any]:
         """Collect state for pickling, minus the lock.
 
-        A :class:`threading.RLock` cannot be pickled, and it carries no
+        A `threading.RLock` cannot be pickled, and it carries no
         information worth preserving: a restored distribution gets a fresh one.
         """
         state = self.__dict__.copy()

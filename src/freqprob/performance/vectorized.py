@@ -51,9 +51,9 @@ class VectorizedScorer:
         """Build lookup arrays for fast vectorized access.
 
         The index is derived entirely from the scorer's public interface
-        (:meth:`~freqprob.base.ScoringMethod.support`,
-        :meth:`~freqprob.base.ScoringMethod.predict` and
-        :meth:`~freqprob.base.ScoringMethod.unobserved_score`), so wrapping a
+        (`freqprob.base.ScoringMethod.support`,
+        `freqprob.base.ScoringMethod.predict` and
+        `freqprob.base.ScoringMethod.unobserved_score`), so wrapping a
         lazy scorer forces the estimates it has not computed yet instead of
         reading an empty table.
         """

@@ -55,6 +55,9 @@ test = [
 docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.24",
+    "mkdocs-redirects>=1.2",
+    # Draws the figures of the How-to guides when the site is built
+    "matplotlib",
 ]
 # All optional dependencies (runtime + development)
 all = [

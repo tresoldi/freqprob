@@ -79,7 +79,7 @@ def continuation_probs(context_types: dict[Element, set[Element]]) -> dict[Eleme
 
     Args:
         context_types: The distinct words following each context, as returned by
-            :func:`extract_bigram_stats`.
+            `extract_bigram_stats`.
 
     Returns:
         The continuation probability of each word, summing to ``1.0`` (empty if
@@ -100,9 +100,9 @@ def continuation_probs(context_types: dict[Element, set[Element]]) -> dict[Eleme
 class BigramBackoff(ScoringMethod):
     """Base class for bigram smoothers that back off to a unigram model.
 
-    Subclasses implement :meth:`_estimate_bigrams`, returning the probability of
+    Subclasses implement `_estimate_bigrams`, returning the probability of
     each observed bigram together with the mass reserved for a non-bigram query.
-    While doing so they record, through :meth:`_record_lower`, the lower-order
+    While doing so they record, through `_record_lower`, the lower-order
     (unigram) model, and set:
 
     - ``self._backoff``: a per-context back-off weight applied to the unigram
@@ -130,7 +130,7 @@ class BigramBackoff(ScoringMethod):
         Observed bigrams return their stored score. For an unseen bigram
         ``(context, word)`` the score is ``weight * P_lower(word)``, where the
         weight is the context's back-off weight (or
-        :attr:`_unknown_context_weight` when the context itself is unseen).
+        `_unknown_context_weight` when the context itself is unseen).
         """
         stored = self._prob.get(element)
         if stored is not None:
@@ -151,7 +151,7 @@ class BigramBackoff(ScoringMethod):
             freqdist: Mapping of ``(context, word)`` bigrams to counts.
 
         Returns:
-            Whatever :meth:`_estimate_bigrams` produces.
+            Whatever `_estimate_bigrams` produces.
         """
         self._lower = {}
         self._backoff = {}
