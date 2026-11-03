@@ -102,8 +102,8 @@ class TestTheSurfaceIsTheDomain:
         infrastructure = {
             name
             for name in exported
-            if inspect.getmodule(getattr(freqprob, name))
-            and "performance" in (inspect.getmodule(getattr(freqprob, name)).__name__ or "")
+            if (module := inspect.getmodule(getattr(freqprob, name))) is not None
+            and "performance" in module.__name__
         }
 
         assert len(infrastructure) < len(ESTIMATORS)

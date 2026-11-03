@@ -225,6 +225,25 @@ def test_chao_shen_matches_plugin_when_well_sampled() -> None:
     assert chao_shen_entropy(freqdist) == pytest.approx(math.log(3), abs=1e-3)
 
 
+@pytest.mark.parametrize("n_types", [2, 3, 10])
+def test_chao_shen_all_singletons_uses_reference_adjustment(n_types: int) -> None:
+    """All-singleton samples take ``n1 = N - 1`` instead of collapsing to zero.
+
+    Regression test: zero coverage used to short-circuit to an entropy of 0.0,
+    below even the plug-in estimate. The expected value is the reference
+    estimator evaluated by hand: with ``N`` singletons, ``C = 1 / N`` and every
+    type has ``C * p = 1 / N**2``.
+    """
+    freqdist: dict[Element, int] = {f"t{i}": 1 for i in range(n_types)}
+    p = 1 / n_types**2
+    expected = -n_types * p * math.log(p) / (1 - (1 - p) ** n_types)
+
+    estimate = chao_shen_entropy(freqdist)
+
+    assert estimate == pytest.approx(expected)
+    assert estimate > math.log(n_types)  # above the plug-in estimate
+
+
 # --------------------------------------------------------------------------- #
 # nsb_entropy
 # --------------------------------------------------------------------------- #

@@ -216,12 +216,18 @@ def chao_shen_entropy(freqdist: FrequencyDistribution) -> float:
     where ``p_i`` is the relative frequency of type ``i``, ``C`` the sample
     coverage (see :func:`sample_coverage`), and ``N`` the total count.
 
+    When every observation is a singleton the Good-Turing coverage is zero and
+    the estimate would collapse to ``0``. Following Chao and Shen (2003), and
+    reference implementations such as R's ``entropy::entropy.ChaoShen``, the
+    singleton count is then taken as ``N - 1``, which keeps the coverage at
+    ``1 / N``.
+
     Args:
         freqdist: Mapping of elements to observed counts.
 
     Returns:
         The estimated entropy in nats (natural log). Returns ``0.0`` for an
-        empty distribution or when coverage is zero (all singletons).
+        empty distribution.
 
     Examples:
         >>> from freqprob import chao_shen_entropy
@@ -236,9 +242,10 @@ def chao_shen_entropy(freqdist: FrequencyDistribution) -> float:
     if total == 0:
         return 0.0
     n1 = sum(1 for count in freqdist.values() if count == 1)
+    if n1 == total:
+        # All singletons: avoid a zero coverage (see the docstring).
+        n1 = total - 1
     coverage = 1.0 - n1 / total
-    if coverage <= 0.0:
-        return 0.0
 
     entropy = 0.0
     for count in freqdist.values():
