@@ -31,6 +31,12 @@ package promises.
 - **Per-method config subclasses are gone.** A method's parameters are typed
   attributes on the estimator, validated in its constructor;
   `ScoringMethodConfig` keeps `unobs_prob`, `bins` and `logprob`.
+- **`nsb_entropy` is several times faster.** It sums over distinct counts
+  rather than over types (types with equal counts contribute identically),
+  computes the integration grid's fixed terms once, and reuses the terms that
+  depend only on the alphabet size across calls with the same `bins`. Results
+  are unchanged up to floating-point rounding; working memory stays bounded for
+  inputs with many distinct counts.
 
 ### Fixed
 

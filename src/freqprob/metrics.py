@@ -7,6 +7,7 @@ Good-Turing estimate of observed mass) and the bias-corrected entropy estimators
 of the naive plug-in entropy when many types are rare or unobserved.
 """
 
+import functools
 import math
 from collections.abc import Iterable
 
@@ -261,6 +262,42 @@ def chao_shen_entropy(freqdist: FrequencyDistribution) -> float:
     return entropy
 
 
+# Distinct counts evaluated together in :func:`nsb_entropy`; bounds its working
+# memory to a few ``_NSB_CHUNK x grid`` arrays however many distinct counts the
+# input has.
+_NSB_CHUNK = 128
+
+
+@functools.cache
+def _nsb_grid() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Return the NSB integration grid over ``a`` and the terms that depend on it alone.
+
+    These are the same for every call of :func:`nsb_entropy`, so they are
+    computed once, on first use, and returned read-only: the grid ``a``,
+    ``gammaln(a)``, ``trigamma(a + 1)``, ``a * psi(a + 1)`` and the log grid
+    spacing.
+    """
+    a = np.geomspace(1e-8, 1e8, 6000)
+    terms = (a, gammaln(a), polygamma(1, a + 1.0), a * psi(a + 1.0), np.log(np.gradient(a)))
+    for term in terms:
+        term.setflags(write=False)
+    return terms
+
+
+@functools.lru_cache(maxsize=32)
+def _nsb_alphabet_terms(k: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return the NSB terms that depend only on the alphabet size ``k``.
+
+    ``k * a``, ``gammaln(k * a)`` and ``trigamma(k * a + 1)`` over the grid,
+    read-only. Repeated calls with one alphabet, the usual case, reuse them.
+    """
+    ka = k * _nsb_grid()[0]
+    terms = (ka, gammaln(ka), polygamma(1, ka + 1.0))
+    for term in terms:
+        term.setflags(write=False)
+    return terms
+
+
 def nsb_entropy(freqdist: FrequencyDistribution, bins: int | None = None) -> float:
     """Estimate Shannon entropy with the Nemenman-Shafee-Bialek estimator.
 
@@ -308,36 +345,44 @@ def nsb_entropy(freqdist: FrequencyDistribution, bins: int | None = None) -> flo
 
     k = float(bins)
     n = float(total)
-    observed = np.asarray(counts, dtype=float)
 
     # Integrate over the per-bin Dirichlet concentration parameter ``a`` on a
     # geometric grid, weighting each value by the evidence and the prior that
     # makes the a-priori mean entropy uniform.
-    a = np.geomspace(1e-8, 1e8, 6000)
-    ka = k * a
+    a, gammaln_a, trigamma_a1, a_psi_a1, log_spacing = _nsb_grid()
+    ka, gammaln_ka, trigamma_ka1 = _nsb_alphabet_terms(k)
+
+    # Types with equal counts contribute identically, so the per-type sums below
+    # run over the distinct counts, weighted by how many types share each and
+    # broadcast against the grid. Sparse samples repeat small counts heavily,
+    # which makes this far cheaper than one pass over the grid per type.
+    distinct, multiplicity = np.unique(np.asarray(counts, dtype=float), return_counts=True)
 
     # Log evidence (unnormalized): unobserved bins contribute nothing in log.
-    log_evidence = gammaln(ka) - gammaln(n + ka)
-    for count in observed:
-        log_evidence = log_evidence + gammaln(count + a) - gammaln(a)
+    log_evidence = gammaln_ka - gammaln(n + ka) - n_observed_types * gammaln_a
+    observed_term = np.zeros_like(a)
+    for start in range(0, len(distinct), _NSB_CHUNK):
+        count = distinct[start : start + _NSB_CHUNK, None]
+        types_with_count = multiplicity[start : start + _NSB_CHUNK, None]
+        count_a = count + a
+        log_evidence = log_evidence + np.sum(types_with_count * gammaln(count_a), axis=0)
+        observed_term = observed_term + np.sum(
+            types_with_count * count_a * psi(count_a + 1.0), axis=0
+        )
 
     # Prior Jacobian d(xi)/da, where xi(a) = psi(k a + 1) - psi(a + 1) is the
     # a-priori mean entropy; a flat prior on xi makes this the density in ``a``.
-    jacobian = k * polygamma(1, ka + 1.0) - polygamma(1, a + 1.0)
+    jacobian = k * trigamma_ka1 - trigamma_a1
     jacobian = np.clip(jacobian, 0.0, None)
 
     # Posterior mean entropy given ``a`` (Wolpert & Wolf, 1995).
     denom = n + ka
-    observed_term = np.zeros_like(a)
-    for count in observed:
-        observed_term = observed_term + (count + a) * psi(count + a + 1.0)
-    unobserved_term = (k - n_observed_types) * a * psi(a + 1.0)
+    unobserved_term = (k - n_observed_types) * a_psi_a1
     mean_entropy = psi(denom + 1.0) - (observed_term + unobserved_term) / denom
 
     # Combine in log space; weight = evidence * jacobian * grid spacing.
-    spacing = np.gradient(a)
     with np.errstate(divide="ignore"):
-        log_weight = log_evidence + np.log(np.where(jacobian > 0, jacobian, 1.0)) + np.log(spacing)
+        log_weight = log_evidence + np.log(np.where(jacobian > 0, jacobian, 1.0)) + log_spacing
     log_weight = np.where(jacobian > 0, log_weight, -np.inf)
 
     finite = np.isfinite(log_weight)
