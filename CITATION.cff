@@ -23,6 +23,14 @@ license: MIT
 repository-code: "https://github.com/tresoldi/freqprob"
 repository-artifact: "https://pypi.org/project/freqprob/"
 url: "https://freqprob.tresoldi.org/"
+doi: 10.5281/zenodo.23917393
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23917393
+    description: "Concept DOI for all versions of FreqProb; resolves to the latest release."
+  - type: doi
+    value: 10.5281/zenodo.23917394
+    description: "DOI of FreqProb version 0.8.1."
 keywords:
   - smoothing
   - probability estimation

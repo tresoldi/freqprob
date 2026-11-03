@@ -11,13 +11,28 @@ import freqprob
 print(freqprob.__version__)
 ```
 
+## DOIs
+
+Every release of FreqProb from 0.8.1 onwards is archived on
+[Zenodo](https://doi.org/10.5281/zenodo.23917393) with its own DOI:
+
+- **A specific version:** cite the DOI of the release you used, so readers get
+  exactly that code. Version 0.8.1 is
+  [10.5281/zenodo.23917394](https://doi.org/10.5281/zenodo.23917394). Later versions are listed under "Versions" on the
+  Zenodo record.
+- **All versions:** [10.5281/zenodo.23917393](https://doi.org/10.5281/zenodo.23917393) always resolves to the latest
+  release. Use it when you refer to FreqProb in general rather than to results
+  from a particular version.
+
+Releases before 0.8.1 have no DOI; cite them by version number and URL.
+
 ## Citing the software
 
 **APA**
 
 > Tresoldi, T. (2026). *FreqProb: A Python library for probability smoothing and
-> frequency-based estimation* (Version 0.8.1) [Computer software].
-> https://freqprob.tresoldi.org/
+> frequency-based estimation* (Version 0.8.1) [Computer software]. Zenodo.
+> https://doi.org/10.5281/zenodo.23917394
 
 **BibTeX** (biblatex, or any style that supports `@software`)
 
@@ -28,6 +43,7 @@ print(freqprob.__version__)
              frequency-based estimation},
   year    = {2026},
   version = {0.8.1},
+  doi     = {10.5281/zenodo.23917394},
   url     = {https://freqprob.tresoldi.org/}
 }
 ```
@@ -42,11 +58,12 @@ templates)
                   frequency-based estimation},
   year         = {2026},
   note         = {Version 0.8.1},
-  howpublished = {\url{https://freqprob.tresoldi.org/}}
+  doi          = {10.5281/zenodo.23917394},
+  howpublished = {\url{https://doi.org/10.5281/zenodo.23917394}}
 }
 ```
 
-Replace the version and year with those of the release you used. The citation
+Replace the version, year and DOI with those of the release you used. The citation
 metadata also lives in
 [`CITATION.cff`](https://github.com/tresoldi/freqprob/blob/main/CITATION.cff);
 GitHub's **Cite this repository** button on the repository page builds APA and
