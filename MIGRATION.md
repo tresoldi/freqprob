@@ -1,5 +1,54 @@
 # Migration Guide
 
+## Migrating to 0.8.0
+
+Version 0.8.0 shrinks the top-level `freqprob` namespace from 50 names to 41.
+Code that uses only the estimators, the entropy and evaluation functions, and
+the distribution classes needs no change.
+
+### Removed names and their replacements
+
+| Removed | Use instead |
+|---------|-------------|
+| `create_compressed_distribution(counts)` | `CompressedFrequencyDistribution.from_counts(counts)` |
+| `create_sparse_distribution(counts)` | `SparseFrequencyDistribution.from_counts(counts)` |
+| `create_vectorized_batch_scorer(scorers)` | `BatchScorer(scorers)` |
+| `LazyBatchScorer` | The scorer's own `predict()`, or `BatchScorer` |
+| `VectorizedScorer.score_parallel` | `VectorizedScorer.score_batch` (the old method ran sequentially anyway) |
+
+### Moved out of the top level
+
+These still exist; import them from their modules:
+
+```python
+from freqprob.performance.lazy import LazyScoringMethod
+from freqprob.performance.profiling import (
+    DistributionMemoryAnalyzer,
+    MemoryMonitor,
+    MemoryProfiler,
+)
+from freqprob.performance.streaming import StreamingDataProcessor
+```
+
+### Per-method config classes
+
+The per-method config subclasses (`KneserNeyConfig`, `BayesianConfig`, and so
+on) were never exported at the top level, and they are now gone. Pass a
+method's parameters to its constructor, as the top-level API always did.
+`ScoringMethodConfig` keeps `unobs_prob`, `bins` and `logprob`.
+
+### Results that change
+
+- **Kneser-Ney scores for unseen bigrams** now depend on the context's back-off
+  weight instead of one flat average, and a word absent from the data scores at
+  the floor.
+- **`chao_shen_entropy` on all-singleton samples** returns a positive estimate
+  instead of `0.0`.
+- **An empty distribution scored by a log-scorer** returns `log(1e-10)` instead
+  of `1e-10`.
+
+See the [CHANGELOG](CHANGELOG.md) for the full list of fixes.
+
 ## Migrating to 0.6.0
 
 Version 0.6.0 completes a multi-phase internal restructuring and introduces a
