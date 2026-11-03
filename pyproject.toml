@@ -10,10 +10,10 @@ readme = "README.md"
 license = "MIT"
 keywords = ["nlp", "smoothing", "frequency", "probability", "language-model"]
 authors = [
-    {name = "Tiago Tresoldi", email = "freqprob@tresoldi.org"},
+    {name = "Tiago Tresoldi", email = "tiago.tresoldi@lingfil.uu.se"},
 ]
 maintainers = [
-    {name = "Tiago Tresoldi", email = "freqprob@tresoldi.org"},
+    {name = "Tiago Tresoldi", email = "tiago.tresoldi@lingfil.uu.se"},
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -26,7 +26,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Text Processing :: Linguistic",
@@ -88,8 +87,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/tresoldi/freqprob"
-Documentation = "https://tresoldi.github.io/freqprob/"
+Homepage = "https://freqprob.tresoldi.org/"
+Documentation = "https://freqprob.tresoldi.org/"
 Repository = "https://github.com/tresoldi/freqprob.git"
 Issues = "https://github.com/tresoldi/freqprob/issues"
 Changelog = "https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md"

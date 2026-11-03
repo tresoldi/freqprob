@@ -97,20 +97,28 @@ and the bias-corrected entropy estimators `chao_shen_entropy` and `nsb_entropy`
   examples across text, ecology, genomics, and categorical data.
 - **[API Reference](https://freqprob.tresoldi.org/reference/)** — every
   public class and function, generated from the source with a runnable example.
+- **[References](https://freqprob.tresoldi.org/references/)** — the published
+  source of each method, with a BibTeX file.
 
 ## Citation
 
-If you use FreqProb in academic research, please cite:
+If you use FreqProb in published work, please cite the version you used:
 
 ```bibtex
-@software{tresoldi_freqprob_2026,
-  author = {Tresoldi, Tiago},
-  title = {FreqProb: A Python library for probability smoothing and frequency-based estimation},
-  url = {https://github.com/tresoldi/freqprob},
+@software{tresoldi_freqprob,
+  author  = {Tresoldi, Tiago},
+  title   = {{FreqProb}: A {Python} library for probability smoothing and
+             frequency-based estimation},
+  year    = {2026},
   version = {0.8.0},
-  year = {2026}
+  url     = {https://freqprob.tresoldi.org/}
 }
 ```
+
+See [How to cite](https://freqprob.tresoldi.org/citing/) for APA and classic
+BibTeX forms, and [References](https://freqprob.tresoldi.org/references/) for
+the papers behind each method. Citation metadata is also in
+[`CITATION.cff`](CITATION.cff).
 
 ## License
 

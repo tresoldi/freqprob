@@ -104,7 +104,8 @@ By data characteristics:
 | Sequence contexts (n-grams) | Any | `KneserNey` |
 | Any | You have a trusted background model | `Interpolated` |
 
-When-to-use, in one line each:
+When-to-use, in one line each (the [References](references.md) page gives the
+published source of each method):
 
 - **`MLE`** — a reference point; not for sparse data (zeros unseen events).
 - **`Laplace`** (add-one) — simple and robust, but over-smooths large vocabularies.
@@ -583,4 +584,6 @@ assert list(model.predict(["a", "b"])) == [model("a"), model("b")]
 
 - **[API Reference](reference.md)** — every public class and function, generated
   from the source, with a runnable example for each.
+- **[References](references.md)** — the published source of each method.
+- **[How to cite](citing.md)** — citing FreqProb and the methods you used.
 - **[Home](index.md)** — the one-minute overview and the method-selection table.

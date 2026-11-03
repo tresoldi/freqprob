@@ -15,7 +15,7 @@ still there, one import deeper, where its being infrastructure is visible:
 # Version of the freqprob package
 __version__ = "0.8.0"
 __author__ = "Tiago Tresoldi"
-__email__ = "freqprob@tresoldi.org"
+__email__ = "tiago.tresoldi@lingfil.uu.se"
 
 
 # Base type (useful for isinstance checks and type annotations)
