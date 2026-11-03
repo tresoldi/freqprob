@@ -13,19 +13,20 @@ repos:
       - id: check-merge-conflict
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.0
+    rev: v0.17.3
     hooks:
       # Linter (matches `ruff check .`)
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
       # Formatter (matches `ruff format --check .`)
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: mypy
         files: ^(src/freqprob|tests|scripts)/
         additional_dependencies:
-          - numpy
-          - scipy
+          # Same bounds as the `dev` extra, so the hook sees the stubs CI sees.
+          - numpy<2.6
+          - scipy<1.19
