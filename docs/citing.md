@@ -16,7 +16,7 @@ print(freqprob.__version__)
 **APA**
 
 > Tresoldi, T. (2026). *FreqProb: A Python library for probability smoothing and
-> frequency-based estimation* (Version 0.8.0) [Computer software].
+> frequency-based estimation* (Version 0.8.1) [Computer software].
 > https://freqprob.tresoldi.org/
 
 **BibTeX** (biblatex, or any style that supports `@software`)
@@ -27,7 +27,7 @@ print(freqprob.__version__)
   title   = {{FreqProb}: A {Python} library for probability smoothing and
              frequency-based estimation},
   year    = {2026},
-  version = {0.8.0},
+  version = {0.8.1},
   url     = {https://freqprob.tresoldi.org/}
 }
 ```
@@ -41,7 +41,7 @@ templates)
   title        = {{FreqProb}: A {Python} library for probability smoothing and
                   frequency-based estimation},
   year         = {2026},
-  note         = {Version 0.8.0},
+  note         = {Version 0.8.1},
   howpublished = {\url{https://freqprob.tresoldi.org/}}
 }
 ```
