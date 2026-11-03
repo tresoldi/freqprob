@@ -34,6 +34,8 @@ nav:
   - Home: index.md
   - User Guide: USER_GUIDE.md
   - API Reference: reference.md
+  - References: references.md
+  - How to cite: citing.md
 
 plugins:
   - search

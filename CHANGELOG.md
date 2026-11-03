@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **References** page on the documentation site, with the published source of
+  every method and a `references.bib` file.
+- **How to cite** page with APA and BibTeX (`@software` and `@misc`) entries.
+
+### Changed
+
+- Citation metadata: `CITATION.cff` now uses the same title as the README and
+  site ("…probability smoothing and frequency-based estimation"), adds an
+  ORCID iD, the Uppsala University affiliation, the PyPI artifact and the
+  documentation site as its URL. The maintainer contact returns to
+  `tiago.tresoldi@lingfil.uu.se` in `pyproject.toml`, the package metadata and
+  `SECURITY.md`, matching ASymCat.
+- PyPI project links now point to the documentation site
+  (`https://freqprob.tresoldi.org/`) instead of the retired GitHub Pages URL.
+- Dropped the `Implementation :: PyPy` classifier: CI tests CPython only.
+- README and home-page BibTeX entries now use a version-independent key and the
+  documentation URL.
+
 ## [0.8.0] - 2026-11-03
 
 Internal-architecture release. The estimators and their mathematics are
