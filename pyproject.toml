@@ -226,6 +226,9 @@ module = [
     "nltk.*",
     "sklearn.*",
     "hypothesis.*",
+    # MkDocs is a docs-only dependency, absent from the type-check environment;
+    # only the documentation build hook (scripts/docs_figures.py) imports it.
+    "mkdocs.*",
 ]
 ignore_missing_imports = true
 
