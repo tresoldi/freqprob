@@ -3,6 +3,7 @@
 [![CI](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml/badge.svg)](https://github.com/tresoldi/freqprob/actions/workflows/quality.yml)
 [![codecov](https://codecov.io/gh/tresoldi/freqprob/branch/main/graph/badge.svg)](https://codecov.io/gh/tresoldi/freqprob)
 [![Docs](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://freqprob.tresoldi.org/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23917393.svg)](https://doi.org/10.5281/zenodo.23917393)
 [![PyPI version](https://badge.fury.io/py/freqprob.svg)](https://badge.fury.io/py/freqprob)
 [![Python versions](https://img.shields.io/pypi/pyversions/freqprob.svg)](https://pypi.org/project/freqprob/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -111,10 +112,13 @@ If you use FreqProb in published work, please cite the version you used:
              frequency-based estimation},
   year    = {2026},
   version = {0.8.1},
+  doi     = {10.5281/zenodo.23917394},
   url     = {https://freqprob.tresoldi.org/}
 }
 ```
 
+The DOI [10.5281/zenodo.23917394](https://doi.org/10.5281/zenodo.23917394) identifies version 0.8.1;
+[10.5281/zenodo.23917393](https://doi.org/10.5281/zenodo.23917393) always resolves to the latest version.
 See [How to cite](https://freqprob.tresoldi.org/citing/) for APA and classic
 BibTeX forms, and [References](https://freqprob.tresoldi.org/references/) for
 the papers behind each method. Citation metadata is also in

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Zenodo DOIs: 10.5281/zenodo.23917394 for version 0.8.1, and 10.5281/zenodo.23917393 for all versions. They are in
+  `CITATION.cff`, the README (with a DOI badge), the home page and the How to
+  cite page.
+
 ## [0.8.1] - 2026-11-03
 
 Documentation and citation-metadata release, the first archived on Zenodo.
