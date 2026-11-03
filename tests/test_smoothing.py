@@ -1,14 +1,20 @@
 """Test the advanced smoothing methods."""
 
 # Import Python standard libraries
+import math
+
 import pytest
 
 # Import the library to test
 from freqprob import (
+    AbsoluteDiscounting,
     Bayesian,
     Interpolated,
+    KatzBackoff,
     KneserNey,
     ModifiedKneserNey,
+    PitmanYor,
+    StupidBackoff,
 )
 
 # Set up test data for advanced smoothing methods
@@ -48,8 +54,9 @@ def test_kneser_ney_basic() -> None:
     assert prob_the_cat > 0
     assert prob_the_dog > 0
 
-    # Test unobserved bigram
-    prob_unseen = kn(("unseen", "word"))
+    # Test unobserved bigram: an unseen context backs off to the continuation
+    # probability of a known word
+    prob_unseen = kn(("unseen", "bird"))
     assert prob_unseen > 0  # Should have some probability from continuation
 
     # Test that probabilities are reasonable
@@ -99,7 +106,7 @@ def test_modified_kneser_ney_basic() -> None:
     # Note: due to continuation probability, high count doesn't always mean higher probability
 
     # Test unobserved bigram
-    prob_unseen = mkn(("unseen", "word"))
+    prob_unseen = mkn(("unseen", "bird"))
     assert prob_unseen > 0
 
 
@@ -449,3 +456,15 @@ def test_kneser_ney_context_sensitivity() -> None:
     # Test that Kneser-Ney gives reasonable probabilities
     # (diverse word should have good continuation probability due to context variety)
     assert prob_new_diverse >= prob_new_narrow * 0.5  # Allow some flexibility
+
+
+@pytest.mark.parametrize(
+    "method",
+    [KneserNey, ModifiedKneserNey, AbsoluteDiscounting, PitmanYor, KatzBackoff, StupidBackoff],
+)
+def test_bigram_methods_give_unknown_words_no_mass(method: type) -> None:
+    """A word never seen in any bigram has no lower-order mass to back off to."""
+    plain = method(BIGRAM_DATA, logprob=False)
+    assert plain(("the", "unknown")) == 0.0
+    log = method(BIGRAM_DATA, logprob=True)
+    assert log(("the", "unknown")) == pytest.approx(math.log(1e-10))

@@ -85,14 +85,17 @@ def kl_divergence(
     """Calculate the Kullback-Leibler divergence between two models.
 
     KL divergence measures how much the approximate distribution ``Q`` diverges
-    from the reference distribution ``P``. It is not symmetric:
+    from the reference distribution ``P``:
+    ``KL(P||Q) = sum_w P(w) log(P(w) / Q(w))``, summed over the distinct
+    elements ``w`` of ``test_data`` (the support to compare the models on;
+    repeated elements are counted once). It is not symmetric:
     ``KL(P||Q) != KL(Q||P)``.
 
     Args:
         p_model: The reference probability model ``P``. Must use ``logprob=True``.
         q_model: The approximate probability model ``Q``. Must use ``logprob=True``.
-        test_data: Iterable of test elements over which to accumulate the
-            divergence.
+        test_data: Iterable of elements over which to sum the divergence.
+            Duplicates are ignored.
 
     Returns:
         The KL divergence value.
@@ -104,14 +107,15 @@ def kl_divergence(
         >>> from freqprob import MLE, Laplace, kl_divergence
         >>> p_model = MLE({"a": 3, "b": 2, "c": 1}, logprob=True)
         >>> q_model = Laplace({"a": 3, "b": 2, "c": 1}, logprob=True)
-        >>> round(kl_divergence(p_model, q_model, ["a", "b", "a", "c"]), 4)
-        0.0698
+        >>> round(kl_divergence(p_model, q_model, ["a", "b", "c"]), 4)
+        0.0109
     """
     if not p_model.logprob or not q_model.logprob:
         raise ValueError("Both models must be configured for log probabilities")
 
     kl_div = 0.0
-    for element in test_data:
+    # Each element of the support contributes once, however often it is listed.
+    for element in dict.fromkeys(test_data):
         p_log_prob = p_model(element)
         q_log_prob = q_model(element)
 

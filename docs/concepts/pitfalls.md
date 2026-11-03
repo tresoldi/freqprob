@@ -99,12 +99,15 @@ distribution.
 `KneserNey`, `ModifiedKneserNey`, `AbsoluteDiscounting`, `PitmanYor`,
 `KatzBackoff` and `StupidBackoff` take `(context, word)` pairs and ignore other
 keys. A word never seen in any bigram has no lower-order probability to back
-off to, so it scores the floor $10^{-10}$, even with `logprob=False`:
+off to, so it scores 0 (or the log floor):
 
 ```pycon
 >>> freqprob.KneserNey(bigrams, logprob=False)(("the", "fish"))
-1e-10
+0.0
 ```
+
+Add such words to the training bigrams, or interpolate with a smoothed unigram
+model, if they must receive probability.
 
 ## Simple Good–Turing needs a spread of low counts
 
