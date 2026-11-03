@@ -93,7 +93,7 @@ def ngram_frequency(
 ) -> dict[tuple[str, ...], int | float]:
     """Compute n-gram frequency from text.
 
-    Generates n-grams with :func:`generate_ngrams` and counts them. Counts are
+    Generates n-grams with `generate_ngrams` and counts them. Counts are
     returned by default, or relative frequencies when ``normalize`` is set.
 
     Args:

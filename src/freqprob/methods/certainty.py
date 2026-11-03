@@ -70,8 +70,8 @@ class CertaintyDegree(ScoringMethod):
 
         For very large ``n`` the reserved mass underflows, because the estimator
         is then confident that every element that matters has been observed.
-        That used to need an explicit epsilon here to keep :func:`math.log` in
-        its domain; :meth:`~freqprob.base.ScoringMethod._score_of` now applies
+        That used to need an explicit epsilon here to keep `math.log` in
+        its domain; `freqprob.base.ScoringMethod._score_of` now applies
         that floor for every method.
 
         Args:

@@ -1,9 +1,9 @@
 """Model-evaluation metrics: perplexity, cross-entropy, KL divergence, entropy.
 
 Alongside the model-scoring metrics, this module provides sample-based estimators
-that work directly on a frequency distribution: :func:`sample_coverage` (the
+that work directly on a frequency distribution: `sample_coverage` (the
 Good-Turing estimate of observed mass) and the bias-corrected entropy estimators
-:func:`chao_shen_entropy` and :func:`nsb_entropy`, which correct the downward bias
+`chao_shen_entropy` and `nsb_entropy`, which correct the downward bias
 of the naive plug-in entropy when many types are rare or unobserved.
 """
 
@@ -215,7 +215,7 @@ def chao_shen_entropy(freqdist: FrequencyDistribution) -> float:
     ``H = - sum_i (C p_i) log(C p_i) / (1 - (1 - C p_i) ** N)``
 
     where ``p_i`` is the relative frequency of type ``i``, ``C`` the sample
-    coverage (see :func:`sample_coverage`), and ``N`` the total count.
+    coverage (see `sample_coverage`), and ``N`` the total count.
 
     When every observation is a singleton the Good-Turing coverage is zero and
     the estimate would collapse to ``0``. Following Chao and Shen (2003), and
@@ -262,7 +262,7 @@ def chao_shen_entropy(freqdist: FrequencyDistribution) -> float:
     return entropy
 
 
-# Distinct counts evaluated together in :func:`nsb_entropy`; bounds its working
+# Distinct counts evaluated together in `nsb_entropy`; bounds its working
 # memory to a few ``_NSB_CHUNK x grid`` arrays however many distinct counts the
 # input has.
 _NSB_CHUNK = 128
@@ -272,7 +272,7 @@ _NSB_CHUNK = 128
 def _nsb_grid() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Return the NSB integration grid over ``a`` and the terms that depend on it alone.
 
-    These are the same for every call of :func:`nsb_entropy`, so they are
+    These are the same for every call of `nsb_entropy`, so they are
     computed once, on first use, and returned read-only: the grid ``a``,
     ``gammaln(a)``, ``trigamma(a + 1)``, ``a * psi(a + 1)`` and the log grid
     spacing.

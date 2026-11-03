@@ -23,6 +23,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   runs them so they cannot drift from the code. All links are absolute, so they
   also work on PyPI. The badges are reduced to version, Python versions, CI,
   docs, DOI and licence.
+- **Landing page refreshed.** The masthead shows the version and DOI and a row
+  of links into the documentation; four entry cards lead to getting started, the
+  methods, the how-to guides and the API reference. The quick start is the
+  README's, and a new test (`tests/test_landing_example.py`) runs it. The
+  illustrative figure is replaced by a figure computed with FreqProb on the word
+  counts of *The Zen of Python* (observed relative frequencies against Simple
+  Good–Turing estimates, with the 42% of probability mass it reserves for unseen
+  words). The page also gains Related projects and links to How to cite and the
+  migration guide.
+- **Documentation restructured by purpose**, on the same template as ASymCat's.
+  The User Guide is replaced by a tutorial; concept pages on how estimators
+  work, notation, choosing a method and pitfalls; one page per method family
+  with its definition as FreqProb computes it, a worked example on shared
+  counts, its properties, its API entries and its references; evaluation pages
+  for the model metrics and for sample coverage and entropy; how-to guides for
+  building counts, choosing `bins`, log space, scaling, persistence, worked
+  examples by domain and plotting; and an API reference by module. Old URLs
+  redirect to their new pages, and the method pages render their formulas with
+  MathJax.
+- **Every documentation example checks its output.** Examples are `pycon` blocks
+  with their real output, run as doctests by `tests/test_docs_examples.py`,
+  which replaces the test that only checked that `python` blocks ran. The
+  plotting guide's figure is drawn from its own example when the site is built
+  (`scripts/docs_figures.py`).
+- **Plain-probability scores are Python floats.** `SimpleGoodTuring` returned
+  NumPy scalars for observed elements with `logprob=False`; every estimator now
+  returns `float`. Values are unchanged.
+- **Docstrings.** `SimpleGoodTuring`'s `allow_fail` was documented the wrong way
+  round: the default (`True`) proceeds when the assumptions fail, and `False`
+  raises `RuntimeWarning`. Sphinx roles in the docstrings are replaced by plain
+  code, which the API reference renders.
+- The `docs` extra adds `mkdocs-redirects` and `matplotlib`.
 
 ## [0.8.1] - 2026-11-03
 

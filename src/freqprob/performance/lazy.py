@@ -209,8 +209,8 @@ class LazyScoringMethod(ScoringMethod):
         """Record the distribution without estimating anything yet.
 
         Returning an empty table is the lazy part: each element's estimate is
-        produced by :meth:`__call__` the first time it is asked for, and the
-        reserved score by :meth:`_get_unobserved_probability`.
+        produced by `__call__` the first time it is asked for, and the
+        reserved score by `_get_unobserved_probability`.
 
         Args:
             freqdist: Frequency distribution to score against later.

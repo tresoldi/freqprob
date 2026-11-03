@@ -24,7 +24,7 @@ class KneserNey(BigramBackoff):
 
     This is absolute discounting with the unigram model replaced by the
     continuation distribution, and it shares the back-off machinery with
-    :class:`~freqprob.AbsoluteDiscounting` accordingly.
+    `freqprob.AbsoluteDiscounting` accordingly.
 
     Args:
         freqdist: Frequency distribution mapping bigrams to their observed

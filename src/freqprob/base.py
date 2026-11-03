@@ -89,10 +89,10 @@ class ScoringMethod(ABC):
     estimates a probability ``P(w)`` for every element ``w``. For unobserved
     elements, methods reserve probability mass to avoid returning zero.
 
-    Subclasses must implement :meth:`_estimate`, which returns the probability
+    Subclasses must implement `_estimate`, which returns the probability
     of each observed element together with the mass reserved for the rest. The
     method's own parameters are attributes on the estimator; the shared
-    :class:`ScoringMethodConfig` carries only what every method may need.
+    `ScoringMethodConfig` carries only what every method may need.
 
     Attributes:
         config: Configuration parameters for the method.
@@ -164,14 +164,14 @@ class ScoringMethod(ABC):
     def support(self) -> Collection[Element]:
         """Return the elements this scorer holds an explicit estimate for.
 
-        Every other element is scored with :meth:`unobserved_score`. Together
-        with :attr:`revision`, this is what lets a caller build its own index
+        Every other element is scored with `unobserved_score`. Together
+        with `revision`, this is what lets a caller build its own index
         over the scorer without reaching into its internals.
 
         Returns:
             The elements with an explicit estimate. The result is a read-only
             view: it must not be mutated, and it may become stale once
-            :attr:`revision` changes.
+            `revision` changes.
 
         Examples:
             >>> from freqprob import MLE
@@ -182,7 +182,7 @@ class ScoringMethod(ABC):
         return self._prob.keys()
 
     def unobserved_score(self) -> Probability | LogProbability:
-        """Return the score given to every element outside :meth:`support`.
+        """Return the score given to every element outside `support`.
 
         Returns:
             The reserved probability (or log-probability) for unobserved
@@ -200,9 +200,9 @@ class ScoringMethod(ABC):
     def revision(self) -> int:
         """Count of how many times this scorer's estimates have changed.
 
-        Starts at ``0`` and increases on every :meth:`fit` and on every
+        Starts at ``0`` and increases on every `fit` and on every
         streaming update. A caller that caches anything derived from
-        :meth:`support`, :meth:`unobserved_score`, or the scores themselves
+        `support`, `unobserved_score`, or the scores themselves
         should record this value alongside the cache and rebuild when it
         changes.
 
@@ -221,13 +221,13 @@ class ScoringMethod(ABC):
         self._revision += 1
 
     def _cache_key(self) -> tuple[Any, ...]:
-        """Return the parameters that affect :meth:`_estimate`.
+        """Return the parameters that affect `_estimate`.
 
         Used to memoize estimates. A method that takes parameters of its own
         extends this, so what a cache entry depends on is written down rather
         than discovered by reflecting over the configuration object.
 
-        ``logprob`` is deliberately absent: :meth:`_estimate` works in plain
+        ``logprob`` is deliberately absent: `_estimate` works in plain
         probability space, so one entry serves both output spaces.
 
         Returns:
@@ -241,8 +241,8 @@ class ScoringMethod(ABC):
         This is where the log/plain duality lives. Estimators compute in plain
         probability space and hand the result here.
 
-        A log-scorer substitutes :data:`MIN_PROBABILITY` for a probability of
-        zero, which keeps :func:`math.log` in its domain without disturbing
+        A log-scorer substitutes `MIN_PROBABILITY` for a probability of
+        zero, which keeps `math.log` in its domain without disturbing
         small-but-genuine estimates. A plain scorer returns the probability
         untouched, so it can still report an exact ``0.0`` for an element it
         gives no mass to.
@@ -256,7 +256,7 @@ class ScoringMethod(ABC):
         """
         if self.logprob:
             return math.log(prob) if prob > 0.0 else math.log(MIN_PROBABILITY)
-        return prob
+        return float(prob)
 
     def __str__(self) -> str:
         """Return a string representation of the smoothing method.
@@ -295,11 +295,11 @@ class ScoringMethod(ABC):
 
         This is the one method a smoothing method must implement, and it should
         contain nothing but that method's mathematics. Work in **plain
-        probability space** and return the result; :meth:`fit` applies the
-        :data:`MIN_PROBABILITY` floor, converts to log-probabilities when the
+        probability space** and return the result; `fit` applies the
+        `MIN_PROBABILITY` floor, converts to log-probabilities when the
         scorer is a log-scorer, and installs the result. An implementation
         therefore never writes ``self._prob``, never branches on
-        ``self.logprob``, and never calls :func:`math.log`.
+        ``self.logprob``, and never calls `math.log`.
 
         Args:
             freqdist: Frequency distribution mapping elements to their observed
@@ -345,7 +345,7 @@ class ScoringMethod(ABC):
         """Convert estimates into this scorer's output space and adopt them.
 
         The single place where a probability becomes a score. Called by
-        :meth:`fit`, and by any estimator that revises its estimates outside a
+        `fit`, and by any estimator that revises its estimates outside a
         fit (the streaming scorers do this on every update).
 
         Args:
@@ -419,8 +419,8 @@ class ScoringMethod(ABC):
     def save(self, path: str | Path) -> None:
         """Serialize this fitted scorer to a file.
 
-        The scorer can be restored later with :meth:`load`, avoiding the cost of
-        re-fitting. Serialization uses :mod:`pickle`.
+        The scorer can be restored later with `load`, avoiding the cost of
+        re-fitting. Serialization uses `pickle`.
 
         Args:
             path: Destination file path.
@@ -438,10 +438,10 @@ class ScoringMethod(ABC):
 
     @classmethod
     def load(cls: type[T], path: str | Path) -> T:  # noqa: PYI019  (Self needs typing_extensions on 3.10)
-        """Load a scorer previously written with :meth:`save`.
+        """Load a scorer previously written with `save`.
 
         Args:
-            path: Path to a file created by :meth:`save`.
+            path: Path to a file created by `save`.
 
         Returns:
             The restored scorer.

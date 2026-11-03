@@ -35,7 +35,7 @@ class KatzBackoff(BigramBackoff):
     where ``d_c`` is the Good-Turing discount ratio for count ``c`` and
     ``alpha(context)`` is chosen so each context's distribution sums to one. It
     is one of the classic n-gram smoothing methods and pairs naturally with
-    :class:`~freqprob.SimpleGoodTuring`, which uses the same count-of-counts
+    `freqprob.SimpleGoodTuring`, which uses the same count-of-counts
     machinery.
 
     Args:

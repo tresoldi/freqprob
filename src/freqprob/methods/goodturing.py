@@ -111,7 +111,7 @@ class SimpleGoodTuring(ScoringMethod):
         Since v0.4.0, unseen queries return the per-word probability
         ``p0 / (bins - V)`` rather than the total mass ``p0``, making the method
         compatible with perplexity calculations and consistent with the other
-        smoothers. Use the :attr:`total_unseen_mass` property to recover ``p0``
+        smoothers. Use the `total_unseen_mass` property to recover ``p0``
         (the total mass for all unseen words combined).
 
     Args:
@@ -131,11 +131,11 @@ class SimpleGoodTuring(ScoringMethod):
         logprob: Return log-probabilities if ``True`` (the default), otherwise
             plain probabilities. Counts are corrected to avoid domain errors
             when taking logarithms.
-        allow_fail: If ``True`` (the default), raise ``RuntimeWarning`` when the
+        allow_fail: If ``True`` (the default), estimation proceeds even when the
             essential SGT assumptions are not met (log-linear regression slope
             ``> -1.0``, or an unobserved count reached before crossing the
-            smoothing threshold). If ``False``, estimation proceeds but may yield
-            an unreliable distribution.
+            smoothing threshold), and may yield an unreliable distribution. If
+            ``False``, raise ``RuntimeWarning`` in those cases.
 
     Examples:
         SGT needs a spread of low-frequency counts, so use a Zipfian-ish
@@ -218,8 +218,9 @@ class SimpleGoodTuring(ScoringMethod):
 
         Raises:
             ValueError: If ``bins`` does not exceed the number of observed
-                elements, or if the log-linear fit fails and ``allow_fail``
-                is set.
+                elements.
+            RuntimeWarning: If ``allow_fail`` is ``False`` and the SGT
+                assumptions are not met.
         """
         p_value = self.p_value
         default_p0 = self.default_p0

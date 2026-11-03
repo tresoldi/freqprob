@@ -25,6 +25,8 @@ theme:
         name: Switch to light mode
   features:
     - navigation.sections
+    - navigation.indexes
+    - navigation.footer
     - navigation.top
     - content.code.copy
     - search.suggest
@@ -32,13 +34,55 @@ theme:
 
 nav:
   - Home: index.md
-  - User Guide: USER_GUIDE.md
-  - API Reference: reference.md
+  - Getting started:
+      - Installation: getting-started/installation.md
+      - Tutorial: getting-started/tutorial.md
+  - Concepts:
+      - How estimators work: concepts/estimators.md
+      - Notation: concepts/notation.md
+      - Choosing a method: concepts/choosing-a-method.md
+      - Pitfalls: concepts/pitfalls.md
+  - Methods:
+      - methods/index.md
+      - Baselines: methods/baselines.md
+      - Additive smoothing: methods/additive.md
+      - Simple Good–Turing: methods/simple-good-turing.md
+      - Witten–Bell: methods/witten-bell.md
+      - Kneser–Ney: methods/kneser-ney.md
+      - Absolute discounting and Pitman–Yor: methods/absolute-discounting.md
+      - Katz and Stupid back-off: methods/backoff.md
+      - Interpolation: methods/interpolation.md
+      - Certainty degree: methods/certainty-degree.md
+  - Evaluation:
+      - Evaluating models: evaluation/model-metrics.md
+      - Coverage and entropy: evaluation/sample-statistics.md
+  - How-to guides:
+      - how-to/index.md
+      - Build frequency distributions: how-to/build-counts.md
+      - Choose bins: how-to/choose-bins.md
+      - Work in log space: how-to/log-space.md
+      - Scale to large data: how-to/scale.md
+      - Save, load and refit: how-to/persist.md
+      - Worked examples by domain: how-to/domains.md
+      - Plot a smoothed distribution: how-to/plot.md
+  - API reference:
+      - api/index.md
+      - Estimators: api/estimators.md
+      - Metrics: api/metrics.md
+      - Text helpers: api/text.md
+      - Performance: api/performance.md
   - References: references.md
   - How to cite: citing.md
 
+hooks:
+  - scripts/docs_figures.py
+
 plugins:
   - search
+  - redirects:
+      redirect_maps:
+        USER_GUIDE.md: getting-started/tutorial.md
+        reference.md: api/index.md
   - mkdocstrings:
       handlers:
         python:
@@ -59,5 +103,12 @@ markdown_extensions:
       anchor_linenums: true
   - pymdownx.superfences
   - pymdownx.inlinehilite
+  - pymdownx.arithmatex:
+      generic: true
   - toc:
       permalink: true
+
+# LaTeX math rendering via MathJax (the method pages use $...$ / $$...$$).
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js

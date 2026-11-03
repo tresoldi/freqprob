@@ -91,8 +91,11 @@ familiarity, and can be saved with `.save(path)` and reloaded with
 
 For large or streaming data, FreqProb also provides vectorized batch scoring,
 lazy evaluation, incremental (streaming) estimators and memory-efficient
-representations. The [User Guide](https://freqprob.tresoldi.org/USER_GUIDE/)
-explains each method and when to use it.
+representations.
+[Choosing a method](https://freqprob.tresoldi.org/concepts/choosing-a-method/)
+helps pick one, and each family has a
+[page of its own](https://freqprob.tresoldi.org/methods/) with its definition
+and a worked example.
 
 ## Highlights
 
@@ -109,11 +112,19 @@ explains each method and when to use it.
 
 ## Documentation
 
-- **[User Guide](https://freqprob.tresoldi.org/USER_GUIDE/):** concepts,
-  choosing a method, and worked examples across text, ecology, genomics and
-  categorical data.
-- **[API Reference](https://freqprob.tresoldi.org/reference/):** every public
-  class and function, generated from the source with a runnable example.
+- **[Tutorial](https://freqprob.tresoldi.org/getting-started/tutorial/):** from
+  raw text to smoothed probabilities, held-out evaluation and n-grams.
+- **[Concepts](https://freqprob.tresoldi.org/concepts/estimators/):** how
+  estimators work, notation, choosing a method and common pitfalls.
+- **[Methods](https://freqprob.tresoldi.org/methods/):** one page per method
+  family, with its definition, a worked example, its properties and references.
+- **[Evaluation](https://freqprob.tresoldi.org/evaluation/model-metrics/):**
+  perplexity and cross-entropy, sample coverage and bias-corrected entropy.
+- **[How-to guides](https://freqprob.tresoldi.org/how-to/):** building counts,
+  choosing `bins`, log space, scaling, persistence and worked examples by
+  domain.
+- **[API Reference](https://freqprob.tresoldi.org/api/):** every public class
+  and function, generated from the source with a runnable example.
 - **[References](https://freqprob.tresoldi.org/references/):** the published
   source of each method, with a BibTeX file.
 - **[Changelog](https://github.com/tresoldi/freqprob/blob/main/CHANGELOG.md)**
