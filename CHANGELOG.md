@@ -23,6 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   runs them so they cannot drift from the code. All links are absolute, so they
   also work on PyPI. The badges are reduced to version, Python versions, CI,
   docs, DOI and licence.
+- **Landing page refreshed.** The masthead shows the version and DOI and a row
+  of links into the documentation; four entry cards lead to getting started, the
+  methods, the how-to guides and the API reference. The quick start is the
+  README's, and a new test (`tests/test_landing_example.py`) runs it. The
+  illustrative figure is replaced by a figure computed with FreqProb on the word
+  counts of *The Zen of Python* (observed relative frequencies against Simple
+  Good–Turing estimates, with the 42% of probability mass it reserves for unseen
+  words). The page also gains Related projects and links to How to cite and the
+  migration guide.
 
 ## [0.8.1] - 2026-11-03
 
