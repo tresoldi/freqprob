@@ -29,6 +29,9 @@ identifiers:
     value: 10.5281/zenodo.23917393
     description: "Concept DOI for all versions of FreqProb; resolves to the latest release."
   - type: doi
+    value: 10.5281/zenodo.23938349
+    description: "DOI of FreqProb version 0.9.0."
+  - type: doi
     value: 10.5281/zenodo.23917394
     description: "DOI of FreqProb version 0.8.1."
 keywords:
