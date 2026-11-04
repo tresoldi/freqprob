@@ -17,7 +17,8 @@ Every release of FreqProb from 0.8.1 onwards is archived on
 [Zenodo](https://doi.org/10.5281/zenodo.23917393) with its own DOI:
 
 - **A specific version:** cite the DOI of the release you used, so readers get
-  exactly that code. Version 0.8.1 is
+  exactly that code. Version 0.9.0 is
+  [10.5281/zenodo.23938349](https://doi.org/10.5281/zenodo.23938349), and version 0.8.1 is
   [10.5281/zenodo.23917394](https://doi.org/10.5281/zenodo.23917394). Later versions are listed under "Versions" on the
   Zenodo record.
 - **All versions:** [10.5281/zenodo.23917393](https://doi.org/10.5281/zenodo.23917393) always resolves to the latest
@@ -32,7 +33,7 @@ Releases before 0.8.1 have no DOI; cite them by version number and URL.
 
 > Tresoldi, T. (2026). *FreqProb: A Python library for probability smoothing and
 > frequency-based estimation* (Version 0.9.0) [Computer software]. Zenodo.
-> https://doi.org/10.5281/zenodo.23917393
+> https://doi.org/10.5281/zenodo.23938349
 
 **BibTeX** (biblatex, or any style that supports `@software`)
 
@@ -43,7 +44,7 @@ Releases before 0.8.1 have no DOI; cite them by version number and URL.
              frequency-based estimation},
   year    = {2026},
   version = {0.9.0},
-  doi     = {10.5281/zenodo.23917393},
+  doi     = {10.5281/zenodo.23938349},
   url     = {https://freqprob.tresoldi.org/}
 }
 ```
@@ -58,8 +59,8 @@ templates)
                   frequency-based estimation},
   year         = {2026},
   note         = {Version 0.9.0},
-  doi          = {10.5281/zenodo.23917393},
-  howpublished = {\url{https://doi.org/10.5281/zenodo.23917393}}
+  doi          = {10.5281/zenodo.23938349},
+  howpublished = {\url{https://doi.org/10.5281/zenodo.23938349}}
 }
 ```
 
