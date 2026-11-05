@@ -166,6 +166,12 @@ forms, and [References](https://freqprob.tresoldi.org/references/) for the paper
 behind each method. Citation metadata is also in
 [`CITATION.cff`](https://github.com/tresoldi/freqprob/blob/main/CITATION.cff).
 
+## Use of AI
+
+We use AI assistants for routine engineering and for reviewing our writing; the
+design and all decisions are ours, and so is the responsibility. See
+[AI_USAGE.md](https://github.com/tresoldi/freqprob/blob/main/AI_USAGE.md).
+
 ## License
 
 MIT; see [LICENSE](https://github.com/tresoldi/freqprob/blob/main/LICENSE).

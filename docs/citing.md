@@ -77,3 +77,9 @@ estimator, such as Simple Good–Turing or the Chao–Shen entropy estimator, ci
 the method's original paper as well as the software. The
 [References](references.md) page lists the source for each method and provides
 them all as a BibTeX file.
+
+## Use of AI
+
+AI assistants helped with routine engineering and with reviewing the writing of
+this software and its documentation; the design, the data and the
+responsibility are ours. [AI_USAGE.md](https://github.com/tresoldi/freqprob/blob/main/AI_USAGE.md) describes how.
