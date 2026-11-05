@@ -2,138 +2,138 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://freqprob.tresoldi.org/dev/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/citing/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/references/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/api/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/api/estimators/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/api/metrics/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/api/performance/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/api/text/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/concepts/choosing-a-method/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/concepts/estimators/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/concepts/notation/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/concepts/pitfalls/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/evaluation/model-metrics/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/evaluation/sample-statistics/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/getting-started/installation/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/getting-started/tutorial/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/how-to/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/how-to/build-counts/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/how-to/choose-bins/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/how-to/domains/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/how-to/log-space/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/how-to/persist/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/how-to/plot/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/how-to/scale/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/absolute-discounting/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/additive/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/backoff/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/baselines/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/certainty-degree/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/interpolation/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/kneser-ney/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/simple-good-turing/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
     <url>
          <loc>https://freqprob.tresoldi.org/dev/methods/witten-bell/</loc>
-         <lastmod>2026-11-04</lastmod>
+         <lastmod>2026-11-05</lastmod>
     </url>
 </urlset>
